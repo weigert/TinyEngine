@@ -20,21 +20,20 @@ Shaders:
   - Small shader library, for rendering billboards, shadow mapping, phong shading
     
 Billboards:
-    - FBO rendering support, allows for pipelining and utilization of effect shaders
-    - Drawing of textures to the screen
-    - Easy positioning of the billboard on the screen
-    - Drawing helper for generating a texture from arbitrary (e.g. array) data, using a set of drawing helper
+  - FBO rendering support, allows for pipelining and utilization of effect shaders
+  - Drawing of textures to the screen
+  - Easy positioning of the billboard on the screen
+  - Drawing helper for generating a texture from arbitrary (e.g. array) data, using a set of drawing helper
     
 Interface:
-    - Integrates DearImGUI in a way to give you an easy way to provide an interface
-    - 
+  - Integrates DearImGUI in a way to give you an easy way to provide an interface
     
 Event Handler:
-    - Support for keyboard and mouse inputs
-    - 
+  - Support for keyboard and mouse inputs
+  - 
     
 Audio:
-    - Capable of playing / looping audio files using event triggers
+  - Capable of playing / looping audio files using event triggers
 
 ## Dependencies
 ... coming soon ...

@@ -25,8 +25,9 @@ using slist = std::initializer_list<std::string>;
 #include <boost/filesystem/path.hpp>
 
 //Helpers
-#include "include/helpers/image.h"
 #include "include/helpers/color.h"
+#include "include/helpers/draw.h"
+#include "include/helpers/image.h"
 #include "include/helpers/timer.h"
 
 //Utility Classes for the Engine

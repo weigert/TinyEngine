@@ -2,11 +2,16 @@ class Billboard{
 public:
   Billboard(std::string path){      //Construct from PNG Image
     setup();
-    fromRaw(image::load(path));
+    raw(image::load(path));
   };
 
   Billboard(){
     setup();
+  };
+
+  Billboard(int width, int height, bool depthOnly){
+    setup();
+    drawable(width, height, depthOnly);
   };
 
   ~Billboard(){
@@ -14,6 +19,7 @@ public:
   }
 
   //Rendering Data
+  unsigned int WIDTH, HEIGHT;
   GLuint vao, vbo[2];
   void setup();
   void cleanup();
@@ -31,11 +37,11 @@ public:
   GLuint texture;
   GLuint depthTexture;
 
-  bool fromRaw(SDL_Surface* TextureImage);
-  bool setup(int width, int height);
-  bool setup2(int width, int height);
+  bool raw(SDL_Surface* TextureImage);
+  bool drawable(int width, int height, bool depthOnly);
 
-  void render();
+  void target(glm::vec3 clear); //Billboard as render target with clear color
+  void render();                //Render this billboard
 };
 
 void Billboard::setup(){
@@ -54,6 +60,10 @@ void Billboard::setup(){
   glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat), &tex[0], GL_STATIC_DRAW);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+  //Generate Textures
+  glGenTextures( 1, &texture );
+  glGenTextures( 1, &depthTexture );
 }
 
 void Billboard::cleanup(){
@@ -69,7 +79,6 @@ void Billboard::cleanup(){
 }
 
 void Billboard::move(glm::vec2 pos, glm::vec2 scale){
-  //Scale and Translate the Model Matrix
   model = glm::translate(glm::mat4(1.0), glm::vec3(2.0*pos.x-1.0+scale.x, 2.0*pos.y-1.0+scale.y, 0.0));
   model = glm::scale(model, glm::vec3(scale.x, scale.y, 1.0));
 }
@@ -80,41 +89,32 @@ void Billboard::move(glm::vec2 pos, glm::vec2 scale){
 ================================================================================
 */
 
-bool Billboard::fromRaw(SDL_Surface* TextureImage){
-  //Load the File
-  if(TextureImage == NULL){
-    std::cout<<"Error loading billboard from surface."<<std::endl;
-    return false;
-  }
+bool Billboard::raw(SDL_Surface* s){
+  WIDTH  = s->w;  //Set Width and Height
+  HEIGHT = s->h;
 
-  glGenTextures( 1, &texture );
+  //Update the Texture
   glBindTexture( GL_TEXTURE_2D, texture );
-
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TextureImage->w, TextureImage->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, TextureImage->pixels);
-
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 
   return true;
 }
 
-//Generate all the Data for this Billboard (which can be rendered to in 3D in theory)
-bool Billboard::setup(int width, int height){
-  //Add the Frame Buffer Object
-  glGenFramebuffers(1, &fbo);
+bool Billboard::drawable(int width, int height, bool depthOnly){
+  glGenFramebuffers(1, &fbo); //Frame Buffer Object for drawing
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-  //Generate and Bind the Texture
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+  if(!depthOnly){
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+  }
 
-  //Generate and Bind the Texture
-  glGenTextures(1, &depthTexture);
   glBindTexture(GL_TEXTURE_2D, depthTexture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -123,41 +123,23 @@ bool Billboard::setup(int width, int height){
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
-  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    return false;
+  if(depthOnly) glDrawBuffer(GL_NONE);
 
-  //Reset the FrameBuffer
+  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+    std::cout<<"Failed to construct framebuffer object."<<std::endl;
+    return false;
+  }
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return true;
 }
 
-bool Billboard::setup2(int width, int height){
-  //Add the Frame Buffer Object
-  glGenFramebuffers(1, &fbo);
+void Billboard::target(glm::vec3 clear){
+  glViewport(0, 0, WIDTH, HEIGHT);
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-  //Generate Texture
-  glGenTextures(1, &depthTexture);
-  glBindTexture(GL_TEXTURE_2D, depthTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
-
-  /* NEW */
-  glDrawBuffer(GL_NONE);
-
-  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    return false;
-
-  //Reset the FrameBuffer
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  return true;
+  glClearColor(clear.x, clear.y, clear.z, 1.0f); //Blue
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Billboard::render(){

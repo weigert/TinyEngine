@@ -3,8 +3,7 @@ class View{
     bool init(std::string windowName, int width, int height);
     void cleanup();
 
-    unsigned int WIDTH;
-    unsigned int HEIGHT;
+    unsigned int WIDTH, HEIGHT;
 
     SDL_Window* gWindow;        //Window Pointer
     SDL_GLContext gContext;     //Render Context

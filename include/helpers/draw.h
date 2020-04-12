@@ -1,25 +1,19 @@
+/*
+  Basically: We make a surface from an array by passing it through some function that generates
+  the color of the surface. The draw helper provides a number of methods to do just that.
+  Then we can generate a picture from raw array data.
+*/
+
 namespace draw{
 
-  /* Surface Constructor */
+  //Black / White
+  std::function<glm::vec4(double)> BW = [](double t){
+    return glm::vec4(t, t, t, 1.0);
+  };
 
-  //Define the color
-  SDL_Surface* makeSurface(glm::vec2 d, CArray R, CArray G, CArray B, CArray A){
-    //Construct and Return the Surface
-    SDL_Surface *s = SDL_CreateRGBSurface(0, d.x, d.y, 32, 0, 0, 0, 0);
-    SDL_LockSurface(s);
+  //Bezier with Color Scheme!
+  std::function<glm::vec4(double)> grass = [](double t){
+    return color::bezier<glm::vec4>(t, color::grasscolors);
+  };
 
-    //Create raw data pointer
-    unsigned char *img_raw = (unsigned char*)s->pixels;
-
-    for(int i = 0; i < d.x*d.y; i++){
-      //Raw Pointer Stuff
-      *(img_raw+4*i)    = (unsigned char)R[i].real();
-      *(img_raw+4*i+1)  = (unsigned char)G[i].real();
-      *(img_raw+4*i+2)  = (unsigned char)B[i].real();
-      *(img_raw+4*i+3)  = (unsigned char)A[i].real();
-    }
-
-    SDL_UnlockSurface(s);
-    return s;
-  }
-}
+}; //End of Namespace

@@ -26,6 +26,8 @@ using slist = std::initializer_list<std::string>;
 
 //Helpers
 #include "include/helpers/image.h"
+#include "include/helpers/color.h"
+#include "include/helpers/timer.h"
 
 //Utility Classes for the Engine
 #include "include/utility/shader.cpp"
@@ -38,15 +40,7 @@ using slist = std::initializer_list<std::string>;
 
 /* TINY ENGINE */
 
-/*
-    Working Princple:
-
-      Define a function that acts as the event handler, with access to the member functions.
-      Define a function that draws an interface that can access any variables you want.
-      Define an attach function that decides what kinds of elements the view has access to.
-*/
-
-namespace Tiny{
+namespace Tiny {
 
 //Main Engine Elements
 static View view;       //Window and Interface
@@ -88,23 +82,17 @@ void quit(){
   SDL_Quit();
 };
 
-//Game Loop
 template<typename F, typename... Args>
 void loop(F function, Args&&... args){
-  //Do the main game loop!
   while(!event.quit){
-    //Take user Input
-    event.input();
+    event.input();        //Handle Input
     event.handle(view);
 
-    //Audio Processor
-    audio.process();
+    audio.process();      //Audio Processor
 
-    //Execute the specified game loop!
-    function(args...);
+    function(args...);    //User-defined Game Loop
 
-    //Render the View
-    view.render();
+    view.render();        //Render View
   }
 };
 

@@ -1,4 +1,3 @@
-#pragma once
 class Billboard{
 public:
   Billboard(std::string path){      //Construct from PNG Image
@@ -31,11 +30,11 @@ public:
   GLuint fbo;       //We need an FBO to render scene to screen
   GLuint texture;
   GLuint depthTexture;
+
   bool fromRaw(SDL_Surface* TextureImage);
   bool setup(int width, int height);
   bool setup2(int width, int height);
 
-  //Draw
   void render();
 };
 
@@ -162,7 +161,6 @@ bool Billboard::setup2(int width, int height){
 }
 
 void Billboard::render(){
-  //Bind the VAO and Draw!
   glBindVertexArray(vao);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }

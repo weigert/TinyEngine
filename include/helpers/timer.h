@@ -1,6 +1,8 @@
+#include <chrono>
+#include <thread>
+
 namespace timer{
 
-  //Benchmarking Helper
   template<typename D, typename F, typename... Args>
   void benchmark(F function, Args&&... args){
     auto start = std::chrono::high_resolution_clock::now();
@@ -10,7 +12,6 @@ namespace timer{
     std::cout<<"Execution Time: "<<duration.count()<<std::endl;
   };
 
-  //Timed Execution Helper
   template<typename D>
   class Timer{
     //Finish the Guy

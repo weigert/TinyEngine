@@ -1,14 +1,3 @@
-/*
-    This is a helper namespace for turning raw array data into a texture that can
-    be rendered using the billboard shader.
-*/
-
-/*
-================================================================================
-                                  Drawing Helpers
-================================================================================
-*/
-
 namespace draw{
 
   /* Surface Constructor */

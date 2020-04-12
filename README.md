@@ -156,7 +156,4 @@ See the example programs to see exactly how to link the program (makefile). Comp
 A number of example programs are included.
 
 ## To-Do
-Reduce the billboard class. This has the most potential to be cut down dramatically in size.
-Decide which helpers are necessary
-
-Also need to simultaneously expand the billboard class to draw the texture from 
+	- ???

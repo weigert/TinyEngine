@@ -149,6 +149,19 @@ Billboard:
       //Rendering
       billboard.render();
       
+To target the main window again, call:
+
+      //
+      Tiny::view.target(vec3 clearcolor);
+      
+### Rendering Pipeline
+The rendering pipeline can be constructed in any way, but generally consists of the following steps:
+ 
+  - Choose rendering target (Tiny.view, billboard)
+  - Setup shader (use, set uniforms)
+  - Render models (sprites and models, possibly billboards)
+  - Repeat!
+      
 ### Compiling and Linking
 See the example programs to see exactly how to link the program (makefile). Compiled using gcc on Ubuntu 18 LTS.
 

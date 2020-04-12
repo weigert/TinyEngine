@@ -32,6 +32,7 @@ using slist = std::initializer_list<std::string>;
 
 //Utility Classes for the Engine
 #include "include/utility/shader.cpp"
+#include "include/utility/sprite.cpp"
 #include "include/utility/billboard.cpp"
 #include "include/utility/model.cpp"
 

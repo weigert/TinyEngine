@@ -17,7 +17,7 @@ int main( int argc, char* args[] ) {
 	//Setup the Model Stuff
 	setup();
 
-	Billboard image;	//Create an image from the heightmap in black and white
+	Sprite image;	//Create an image from the heightmap in black and white
 	image.raw(image::make<double>(dim, heightmap, draw::grass));
 
 	Shader billboardShader("shader/billboard.vs", "shader/billboard.fs", {"in_Quad", "in_Tex"});

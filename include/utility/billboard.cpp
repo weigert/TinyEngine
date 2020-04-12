@@ -1,14 +1,5 @@
 class Billboard{
 public:
-  Billboard(std::string path){      //Construct from PNG Image
-    setup();
-    raw(image::load(path));
-  };
-
-  Billboard(){
-    setup();
-  };
-
   Billboard(int width, int height, bool depthOnly){
     setup();
     drawable(width, height, depthOnly);
@@ -89,34 +80,23 @@ void Billboard::move(glm::vec2 pos, glm::vec2 scale){
 ================================================================================
 */
 
-bool Billboard::raw(SDL_Surface* s){
-  WIDTH  = s->w;  //Set Width and Height
-  HEIGHT = s->h;
-
-  //Update the Texture
-  glBindTexture( GL_TEXTURE_2D, texture );
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-  return true;
-}
-
 bool Billboard::drawable(int width, int height, bool depthOnly){
   glGenFramebuffers(1, &fbo); //Frame Buffer Object for drawing
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+  WIDTH = width;
+  HEIGHT = height;
+
   if(!depthOnly){
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
   }
 
   glBindTexture(GL_TEXTURE_2D, depthTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);

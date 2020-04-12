@@ -1,7 +1,3 @@
-/*
-  Include this file in your project if you want to use TinyEngine.
-*/
-
 #include <functional>
 using Handle = std::function<void()>;
 #include <initializer_list>
@@ -48,9 +44,6 @@ using slist = std::initializer_list<std::string>;
       Define a function that acts as the event handler, with access to the member functions.
       Define a function that draws an interface that can access any variables you want.
       Define an attach function that decides what kinds of elements the view has access to.
-
-
-    To-Do: Setup Models, Billboards and Shaders
 */
 
 namespace Tiny{

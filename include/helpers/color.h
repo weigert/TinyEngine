@@ -1,22 +1,3 @@
-/*
--> Function to Generate Bezier Coefficients (as vectors)
--> Function to quickly evaluate polynomials
--> Function to to convert HSV to RGB and vice versa
-
-Can we discuss why one thing or the other is faster?
-
-
-
-*/
-
-/*
-  High order curves lack numerical stability because
-  of the evaluation of the inverse of a factorial - this can become very large
-  and thereby give you inaccurate results.
-  These ratios of factorials are not good. It provides an in-between step that moves over
-  vastly different orders of magnitude, which causes errors in the machine precision.
-*/
-
 namespace color{
   std::vector<glm::vec4> skycolors{
     glm::vec4(0.1, 0.1, 0.1, 1.0),            //Dark Grey

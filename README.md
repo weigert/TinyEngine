@@ -1,6 +1,8 @@
 # TinyEngine
 Small OpenGL3 based 3D Engine / Wrapper in C++
 
+![Rendering Example Program](banner.png)
+
 ## Description
 This is the full maintained version of my OpenGL3 based 3D engine as I add features to it.
 I use this or a stripped-down variant for a lot of my projects.

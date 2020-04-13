@@ -1,7 +1,12 @@
 namespace image {
 
   SDL_Surface* load(std::string path){
-    return IMG_Load(path.c_str());
+    SDL_Surface* loaded = IMG_Load(path.c_str());
+    if(loaded == NULL)
+      printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+    SDL_Surface* optimized = SDL_ConvertSurfaceFormat(loaded, SDL_PIXELFORMAT_RGBA32, 0);
+    SDL_FreeSurface(loaded);
+    return optimized;
   }
 
   void save(SDL_Surface* surface, std::string path){

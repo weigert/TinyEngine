@@ -11,7 +11,7 @@ public:
 
   bool fullscreenToggle = false;
 
-  SDL_Keycode key;
+  std::deque<SDL_Event> keys;
   bool keyEventTrigger = false;
   std::deque<SDL_Event> scroll;  //Scrolling Motion Inputs
   SDL_Event windowEvent;         //Window Resizing Event
@@ -28,14 +28,9 @@ void Event::input(){
   if(in.type == SDL_QUIT) quit = true;
   ImGui_ImplSDL2_ProcessEvent(&in);
 
-  if(in.type == SDL_KEYDOWN){
-    if(in.key.keysym.sym == SDLK_F11) fullscreenToggle = true;
-    return;
-  }
-
   if(in.type == SDL_KEYUP){
-    key = in.key.keysym.sym;
-    keyEventTrigger = true;
+    if(in.key.keysym.sym == SDLK_F11) fullscreenToggle = true;
+    else keys.push_front(in);
     return;
   }
 
@@ -81,11 +76,10 @@ void Event::handle(View &view){
     windowEventTrigger = false;
   }
 
-  if(in.type == SDL_KEYDOWN && in.key.keysym.sym == SDLK_ESCAPE){
+  if(!keys.empty() && keys.back().key.keysym.sym == SDLK_ESCAPE){
     view.showInterface = !view.showInterface;
   }
 
-  //Set Triggers
-  keyEventTrigger = false;
   if(!scroll.empty()) scroll.pop_back();
+  if(!keys.empty()) keys.pop_back();
 }

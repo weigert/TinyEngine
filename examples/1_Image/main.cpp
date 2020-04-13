@@ -1,40 +1,44 @@
 #include "../../TinyEngine.h"
+#include "effects.h"
 
 int main( int argc, char* args[] ) {
 
-	//Add the Event Handler
-	Tiny::event.handler 	= [&](){ /* ... */ };
+	Tiny::init("Shader Effects Example", 1200, 800);
 
-	//Set up an Interface
-	Tiny::view.interface 	= [&](){ /* ... */ };
+	Tiny::event.handler = [](){ /* ... */ };
 
-	//Launch the Window
-	Tiny::init("Image loading and Rendering with Shader", 1200, 800);
+	Tiny::view.interface = interfaceFunc;
 
-	//Load a Shader
-	Shader billboardShader("billboard.vs", "billboard.fs", {"in_Quad", "in_Tex"});
+	//Load the Sprite
+	Sprite sprite(image::load("canyon.png"));
 
-	//Create billboard from image, position
-	Billboard image("hunter.png");
-	image.move(glm::vec2(0), glm::vec2(0.2));
+	//Shaders
+	Shader effect("shader/effect.vs", "shader/effect.fs", {"in_Quad", "in_Tex"});
 
-	//Drawing Pipeline
+	//Render Pipeline
 	Tiny::view.pipeline = [&](){
 
-		Tiny::view.target(color::black);			//Render Target
+		//Render Billboard to Screen
+		Tiny::view.target(color::black);
 
-		billboardShader.use();								//Prepare Shader
+		effect.use();	//Setup Shader
+		effect.setInt("index", ind);
+		effect.setInt("res", res);
+		effect.setInt("bits", bits);
+
+		//Add the Texture
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, image.texture);
-		billboardShader.setInt("imageTexture", 0);
-		billboardShader.setMat4("model", image.model);
+		glBindTexture(GL_TEXTURE_2D, sprite.texture);
+		effect.setInt("imageTexture", 0);
+		effect.setMat4("model", sprite.model);
 
-		image.render();												//Render Objects
+		sprite.render(); //Render Sprite
 
 	};
 
-	//Loop over Stuff
-	Tiny::loop([&](){ /* ... */ });
+	Tiny::loop([&](){
+		/* Absolutely Nothing! */
+	});
 
 	Tiny::quit();
 

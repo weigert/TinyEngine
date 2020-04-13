@@ -3,7 +3,6 @@ in vec2 ex_Tex;
 out vec4 fragColor;
 
 uniform sampler2D imageTexture;
-uniform bool paused;
 
 float size = 100.0f;
 

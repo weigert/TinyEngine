@@ -16,7 +16,10 @@ void setup(){
 std::function<void()> eventHandler = [&](){
 
   // Pause and Unpause
-  if(Tiny::event.key == SDLK_p && Tiny::event.keyEventTrigger)
-    paused = !paused;
+  if(!Tiny::event.keys.empty()){
+    if(Tiny::event.keys.back().key.keysym.sym == SDLK_p){
+      paused = !paused;
+    }
+  }
 
 };

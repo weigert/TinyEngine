@@ -15,6 +15,7 @@ class View{
 
     Handle pipeline;            //User defined Pipeline
     void render();
+    void target(glm::vec3 clearcolor);  //Target main window for drawing
 
     //Flags
     bool fullscreen = false;
@@ -72,11 +73,9 @@ void View::cleanup(){
 }
 
 void View::render(){
-  glViewport(0, 0, WIDTH, HEIGHT);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  (pipeline)();               //User-defined rendering pipeline
+  //User-defined rendering pipeline
+  (pipeline)();
 
   if(showInterface)
     drawInterface();
@@ -95,4 +94,11 @@ void View::drawInterface(){
   ImGui::Render();
   glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void View::target(glm::vec3 clearcolor){
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glViewport(0, 0, WIDTH, HEIGHT);
+  glClearColor(clearcolor.x, clearcolor.y, clearcolor.z, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

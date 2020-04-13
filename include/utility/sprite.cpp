@@ -1,11 +1,11 @@
 class Sprite{
 public:
-  Sprite(std::string path){      //Construct from PNG Image
+  Sprite(SDL_Surface* s){       //Construct from an SDL Surface
     setup();
-    raw(image::load(path));
+    update(s);
   };
 
-  Sprite(){      //Construct from PNG Image
+  Sprite(){       //Only construct (empty texture)
     setup();
   };
 
@@ -27,7 +27,7 @@ public:
   glm::mat4 model = glm::mat4(1.0f);                  //Model Matrix
   void move(glm::vec2 pos, glm::vec2 scale);
 
-  void raw(SDL_Surface* TextureImage);
+  void update(SDL_Surface* TextureImage);
   void render();                //Render this billboard
 };
 
@@ -71,7 +71,7 @@ void Sprite::move(glm::vec2 pos, glm::vec2 scale){
 ================================================================================
 */
 
-void Sprite::raw(SDL_Surface* s){
+void Sprite::update(SDL_Surface* s){
   glBindTexture( GL_TEXTURE_2D, texture );
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);

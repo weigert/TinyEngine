@@ -26,7 +26,7 @@ int main( int argc, char* args[] ) {
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 
 		//Prepare Render Target
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		Tiny::view.target(color::black);
 
 		//Prepare Shader
 		defaultShader.use();

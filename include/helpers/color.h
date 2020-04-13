@@ -2,10 +2,10 @@ using colorscheme = std::vector<glm::vec4>;
 
 namespace color{
   colorscheme skycolors{
-    glm::vec4(0.1, 0.1, 0.1, 1.0),            //Dark Grey
-    glm::vec4(0.00, 1.00, 1.00, 1.0),         //Blue
-    glm::vec4(1.00, 1.00, 1.00, 1.0),         //White
-    glm::vec4(0.1, 0.1, 0.1, 1.0)             //Dark Grey
+    glm::vec4(0.1, 0.1, 0.1, 1.0),
+    glm::vec4(0.00, 1.00, 1.00, 1.0),
+    glm::vec4(1.00, 1.00, 1.00, 1.0),
+    glm::vec4(0.1, 0.1, 0.1, 1.0)
   };
 
   colorscheme sandcolors{
@@ -31,7 +31,11 @@ namespace color{
     glm::vec4(0.75, 0.30, 0.30, 1.0)
   };
 
-  //Generates a hashed value from 0-1 using a large integer
+  //Pre-Defined Colors
+  glm::vec3 black = glm::vec3(0.0);
+  glm::vec3 white = glm::vec3(1.0);
+
+  //Generate hash from 0-1 from integer
   std::hash<std::string> position_hash;
   double hashrand(int i){
     return (double)(position_hash(std::to_string(i))%1000)/1000.0;

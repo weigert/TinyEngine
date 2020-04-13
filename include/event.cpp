@@ -11,14 +11,15 @@ public:
 
   bool fullscreenToggle = false;
 
-  std::deque<SDL_Event> inputs;  //General Key Inputs
+  SDL_Keycode key;
+  bool keyEventTrigger = false;
   std::deque<SDL_Event> scroll;  //Scrolling Motion Inputs
   SDL_Event windowEvent;         //Window Resizing Event
-  bool windowEventTrigger;
+  bool windowEventTrigger = false;
   SDL_Event mouseEvent;          //Mouse Click Event
-  bool mouseEventTrigger;
+  bool mouseEventTrigger = false;
   SDL_Event moveEvent;           //Mouse Movement Events
-  bool moveEventTrigger;
+  bool moveEventTrigger = false;
 };
 
 void Event::input(){
@@ -29,7 +30,12 @@ void Event::input(){
 
   if(in.type == SDL_KEYDOWN){
     if(in.key.keysym.sym == SDLK_F11) fullscreenToggle = true;
-    else inputs.push_front(in);
+    return;
+  }
+
+  if(in.type == SDL_KEYUP){
+    key = in.key.keysym.sym;
+    keyEventTrigger = true;
     return;
   }
 
@@ -79,6 +85,7 @@ void Event::handle(View &view){
     view.showInterface = !view.showInterface;
   }
 
-  if(!inputs.empty()) inputs.pop_back();
+  //Set Triggers
+  keyEventTrigger = false;
   if(!scroll.empty()) scroll.pop_back();
 }

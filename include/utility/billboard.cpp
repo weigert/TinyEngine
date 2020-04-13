@@ -28,9 +28,10 @@ public:
   GLuint texture;
   GLuint depthTexture;
 
-  bool raw(SDL_Surface* TextureImage);
+  void raw(SDL_Surface* s);
   bool drawable(int width, int height, bool depthOnly);
 
+  void target();                //Billboard as render target
   void target(glm::vec3 clear); //Billboard as render target with clear color
   void render();                //Render this billboard
 };
@@ -58,27 +59,26 @@ void Billboard::setup(){
 }
 
 void Billboard::cleanup(){
-  //Delete all Textures and Framebuffer
   glDeleteTextures(1, &texture);
   glDeleteTextures(1, &depthTexture);
   glDeleteFramebuffers(1, &fbo);
-
-  //Delete the VAO and VBO
   glDisableVertexAttribArray(vao);
   glDeleteBuffers(2, vbo);
   glDeleteVertexArrays(1, &vao);
+}
+
+void Billboard::raw(SDL_Surface* s){
+  glBindTexture( GL_TEXTURE_2D, texture );
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 }
 
 void Billboard::move(glm::vec2 pos, glm::vec2 scale){
   model = glm::translate(glm::mat4(1.0), glm::vec3(2.0*pos.x-1.0+scale.x, 2.0*pos.y-1.0+scale.y, 0.0));
   model = glm::scale(model, glm::vec3(scale.x, scale.y, 1.0));
 }
-
-/*
-================================================================================
-                              Texture Constructing
-================================================================================
-*/
 
 bool Billboard::drawable(int width, int height, bool depthOnly){
   glGenFramebuffers(1, &fbo); //Frame Buffer Object for drawing
@@ -115,9 +115,14 @@ bool Billboard::drawable(int width, int height, bool depthOnly){
   return true;
 }
 
-void Billboard::target(glm::vec3 clear){
-  glViewport(0, 0, WIDTH, HEIGHT);
+void Billboard::target(){
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glViewport(0, 0, WIDTH, HEIGHT);
+}
+
+void Billboard::target(glm::vec3 clear){
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glViewport(0, 0, WIDTH, HEIGHT);
   glClearColor(clear.x, clear.y, clear.z, 1.0f); //Blue
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

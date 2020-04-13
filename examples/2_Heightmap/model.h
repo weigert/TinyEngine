@@ -117,7 +117,6 @@ std::function<void(Model* m)> _construct = [&](Model* h){
       }
 
       //Lower Triangle
-
       h->indices.push_back(h->positions.size()/3+0);
       h->indices.push_back(h->positions.size()/3+1);
       h->indices.push_back(h->positions.size()/3+2);

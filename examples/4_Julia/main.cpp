@@ -2,7 +2,8 @@
 #include "model.h"
 
 int main( int argc, char* args[] ) {
-
+	srand(time(NULL));  //SEED
+	
 	Tiny::view.vsync = true;
 
 	Tiny::init("Julia Set Explorer", 1000, 1000);

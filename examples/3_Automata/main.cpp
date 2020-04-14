@@ -3,9 +3,9 @@
 
 int main( int argc, char* args[] ) {
 
-	Tiny::view.vsync = true;
+	Tiny::view.vsync = false;
 
-	Tiny::init("Cellular Automata Example", 500, 500);
+	Tiny::init("Cellular Automata Example", 1200, 800);
 
 	Tiny::event.handler = eventHandler;
 
@@ -15,8 +15,8 @@ int main( int argc, char* args[] ) {
 	setup();
 
 	//Utility Classes
-	Billboard field(SIZE, SIZE, false); //Render target for automata
-	field.raw(image::make<int>(glm::vec2(SIZE), data, [](int t){
+	Billboard field(600, 400, false); //Render target for automata
+	field.raw(image::make<int>(glm::vec2(600, 400), data, [](int t){
 		if(t == 0) return glm::vec4(1.0, 1.0, 1.0, 1.0);
 		else return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	}));	//Initialize raw texture data!

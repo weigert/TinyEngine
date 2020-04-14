@@ -8,7 +8,7 @@ float PI = 3.14159265;
 int res = 25;
 float radius = 2.0;
 float bias[2] = {0.0};
-double zoom = 2.5;
+double zoom = 1.5;
 int order = 2;
 double px = 0.0;
 double py = 0.0;
@@ -67,6 +67,24 @@ Handle interfaceFunc = [&](){
         ImGui::Text(" %f )", py);
         ImGui::Text("Zoom: "); ImGui::SameLine();
         ImGui::Text("%f", zoom);
+        if(ImGui::Button("Randomize")){ //Randomize
+          t = 0.0;  //Reset Time
+          radius = 1.0;
+          active = true;
+          appearAmp = 1.0+(float)(rand()%200)/1000.0;
+          rate = 0.002;
+          order = rand()%4+2; //2-6
+          appear = rand()%2;
+          movex = rand()%2;
+          movey = rand()%2;
+          res = rand()%15+10;
+          center[0] = (float)(rand()%2000)/1000.0-1.0;
+          center[1] = (float)(rand()%2000)/1000.0-1.0;
+          phase[0] = (float)(rand()%2000)/1000.0-1.0;
+          phase[1] = (float)(rand()%2000)/1000.0-1.0;
+          amplitude[0] = (float)(rand()%800)/1000.0+0.2;
+          amplitude[1] = (float)(rand()%800)/1000.0+0.2;
+        }
         ImGui::EndTabItem();
       }
       if(ImGui::BeginTabItem("Control")){

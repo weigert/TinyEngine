@@ -18,10 +18,12 @@ float dc[4] = {0.882, 0.157, 0.204, 1.0};
 
 bool active = false;
 bool appear = false;
+float appearAmp = 1.0;
 bool movex = false;
 bool movey = false;
 float phase[2] = {0.0, 0.0};
 float amplitude[2] = {1.0, 1.0};
+float center[2] = {0.0, 0.0};
 float rate = 0.01;
 float t = 0.0;
 
@@ -87,6 +89,8 @@ Handle interfaceFunc = [&](){
         ImGui::Checkbox("Move Y", &movey);
         ImGui::DragFloat2("Phase", phase, 0.001f, -1.0f, 1.0f);
         ImGui::DragFloat2("Amplitude", amplitude, 0.01f, 0.0f, 10.0f);
+        ImGui::DragFloat2("Center", center, 0.001f, -10.0f, 10.0f);
+        ImGui::DragFloat("Appear Amplitude", &appearAmp, 0.01f, 0.0f, 2.0f); ImGui::SameLine();
 
         ImGui::EndTabItem();
       }

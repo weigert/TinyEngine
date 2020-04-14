@@ -49,9 +49,9 @@ int main( int argc, char* args[] ) {
 		if(!active) return;	//Pause
 
 		//Animate
-		if(appear) radius = pow(sin(2*PI*t), 2);
-		if(movex) bias[0] = amplitude[0]*sin(2*PI*(t+phase[0]));
-		if(movey) bias[1] = amplitude[1]*sin(2*PI*(t+phase[1]));
+		if(appear) radius = appearAmp*pow(sin(2*PI*t), 2);
+		if(movex) bias[0] = center[0]+amplitude[0]*sin(2*PI*(t+phase[0]));
+		if(movey) bias[1] = center[1]+amplitude[1]*sin(2*PI*(t+phase[1]));
 	});
 
 	Tiny::quit();

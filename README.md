@@ -18,6 +18,11 @@ This is also a learning project, for practicing engine / systems design. This is
 
 If anybody likes the structure, they are free to adopt it or recommended additions / changes.
 
+## Examples
+![Multi-Julia Animation](julia.gif)
+
+Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/2020/04/14/animated-multi-julia-sets/).
+
 ## Structure
 The engine consists of three main components:
   - View Class: Window handling and rendering.
@@ -170,9 +175,6 @@ The rendering pipeline can be constructed in any way, but generally consists of 
       
 ### Compiling and Linking
 See the example programs to see exactly how to link the program (makefile). Compiled using gcc on Ubuntu 18 LTS.
-
-## Examples
-![Multi-Julia Animation](julia.gif)
 
 ## To-Do
 	- Audio Interface isn't very good because I haven't built many audio interfaces in the past, just basic ones. I will have to do a project focused around playing sounds to improve it adequately.

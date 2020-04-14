@@ -172,7 +172,7 @@ The rendering pipeline can be constructed in any way, but generally consists of 
 See the example programs to see exactly how to link the program (makefile). Compiled using gcc on Ubuntu 18 LTS.
 
 ## Examples
-A number of example programs are included.
+![Multi-Julia Animation](julia.gif)
 
 ## To-Do
 	- Audio Interface isn't very good because I haven't built many audio interfaces in the past, just basic ones. I will have to do a project focused around playing sounds to improve it adequately.

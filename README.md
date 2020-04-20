@@ -179,3 +179,6 @@ See the example programs to see exactly how to link the program (makefile). Comp
 ## To-Do
 	- Audio Interface isn't very good because I haven't built many audio interfaces in the past, just basic ones. I will have to do a project focused around playing sounds to improve it adequately.
 	- Event handler is capable of doing good things, but is hard to get right intuitively because many inputs are passed very quickly. I need to rethink this a little.
+	
+## License
+MIT License

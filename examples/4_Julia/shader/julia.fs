@@ -37,7 +37,7 @@ vec4 julia(vec2 p){
   //Find the Convergence Behavior
   int iter = 0;
   while(length(p) < radius && iter < maxiter){
-      p = cpow(p, order)+bias;
+      p = 2*cpow(p, order)+4*cpow(p, order+1)-3*cpow(p, order+2)+bias;
       iter++;
   }
 

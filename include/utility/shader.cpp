@@ -4,6 +4,7 @@ public:
     setup(vs, fs);        //Setup the Shader
     for(auto &n : _list)  //Add all Attributes of Shader
       addInput(&n-_list.begin(), n);
+    link();
   };
 
   ~Shader(){
@@ -37,12 +38,10 @@ public:
 
 void Shader::setup(std::string vs, std::string fs){
   shaderProgram = glCreateProgram();  //Generate Shader
-
+  
   boost::filesystem::path data_dir(boost::filesystem::current_path());
   vertexShader   = addProgram((data_dir/vs).string(), GL_VERTEX_SHADER);
   fragmentShader = addProgram((data_dir/fs).string(), GL_FRAGMENT_SHADER);
-
-  link();
 }
 
 int Shader::addProgram(std::string fileName, GLenum shaderType){

@@ -1,22 +1,20 @@
-class Sprite{
+class Particle{
 public:
-  Sprite(SDL_Surface* s){       //Construct from an SDL Surface
-    setup();
-    update(s);
-  };
-
-  Sprite(){       //Only construct (empty texture)
+  Particle(){       //Construct from an SDL Surface
     setup();
   };
 
-  ~Sprite(){
+  ~Particle(){
     cleanup();
   }
 
   //Rendering Data
-  GLuint vao, vbo[2];
+  GLuint vao, vbo[2], instance;
+
   void setup();
+  void update();
   void cleanup();
+
 
   //Vertex and Texture Positions
   const GLfloat vert[12] = {-1.0, -1.0,  0.0,
@@ -30,15 +28,11 @@ public:
                             1.0,  0.0};
 
   //Rendering Position
-  glm::vec3 pos = glm::vec3(0.0);
-  glm::mat4 model = glm::mat4(1.0f);                  //Model Matrix
-  void move(glm::vec2 pos, glm::vec2 scale);
-
-  void update(SDL_Surface* TextureImage);
+  std::vector<glm::mat4> models;
   void render();                //Render this billboard
 };
 
-void Sprite::setup(){
+void Particle::setup(){
   //Setup the VAO
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -54,16 +48,41 @@ void Sprite::setup(){
   glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat), &tex[0], GL_STATIC_DRAW);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+  //Setup Instance VBO
+  glGenBuffers(1, &instance);
 }
 
-void Sprite::cleanup(){
+void Particle::update(){
+  glBindVertexArray(vao);
+  glBindBuffer(GL_ARRAY_BUFFER, instance);
+  glBufferData(GL_ARRAY_BUFFER, models.size()*sizeof(glm::mat4), &models[0], GL_STATIC_DRAW);
+
+  std::size_t vec4Size = sizeof(glm::vec4);
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4Size));
+  glEnableVertexAttribArray(4);
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4Size));
+  glEnableVertexAttribArray(5);
+  glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
+
+  glVertexAttribDivisor(2, 1);
+  glVertexAttribDivisor(3, 1);
+  glVertexAttribDivisor(4, 1);
+  glVertexAttribDivisor(5, 1);
+}
+
+void Particle::cleanup(){
   //Delete Textures and VAO
   glDisableVertexAttribArray(vao);
   glDeleteBuffers(2, vbo);
+  glDeleteBuffers(1,  &instance);
   glDeleteVertexArrays(1, &vao);
 }
 
-void Sprite::render(){
+void Particle::render(){
   glBindVertexArray(vao);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, models.size());
 }

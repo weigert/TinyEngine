@@ -14,10 +14,11 @@ public:
   GLuint vao, vbo[2];
   void setup();
   void cleanup();
+  bool depth;
 
   //Vertex and Texture Positions
   const GLfloat vert[8] = {-1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0};
-  const GLfloat tex[8]  = { 0.0,  0.0,  0.0,  1.0,  1.0,  0.0,  1.0,  1.0};
+  const GLfloat tex[8]  = { 0.0,  1.0,  0.0,  0.0,  1.0,  1.0,  1.0,  0.0};
 
   //Rendering Position
   glm::mat4 model = glm::mat4(1.0f);                  //Model Matrix
@@ -83,7 +84,7 @@ void Billboard::move(glm::vec2 pos, glm::vec2 scale){
 bool Billboard::drawable(int width, int height, bool depthOnly){
   glGenFramebuffers(1, &fbo); //Frame Buffer Object for drawing
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
+  depth = depthOnly;
   WIDTH = width;
   HEIGHT = height;
 
@@ -103,7 +104,7 @@ bool Billboard::drawable(int width, int height, bool depthOnly){
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
-  if(depthOnly) glDrawBuffer(GL_NONE);
+  if(depth) glDrawBuffer(GL_NONE);
 
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
     std::cout<<"Failed to construct framebuffer object."<<std::endl;
@@ -118,6 +119,7 @@ bool Billboard::drawable(int width, int height, bool depthOnly){
 void Billboard::target(){
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
   glViewport(0, 0, WIDTH, HEIGHT);
+  if(depth) glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Billboard::target(glm::vec3 clear){

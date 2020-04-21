@@ -10,7 +10,8 @@ int main( int argc, char* args[] ) {
 	Tiny::view.interface = interfaceFunc;
 
 	//Load the Sprite
-	Sprite sprite(image::load("canyon.png"));
+	Billboard sprite(1200, 800, false);
+	sprite.raw(image::load("canyon.png"));
 
 	//Shaders
 	Shader effect("shader/effect.vs", "shader/effect.fs", {"in_Quad", "in_Tex"});

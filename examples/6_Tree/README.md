@@ -7,6 +7,10 @@ This was based off of an observation I had while walking in the forest, that whe
 
 The model is capable of growing different shapes of trees, from deciduous to evergreen. Some example screenshots are shown below.
 
+![Cherry Tree Example Growth](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Cherry.png)
+
+Example of a deciduous tree, with some nice color variation set manually.
+
 ![Pine Tree Example Growth](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Pine.png)
 
 Example growth of a pine tree. This comes from using imbalanced parameters for growth (explained below).

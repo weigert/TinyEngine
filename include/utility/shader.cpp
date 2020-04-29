@@ -25,7 +25,6 @@ public:
   void link();                  //Link the entire program
   void use();                   //Use the program
 
-  // Uniform Setters
   template<typename T> void uniform(std::string name, const T u);
 };
 
@@ -126,8 +125,7 @@ template<> void Shader::uniform(std::string name, const float u){
   glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), u);
 }
 
-template<> void Shader::uniform(std::string name, const double u){
-  //GLSL is intrinsically single precision.
+template<> void Shader::uniform(std::string name, const double u){ //GLSL Intrinsically Single Precision
   glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), (float)u);
 }
 

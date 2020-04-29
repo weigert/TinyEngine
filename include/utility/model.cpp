@@ -14,9 +14,7 @@ public:
     glDeleteVertexArrays(1, &vao);
   }
 
-  std::vector<GLfloat>  positions;
-  std::vector<GLfloat>  normals;
-  std::vector<GLfloat>  colors;
+  std::vector<GLfloat>  positions, normals, colors;
   std::vector<GLuint>   indices;
 
 	GLuint vbo[3], vao, ibo;

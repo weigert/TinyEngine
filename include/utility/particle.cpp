@@ -8,15 +8,12 @@ public:
     cleanup();
   }
 
-  //Rendering Data
   GLuint vao, vbo[2], instance;
 
   void setup();
   void update();
   void cleanup();
 
-
-  //Vertex and Texture Positions
   const GLfloat vert[12] = {-1.0, -1.0,  0.0,
                            -1.0,  1.0,  0.0,
                             1.0, -1.0,  0.0,
@@ -27,9 +24,8 @@ public:
                             1.0,  1.0,
                             1.0,  0.0};
 
-  //Rendering Position
-  std::vector<glm::mat4> models;
-  void render();                //Render this billboard
+  std::vector<glm::mat4> models;    //Positions Container
+  void render();                    //Render to target
 };
 
 void Particle::setup(){

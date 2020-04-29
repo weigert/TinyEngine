@@ -9,25 +9,19 @@ public:
     cleanup();
   }
 
-  //Rendering Data
   unsigned int WIDTH, HEIGHT;
   GLuint vao, vbo[2];
   void setup();
   void cleanup();
   bool depth;
 
-  //Vertex and Texture Positions
   const GLfloat vert[8] = {-1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0};
   const GLfloat tex[8]  = { 0.0,  0.0,  0.0,  1.0,  1.0,  0.0,  1.0,  1.0};
 
-  //Rendering Position
   glm::mat4 model = glm::mat4(1.0f);                  //Model Matrix
-  void move(glm::vec2 pos, glm::vec2 scale);
+  void move(glm::vec2 pos, glm::vec2 scale);          //Position Model
 
-  //Textures and FBO
-  GLuint fbo;       //We need an FBO to render scene to screen
-  GLuint texture;
-  GLuint depthTexture;
+  GLuint fbo, texture, depthTexture; //Textures and FBO
 
   void raw(SDL_Surface* s);
   bool drawable(int width, int height, bool depthOnly);

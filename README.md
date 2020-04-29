@@ -119,10 +119,10 @@ Shader:
       //Activation
       shader.use();
       
-      //Uniform Setting
-      shader.setInt(string name, int value);
-      shader.setVec3(string name, glm::vec3 vec);
-      shader.setMat4(string name, glm::mat4 mat);
+      //Uniform Setting (fully templated - automatic handling of type)
+      shader.uniform(string name, int value);
+      shader.uniform(string name, glm::vec3 vec);
+      shader.uniform(string name, glm::mat4 mat);
       //... etc
       
 Sprite:

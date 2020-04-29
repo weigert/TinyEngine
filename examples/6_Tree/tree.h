@@ -6,11 +6,10 @@ struct Branch{
   Branch* B;
 
   //Parameters
-  float ratio, passratio, spread, splitsize;
+  float ratio, spread, splitsize;
 
-  Branch(float r, float pr, float s, float ss){
+  Branch(float r, float s, float ss){
     ratio = r;
-    passratio = pr;
     spread = s;
     splitsize = ss;
   };
@@ -33,7 +32,7 @@ struct Branch{
 
 class Tree{
 public:
-  Tree(){ root = new Branch(0.6, 0.8, 0.5, 0.5); }
+  Tree(){ root = new Branch(0.6, 0.5, 0.5); }
   ~Tree(){ delete root; }
 
   float rate = 1.0;
@@ -46,9 +45,11 @@ public:
 
 void Branch::grow(double feed){
 
-  double pass = (leaf)?0.0:passratio;
-
-  //Note: Growth is Volume Based!
+  double pass;
+  if(leaf) pass = 0.0;
+  else if(conservearea) pass = 1.0 - (A->girth+B->girth)/(A->girth+B->girth+girth);
+  else if(conservediameter) pass = 1.0 - (A->length+B->length)/(A->length+B->length+length);
+  else pass = passratio;
 
   size += (1.0-pass)*feed;
 
@@ -68,8 +69,8 @@ void Branch::grow(double feed){
 void Branch::split(){
   leaf = false;
 
-  A = new Branch(ratio, passratio, spread, splitsize);
-  B = new Branch(ratio, passratio, spread, splitsize);
+  A = new Branch(ratio, spread, splitsize);
+  B = new Branch(ratio, spread, splitsize);
   A->ID = rand()%1000;
   B->ID = rand()%1000;
 

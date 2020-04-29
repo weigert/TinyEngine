@@ -27,8 +27,12 @@ float treescale[2] = {15.0f, 1.0f};
 int ringsize = 6;
 int leafcount = 10;
 float leafsize = 5.0;
-float taper = 0.7;
+float taper = 0.6;
 float leafspread[3] = {150.0, 50.0, 150.0};
+
+float passratio = 0.8;
+bool conservearea = false;
+bool conservediameter = false;
 
 #include "tree.h"
 
@@ -100,14 +104,16 @@ Handle interfaceFunc = [&](){
       if(ImGui::BeginTabItem("Growth")){
 
         if(ImGui::Button("Re-Grow")){
-          Branch* newroot = new Branch(tree.root->ratio, tree.root->passratio, tree.root->spread, tree.root->splitsize);
+          Branch* newroot = new Branch(tree.root->ratio, tree.root->spread, tree.root->splitsize);
           delete(tree.root);
           tree.root = newroot;
         }
 
         ImGui::DragFloat("Growth Rate", &tree.rate, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("Split Ratio", &tree.root->ratio, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Pass Ratio", &tree.root->passratio, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Pass Ratio", &passratio, 0.01f, 0.0f, 1.0f);
+        ImGui::Checkbox("Conserve Crossectional Area", &conservearea);
+        ImGui::Checkbox("Conserve Diameter Sum", &conservediameter);
         ImGui::DragFloat("Branch Spread", &tree.root->spread, 0.1f, 0.0f, 5.0f);
         ImGui::DragFloat("Split Size", &tree.root->splitsize, 0.1f, 0.1f, 5.0f);
 

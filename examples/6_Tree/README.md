@@ -1,42 +1,42 @@
-/*
-    Tree Growth Model:
+# TinyEngine
 
-    Every tree segment is a "branch".
+## Tree Growth Model
+This was a small idea I had to grow trees, but it didn't really constitute its own repository. Since I built it with TinyEngine in about 6 hours, I decided to include it as an example program here.
 
-    When a branch reaches a certain size, it splits into two branches.
-    A branch that hasn't split yet is considered to have a leaf at the end.
+This was based off of an observation I had while walking in the forest, that when a tree branch splits, it seems the sum of the cross-section of the two branches it splits into is conserved.
 
-    When it splits, it can split according to a split ratio X, so the two child
-    branches can be evenly or unevenly sized.
+### How it Works
+Every tree segment is a "branch". When a branch reaches a certain size, it splits into two sub-branches. A branch that hasn't split yet is considered to have a leaf at the end.
 
-    The tree is "fed" at a certain rate every time-step. This constant feed is
-    passed down the tree. Every branch it touches takes a fraction of the feed
-    and uses it to grow. It then passes the rest to its child branches according
-    to the split ratio. This process repeats until the feed is used up.
+When a branch splits, it splits according to a split ratio X, so the two sub-branches can be evenly or unevenly sized.
 
-    Notes:
-    Currently, growth
+The tree is "fed" at a certain rate every time-step. This constant feed is passed down the tree. Every branch it touches takes a fraction of the feed (`passratio`) and uses it to grow itself. It then passes the rest to its sub-branches according to the split ratio. This process repeats until the feed is used up.
 
-    Grows until a certain length, where it splits after a certain length
-    splitting occurs with a split ratio, which divides up the crossectional area
-    of the tree between the two branches.
+Feed and growth is volume based, so the branch length and diameter are computed directly from the branch property `size` using the cube root and square root respectively.
 
-    Then the branches also split according to some angle rule and continue to grow.
+Branches also have a direction property. The direction of each branch is computed as a weighted sum between the parent branches direction and a random normal vector to the parent branch. The weight is given by the split ratio, so that thicker child branches are more likely to grow straight, and small ones are more likely to grow perpendicular. A random normal vector can be computed by taking a random vector in 3D space and computing the cross product.
 
+All of these properties can be controlled directly from the control panel.
 
-    The tree can then be grown based on this model and has a way to be visualized.
-    Just make the properties sufficiently modular and it should work quickly.
+#### Parameters
 
-    We could sample from a ratio distribution
+Note that these parameters are currently fixed, but could potentially be sampled from distributions instead (e.g. normal distribution around a mean) to give more realism.
 
-    Aesthetics:
-      Leaf Colors sampled from bezier
+### Visualization
+The leaves are a particle system. They use the image `leaf.png`, and they always face the camera. You can alter color, opacity, size and spread (you can have multiple leaves around a branch).
 
-    Parameters (could be branch-dependent):
-      -> Split ratio, in dependency of the branch that is splitting!
-      -> Split rate / condition, some probability after which a split might occur.
-      -> Choice of split angles!
-      -> Growth Rate of the tree is important because it diverts resources
-      -> Pass-On Ratio to the child branches!
+The tree is meshed by a bunch of cylinders that correspond to the branches. A few parameters then make it look nice (for isntance a taper, the scaling of length and width).
 
-*/
+All colors can be edited. Optionally, a wire-mesh can be displayed on top. Leaves and the tree itself can be turned off. 
+
+### Usage
+
+Compile with make
+        
+        make all
+        
+Control Panel:
+
+        Toggle Pause - P
+        Toggle Auto-Rotate - A
+        Toggle Control Panel - ESC

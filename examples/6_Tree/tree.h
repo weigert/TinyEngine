@@ -65,7 +65,7 @@ struct Branch{
 class Tree{
 public:
   Tree(){
-    root = new Branch(0.6, 0.8, 2.0, 0.5);
+    root = new Branch(0.6, 0.8, 0.5, 0.5);
   }
 
   ~Tree(){
@@ -111,12 +111,15 @@ void Branch::split(){
   A->ID = rand()%1000;
   B->ID = rand()%1000;
 
-  //Offset Vectors (you could use an alternate method to get these)
-  glm::vec3 O = spread*glm::normalize(glm::vec3((double)(rand()%100)/100.0-0.5, (double)(rand()%100)/100.0, (double)(rand()%100)/100.0-0.5));
-  glm::vec3 N = glm::vec3(-1.0, 1.0, -1.0)*O; //Reflect around vertical axis
+  //Random Vector in Space
+  glm::vec3 O = glm::normalize(glm::vec3((double)(rand()%100)/100.0-0.5, (double)(rand()%100)/100.0, (double)(rand()%100)/100.0-0.5));
 
-  glm::vec3 ashift = glm::mix(O, dir, ratio);
-  glm::vec3 bshift = glm::mix(N, dir, 1.0-ratio);
+  //Normal Vector to Branch and Reflection
+  glm::vec3 N = spread*glm::cross(glm::normalize(dir), O);
+  glm::vec3 M = glm::vec3(-1.0, 1.0, -1.0)*N; //Reflect around vertical axis
+
+  glm::vec3 ashift = glm::mix(N, dir, ratio);
+  glm::vec3 bshift = glm::mix(M, dir, 1.0-ratio);
 
   A->dir = glm::normalize(ashift);
   B->dir = glm::normalize(bshift);

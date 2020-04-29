@@ -5,6 +5,12 @@ This was a small idea I had to grow trees, but it didn't really constitute its o
 
 This was based off of an observation I had while walking in the forest, that when a tree branch splits, it seems the sum of the cross-section of the two branches it splits into is conserved.
 
+The model is capable of growing different shapes of trees, from deciduous to evergreen. Some example screenshots are shown below.
+
+![Pine Tree Example Growth](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Pine.png)
+
+Example growth of a pine tree. This comes from using imbalanced parameters for growth (explained below).
+
 ### How it Works
 Every tree segment is a "branch". When a branch reaches a certain size, it splits into two sub-branches. A branch that hasn't split yet is considered to have a leaf at the end.
 
@@ -29,14 +35,34 @@ The tree is meshed by a bunch of cylinders that correspond to the branches. A fe
 
 All colors can be edited. Optionally, a wire-mesh can be displayed on top. Leaves and the tree itself can be turned off. 
 
+#### Reading
+
+The model itself is implemented in `tree.h`. Here you will also find how the mesh for the tree and particle system for the leaves are generated.
+
+To see how the interface and event handler are made, read `model.h`.
+
+Everything is wrapped in `main.cpp`.
+
+Overall the code to generate the trees is very brief.
+
 ### Usage
 
 Compile with make
         
-        make all
+    make all
         
 Control Panel:
 
-        Toggle Pause - P
-        Toggle Auto-Rotate - A
-        Toggle Control Panel - ESC
+    Toggle Pause - P
+    Toggle Auto-Rotate - A
+    Toggle Control Panel - ESC
+
+### Screenshots
+
+![Naked Tree](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Naked.png)
+
+Tree without leaves, example growth with relatively balanced parameters.
+
+![Tree with Leaves](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Leaves.png)
+
+The same tree but with leaves.

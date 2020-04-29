@@ -16,26 +16,32 @@ Example of a deciduous tree, with some nice color variation set manually.
 Example growth of a pine tree. This comes from using imbalanced parameters for growth (explained below).
 
 ### How it Works
-Every tree segment is a "branch". When a branch reaches a certain size, it splits into two sub-branches. A branch that hasn't split yet is considered to have a leaf at the end.
+Every tree segment is a "branch". When a branch reaches a certain size (`splitsize`), it splits into two sub-branches. A branch that hasn't split yet is considered to have a leaf at the end.
 
-When a branch splits, it splits according to a split ratio X, so the two sub-branches can be evenly or unevenly sized. One branch grows proportional to X, the other to (1-X), leading to the size-conservation effect that is desired.
+When a branch splits, it splits according to a split ratio X (`ratio`), so the two sub-branches can be evenly or unevenly sized. One branch grows proportional to X, the other to (1-X), leading to the size-conservation effect that is desired.
 
 The tree is "fed" at a certain rate every time-step. This constant feed is passed down the tree. Every branch it touches takes a fraction of the feed (`passratio`) and uses it to grow itself. It then passes the rest to its sub-branches according to the split ratio. This process repeats until the feed is used up.
 
-Feed and growth is volume based, so the branch length and diameter are computed directly from the branch property `size` using the cube root and square root respectively.
+Feed and growth is volume based, so the branch length and diameter are computed directly from the branch property `size` using the cube root and square root respectively. Length and girth are then scaled arbitrarily for visualization.
 
-Branches also have a direction property. The direction of each branch is computed as a weighted sum between the parent branches direction and a random normal vector to the parent branch. The weight is given by the split ratio, so that thicker child branches are more likely to grow straight, and small ones are more likely to grow perpendicular. A random normal vector can be computed by taking a random vector in 3D space and computing the cross product.
+Branches also have a direction property. The direction of each branch is computed as a weighted sum between the parent branches direction and a random normal vector to the parent branch. The weight is given by the split ratio, so that thicker child branches are more likely to grow straight, and small ones are more likely to grow perpendicular. Additionally, a `spread` parameter adds extra weight to the normal vector if desired so that branches tend more outwards or straight. A random normal vector can be computed by taking a random vector in 3D space and computing the cross product.
 
 All of these properties can be controlled directly from the control panel.
 
 #### Parameters
+
+        Growth Rate - Rate of Tree Feeding
+        Split Ratio - Value of X when a branch splits (how lopsided is the split)
+        Pass Ratio - How much of the feed does a branch consume vs. pass on
+        Branch Spread - How much do branches prefer to grow perpendicular vs. straight
+        Split Size - Critical size when a branch stops being a leaf node and splits
 
 Note that these parameters are currently fixed, but could potentially be sampled from distributions instead (e.g. normal distribution around a mean) to give more realism.
 
 ### Visualization
 The leaves are a particle system. They use the image `leaf.png`, and they always face the camera. You can alter color, opacity, size and spread (you can have multiple leaves around a branch).
 
-The tree is meshed by a bunch of cylinders that correspond to the branches. A few parameters then make it look nice (for isntance a taper, the scaling of length and width).
+The tree is meshed by a bunch of cylinders that correspond to the branches. A few parameters then make it look nice (for instance a taper, the scaling of length and width).
 
 All colors can be edited. Optionally, a wire-mesh can be displayed on top. Leaves and the tree itself can be turned off. 
 

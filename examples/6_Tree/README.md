@@ -45,6 +45,8 @@ The tree is meshed by a bunch of cylinders that correspond to the branches. A fe
 
 All colors can be edited. Optionally, a wire-mesh can be displayed on top. Leaves and the tree itself can be turned off. 
 
+Note that in order to make sure the leaf positions are randomized but don't change every frame, their position offset is hashed. This is done by giving every branch a random ID (which stays the same every tick), which can be used to hash the leaves position offset. This allows for generating a particle cloud that doesn't change all the time and stays fixed in 3D space.
+
 #### Reading
 
 The model itself is implemented in `tree.h`. Here you will also find how the mesh for the tree and particle system for the leaves are generated.

@@ -22,7 +22,7 @@ float wirecolor[3] = {0.00, 0.00, 0.00};
 float backcolor[3] = {0.80, 0.80, 0.80};
 float leafopacity = 0.5;
 float treeopacity = 1.0;
-float treescale[2] = {15.0f, 1.0f};
+float treescale[2] = {15.0f, 2.5f};
 
 int ringsize = 6;
 int leafcount = 10;

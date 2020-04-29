@@ -23,7 +23,8 @@ struct Branch{
   //Position Data
   glm::vec3 dir = glm::vec3(0.0, 1.0, 0.0);
   double length = 0.0;
-  double girth = 0.0;
+  double radius = 0.0;
+  double area = 0.0;
   double size = 0.0;
 
   void grow(double _size);
@@ -45,17 +46,22 @@ public:
 
 void Branch::grow(double feed){
 
-  double pass;
-  if(leaf) pass = 0.0;
-  else if(conservearea) pass = 1.0 - (A->girth+B->girth)/(A->girth+B->girth+girth);
-  else if(conservediameter) pass = 1.0 - (A->length+B->length)/(A->length+B->length+length);
-  else pass = passratio;
-
-  size += (1.0-pass)*feed;
+  /*
+    Size = L * length * (W * radius^2) = X
+  */
 
   //Compute Size Parameters
   length = cbrt(size);
-  girth = sqrt(size);
+  area = (length == 0)?0:size / (treescale[0] * length);
+  radius = (area == 0)?0:treescale[1]*sqrt( area );
+
+  double pass;
+  if(leaf || size == 0) pass = 0.0;
+  else if(conservearea) pass = 1.0 - (A->area+B->area)/(A->area+B->area+area);
+  else if(conservediameter) pass = 1.0 - (A->radius+B->radius)/(A->radius+B->radius+radius);
+  else pass = passratio;
+
+  size += (1.0-pass)*feed;
 
   if(leaf && size > splitsize)
     split();  //Split Behavior
@@ -128,17 +134,17 @@ std::function<void(Model*)> _construct = [&](Model* h){
 
     for(int i = 0; i < ringsize; i++){
 
-      h->positions.push_back(start.x + b->girth*treescale[1]*n.x);
-      h->positions.push_back(start.y + b->girth*treescale[1]*n.y);
-      h->positions.push_back(start.z + b->girth*treescale[1]*n.z);
+      h->positions.push_back(start.x + b->radius*treescale[1]*n.x);
+      h->positions.push_back(start.y + b->radius*treescale[1]*n.y);
+      h->positions.push_back(start.z + b->radius*treescale[1]*n.z);
       h->normals.push_back(n.x);
       h->normals.push_back(n.y);
       h->normals.push_back(n.z);
       n = r*n;
 
-      h->positions.push_back(end.x + taper*b->girth*treescale[1]*n.x);
-      h->positions.push_back(end.y + taper*b->girth*treescale[1]*n.y);
-      h->positions.push_back(end.z + taper*b->girth*treescale[1]*n.z);
+      h->positions.push_back(end.x + taper*b->radius*treescale[1]*n.x);
+      h->positions.push_back(end.y + taper*b->radius*treescale[1]*n.y);
+      h->positions.push_back(end.z + taper*b->radius*treescale[1]*n.z);
       h->normals.push_back(n.x);
       h->normals.push_back(n.y);
       h->normals.push_back(n.z);

@@ -18,7 +18,7 @@ Example growth of a pine tree. This comes from using imbalanced parameters for g
 ### How it Works
 Every tree segment is a "branch". When a branch reaches a certain size, it splits into two sub-branches. A branch that hasn't split yet is considered to have a leaf at the end.
 
-When a branch splits, it splits according to a split ratio X, so the two sub-branches can be evenly or unevenly sized.
+When a branch splits, it splits according to a split ratio X, so the two sub-branches can be evenly or unevenly sized. One branch grows proportional to X, the other to (1-X), leading to the size-conservation effect that is desired.
 
 The tree is "fed" at a certain rate every time-step. This constant feed is passed down the tree. Every branch it touches takes a fraction of the feed (`passratio`) and uses it to grow itself. It then passes the rest to its sub-branches according to the split ratio. This process repeats until the feed is used up.
 

@@ -65,7 +65,7 @@ int main( int argc, char* args[] ) {
 			particleShader.setInt("normalTexture", 1);
 			particleShader.setMat4("projectionCamera", projection*camera);
 			particleShader.setVec4("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
-			
+
 			particleShader.setVec3("lightCol", glm::vec3(1.0));
 			particleShader.setVec3("lookDir", lookPos - cameraPos);
 			particleShader.setVec3("lightDir", lookPos - glm::vec3(250.0));
@@ -86,6 +86,7 @@ int main( int argc, char* args[] ) {
 		if(!paused)
 			tree.grow();
 
+		//Update Rendering Structures
 		treemesh.construct(_construct);
 		addLeaves(&particle);
 		particle.update();

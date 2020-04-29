@@ -1,41 +1,12 @@
-/*
-    Tree Growth Model:
-
-    Start with a branch, which has a certain thickness.
-
-    It starts at a certain angle or whatever.
-
-    Grows until a certain length, where it splits after a certain length
-    splitting occurs with a split ratio, which divides up the crossectional area
-    of the tree between the two branches.
-
-    Then the branches also split according to some angle rule and continue to grow.
-
-    If a tree is sufficiently small, it becomes a leaf.
-
-    The tree can then be grown based on this model and has a way to be visualized.
-    Just make the properties sufficiently modular and it should work quickly.
-
-    We could sample from a ratio distribution
-
-    Aesthetics:
-      Leaf Colors sampled from bezier
-
-    Parameters (could be branch-dependent):
-      -> Split ratio, in dependency of the branch that is splitting!
-      -> Split rate / condition, some probability after which a split might occur.
-      -> Choice of split angles!
-      -> Growth Rate of the tree is important because it diverts resources
-      -> Pass-On Ratio to the child branches!
-
-*/
-
 struct Branch{
 
-  int ID = 0;
+  int ID = 0;         //For Leaf Hashing
   bool leaf = true;
   Branch* A;
   Branch* B;
+
+  //Parameters
+  float ratio, passratio, spread, splitsize;
 
   Branch(float r, float pr, float s, float ss){
     ratio = r;
@@ -43,8 +14,6 @@ struct Branch{
     spread = s;
     splitsize = ss;
   };
-
-  float ratio, passratio, spread, splitsize;
 
   ~Branch(){
     if(leaf) return;
@@ -64,36 +33,29 @@ struct Branch{
 
 class Tree{
 public:
-  Tree(){
-    root = new Branch(0.6, 0.8, 0.5, 0.5);
-  }
+  Tree(){ root = new Branch(0.6, 0.8, 0.5, 0.5); }
+  ~Tree(){ delete root; }
 
-  ~Tree(){
-    delete root;
-  }
-
-  //Parameters
   float rate = 1.0;
 
   Branch* root;
-  void grow();
+  void grow(){
+    root->grow(rate);
+  }
 };
-
-void Tree::grow(){
-  root->grow(rate);
-}
 
 void Branch::grow(double feed){
 
-  //Growth Passed On
   double pass = (leaf)?0.0:passratio;
 
-  //Grow Branch
+  //Note: Growth is Volume Based!
+
   size += (1.0-pass)*feed;
+
+  //Compute Size Parameters
   length = cbrt(size);
   girth = sqrt(size);
 
-  //Split Condition
   if(leaf && size > splitsize)
     split();  //Split Behavior
 
@@ -114,22 +76,22 @@ void Branch::split(){
   //Random Vector in Space
   glm::vec3 O = glm::normalize(glm::vec3((double)(rand()%100)/100.0-0.5, (double)(rand()%100)/100.0, (double)(rand()%100)/100.0-0.5));
 
-  //Normal Vector to Branch and Reflection
-  glm::vec3 N = spread*glm::cross(glm::normalize(dir), O);
-  glm::vec3 M = glm::vec3(-1.0, 1.0, -1.0)*N; //Reflect around vertical axis
+  //Randomly Oriented Normal Vector to Previous Branch
+  glm::vec3 N = glm::cross(glm::normalize(dir), O);
 
-  glm::vec3 ashift = glm::mix(N, dir, ratio);
-  glm::vec3 bshift = glm::mix(M, dir, 1.0-ratio);
+  //Reflect around vertical axis
+  glm::vec3 M = glm::vec3(-1.0, 1.0, -1.0)*N;
 
-  A->dir = glm::normalize(ashift);
-  B->dir = glm::normalize(bshift);
+  //Set Directions
+  A->dir = glm::normalize( glm::mix(spread*N, dir, ratio) );
+  B->dir = glm::normalize( glm::mix(spread*M, dir, 1.0-ratio) );
 }
 
 Tree tree;
 
 #define PI 3.14159265f
 
-// Model Constructing Function
+// Model Constructing Function for Tree
 std::function<void(Model*)> _construct = [&](Model* h){
 
   //Basically Add Lines for the Tree!
@@ -138,10 +100,7 @@ std::function<void(Model*)> _construct = [&](Model* h){
     //No Leaves
     if(b->leaf) return;
 
-    //Start- and End-Points
     glm::vec3 start = p;
-
-    //Shorten this slightly for overlap
     glm::vec3 end   = p + glm::vec3(b->length*treescale[0])*b->dir;
 
     //Get Some Normal Vector
@@ -149,8 +108,7 @@ std::function<void(Model*)> _construct = [&](Model* h){
     glm::vec4 n = glm::vec4(glm::normalize(glm::cross(b->dir, x)), 1.0);
 
     //Add the Correct Number of Indices
-    glm::mat4 m = glm::mat4(1.0);
-    glm::mat4 r = glm::rotate(m, PI/ringsize, b->dir);
+    glm::mat4 r = glm::rotate(glm::mat4(1.0), PI/ringsize, b->dir);
 
     //Index Buffer
     int _b = h->positions.size()/3;
@@ -184,6 +142,7 @@ std::function<void(Model*)> _construct = [&](Model* h){
       h->normals.push_back(n.y);
       h->normals.push_back(n.z);
       n = r*n;
+
     }
 
     addBranch(b->A, end);
@@ -194,11 +153,13 @@ std::function<void(Model*)> _construct = [&](Model* h){
   addBranch(tree.root, glm::vec3(0.0));
 };
 
+//Hash Function for Leaf Displacement!
 std::hash<std::string> position_hash;
 double hashrand(int i){
   return (double)(position_hash(std::to_string(i))%1000)/1000.0;
 }
 
+//Construct Leaf Particle System from Tree Data
 std::function<void(Particle*)> addLeaves = [&](Particle* p){
   p->models.clear();
 

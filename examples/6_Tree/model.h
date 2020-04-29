@@ -1,3 +1,4 @@
+//Parameters
 const int WIDTH = 800;
 const int HEIGHT = 800;
 
@@ -9,7 +10,6 @@ glm::vec3 lookPos = glm::vec3(0, 200, 0);
 glm::mat4 camera = glm::lookAt(cameraPos, lookPos, glm::vec3(0,1,0));
 glm::mat4 projection;
 
-//Toggles
 bool paused = false;
 bool autorotate = false;
 bool drawwire = false;
@@ -35,9 +35,7 @@ float leafspread[3] = {150.0, 50.0, 150.0};
 void setup(){
   //Projection Matrix (Orthographic)
   projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -800.0f, 500.0f);
-
   srand(time(NULL));
-  tree.grow();
 };
 
 // Event Handler

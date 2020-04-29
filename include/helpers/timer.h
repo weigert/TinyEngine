@@ -12,6 +12,16 @@ namespace timer{
     std::cout<<"Execution Time: "<<duration.count()<<std::endl;
   };
 
+  /*
+
+  Example Usage:
+
+  timer::benchmark<std::chrono::microseconds>([&](){
+      //Your Code Here
+  });
+
+  */
+
   template<typename D>
   class Timer{
     //Finish the Guy

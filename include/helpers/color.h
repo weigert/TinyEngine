@@ -46,7 +46,7 @@ namespace color{
   T bezier(double t, std::vector<T> points){
     while(points.size() > 1){ //Recursive Linear Interpolations
       std::vector<T> next;
-      for(int i = 0; i < points.size()-1; i++)
+      for(unsigned int i = 0; i < points.size()-1; i++)
         next.push_back( (1.0-t)*points[i] + t*points[i+1] );
       points = next;
     }

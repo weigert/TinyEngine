@@ -40,8 +40,8 @@ int main( int argc, char* args[] ) {
 		particleShader.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, tex.texture);
-		particleShader.setInt("spriteTexture", 0);
-		particleShader.setMat4("projectionCamera", projection*camera);
+		particleShader.uniform("spriteTexture", 0);
+		particleShader.uniform("projectionCamera", projection*camera);
 		particle.render(); //Render Particle System
 
 	};

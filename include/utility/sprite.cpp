@@ -20,9 +20,9 @@ public:
 
   //Vertex and Texture Positions
   const GLfloat vert[12] = {-1.0, -1.0,  0.0,
-                           -1.0,  1.0,  0.0,
-                            1.0, -1.0,  0.0,
-                            1.0,  1.0,  0.0};
+                            -1.0,  1.0,  0.0,
+                             1.0, -1.0,  0.0,
+                             1.0,  1.0,  0.0};
 
   const GLfloat tex[8]  = { 0.0,  1.0,
                             0.0,  0.0,

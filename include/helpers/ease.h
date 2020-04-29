@@ -1,10 +1,4 @@
-float InOutQuad(float t, float b, float c, float d){
-  t /= d/2.0;
-  if(t < 1.0) return c/2.0*t*t+b;
-  t--;
-	return -c/2.0 * (t*(t-2.0) - 1.0) + b;
-}
-
+/* Ease Function Helper */
 
 namespace ease{
   float sharpen(float t, int n){
@@ -13,5 +7,12 @@ namespace ease{
 
   float langmuir(float t, float k){
     return k*t/(1+k*t);
+  }
+
+  float InOutQuad(float t, float b, float c, float d){
+    t /= d/2.0;
+    if(t < 1.0) return c/2.0*t*t+b;
+    t--;
+  	return -c/2.0 * (t*(t-2.0) - 1.0) + b;
   }
 };

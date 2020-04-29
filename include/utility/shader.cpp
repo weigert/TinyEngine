@@ -26,19 +26,12 @@ public:
   void use();                   //Use the program
 
   // Uniform Setters
-  void setBool(std::string name, bool value);
-  void setInt(std::string name, int value);
-  void setFloat(std::string name, float value);
-  void setVec2(std::string name, const glm::vec2 vec);
-  void setVec3(std::string name, const glm::vec3 vec);
-  void setVec4(std::string name, const glm::vec4 vec);
-  void setMat3(std::string name, const glm::mat3 mat);
-  void setMat4(std::string name, const glm::mat4 mat);
+  template<typename T> void uniform(std::string name, const T u);
 };
 
 void Shader::setup(std::string vs, std::string fs){
   shaderProgram = glCreateProgram();  //Generate Shader
-  
+
   boost::filesystem::path data_dir(boost::filesystem::current_path());
   vertexShader   = addProgram((data_dir/vs).string(), GL_VERTEX_SHADER);
   fragmentShader = addProgram((data_dir/fs).string(), GL_FRAGMENT_SHADER);
@@ -116,34 +109,44 @@ std::string Shader::readGLSLFile(std::string file, int32_t &size){
 
 /* Uniform Setters */
 
-void Shader::setBool(std::string name, bool value){
-  glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), value);
+template<typename T>
+void Shader::uniform(std::string name, T u){
+  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl;
+};
+
+template<> void Shader::uniform(std::string name, const bool u){
+  glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), u);
 }
 
-void Shader::setInt(std::string name, int value){
-  glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), value);
+template<> void Shader::uniform(std::string name, const int u){
+  glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), u);
 }
 
-void Shader::setFloat(std::string name, float value){
-  glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), value);
+template<> void Shader::uniform(std::string name, const float u){
+  glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), u);
 }
 
-void Shader::setVec2(std::string name, const glm::vec2 vec){
-  glUniform2fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &vec[0]);
+template<> void Shader::uniform(std::string name, const double u){
+  //GLSL is intrinsically single precision.
+  glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), (float)u);
 }
 
-void Shader::setVec3(std::string name, const glm::vec3 vec){
-  glUniform3fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &vec[0]);
+template<> void Shader::uniform(std::string name, const glm::vec2 u){
+  glUniform2fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
 }
 
-void Shader::setVec4(std::string name, const glm::vec4 vec){
-  glUniform4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &vec[0]);
+template<> void Shader::uniform(std::string name, const glm::vec3 u){
+  glUniform3fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
 }
 
-void Shader::setMat3(std::string name, const glm::mat3 mat){
-  glUniformMatrix3fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+template<> void Shader::uniform(std::string name, const glm::vec4 u){
+  glUniform4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
 }
 
-void Shader::setMat4(std::string name, const glm::mat4 mat){
-  glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+template<> void Shader::uniform(std::string name, const glm::mat3 u){
+  glUniformMatrix3fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, &u[0][0]);
+}
+
+template<> void Shader::uniform(std::string name, const glm::mat4 u){
+  glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, &u[0][0]);
 }

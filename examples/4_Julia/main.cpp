@@ -3,7 +3,7 @@
 
 int main( int argc, char* args[] ) {
 	srand(time(NULL));  //SEED
-	
+
 	Tiny::view.vsync = true;
 
 	Tiny::init("Julia Set Explorer", 1000, 1000);
@@ -28,16 +28,16 @@ int main( int argc, char* args[] ) {
 		julia.use();				//Use the Automata Shader
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, field.texture);
-		julia.setInt("imageTexture", 0);
-		julia.setInt("maxiter", res);
-		julia.setFloat("radius", radius);
-		julia.setFloat("zoom", zoom);
-		julia.setInt("order", order);
-		julia.setVec4("converge", glm::vec4(cc[0], cc[1], cc[2], cc[3]));
-		julia.setVec4("diverge", glm::vec4(dc[0], dc[1], dc[2], dc[3]));
-		julia.setVec2("bias", glm::vec2(bias[0], bias[1]));
-		julia.setVec2("offset", glm::vec2(px, py));
-		julia.setMat4("model", field.model);
+		julia.uniform("imageTexture", 0);
+		julia.uniform("maxiter", res);
+		julia.uniform("radius", radius);
+		julia.uniform("zoom", zoom);
+		julia.uniform("order", order);
+		julia.uniform("converge", glm::vec4(cc[0], cc[1], cc[2], cc[3]));
+		julia.uniform("diverge", glm::vec4(dc[0], dc[1], dc[2], dc[3]));
+		julia.uniform("bias", glm::vec2(bias[0], bias[1]));
+		julia.uniform("offset", glm::vec2(px, py));
+		julia.uniform("model", field.model);
 
 		field.render();										//Render Field to Self
 

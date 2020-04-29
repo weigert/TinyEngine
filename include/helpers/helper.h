@@ -1,6 +1,4 @@
-/*
-  Generally Useful Functions
-*/
+/* Generally Useful Functions */
 
 template<typename T>
 T min(T a, T b){

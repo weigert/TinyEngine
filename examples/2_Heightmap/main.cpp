@@ -30,8 +30,8 @@ int main( int argc, char* args[] ) {
 
 		//Prepare Shader
 		defaultShader.use();
-		defaultShader.setMat4("model", mesh.model);
-		defaultShader.setMat4("projectionCamera", projection*camera);
+		defaultShader.uniform("model", mesh.model);
+		defaultShader.uniform("projectionCamera", projection*camera);
 
 		//Render to Target
 		mesh.render(GL_LINES);

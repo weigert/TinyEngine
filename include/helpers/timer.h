@@ -12,29 +12,24 @@ namespace timer{
     std::cout<<"Execution Time: "<<duration.count()<<std::endl;
   };
 
-  /*
-
-  Example Usage:
-
-  timer::benchmark<std::chrono::microseconds>([&](){
-      //Your Code Here
-  });
-
+  /* Example Usage:
+        timer::benchmark<std::chrono::microseconds>([&](){
+            //Your Code Here
+        });
   */
 
+  //Timer Class - Execute code on a timed cycle
   template<typename D>
   class Timer{
-    //Finish the Guy
     std::atomic<bool> active = false;
 
-    //Should keep track of execution time...
     std::chrono::time_point<std::chrono::high_resolution_clock> curTime;
     D delayTime = D(0);
 
-    //Thread for the guy
     std::thread t;
 
   public:
+
     //Timeout Setter
     template<typename F>
     void set_timeout(D duration, F function){

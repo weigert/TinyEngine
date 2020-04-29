@@ -36,8 +36,8 @@ int main( int argc, char* args[] ) {
 			automata.use();				//Use the Automata Shader
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, field.texture);
-			automata.setInt("imageTexture", 0);
-			automata.setMat4("model", field.model);
+			automata.uniform("imageTexture", 0);
+			automata.uniform("model", field.model);
 
 			field.render();										//Render Field to Self
 
@@ -49,8 +49,8 @@ int main( int argc, char* args[] ) {
 		shader.use(); 										//Setup Shader
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, field.texture);
-		shader.setInt("imageTexture", 0);
-		shader.setMat4("model", field.model);
+		shader.uniform("imageTexture", 0);
+		shader.uniform("model", field.model);
 
 		field.render();										//Render Objects
 	};

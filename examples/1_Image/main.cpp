@@ -23,15 +23,15 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(color::black);
 
 		effect.use();	//Setup Shader
-		effect.setInt("index", ind);
-		effect.setInt("res", res);
-		effect.setInt("bits", bits);
+		effect.uniform("index", ind);
+		effect.uniform("res", res);
+		effect.uniform("bits", bits);
 
 		//Add the Texture
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, sprite.texture);
-		effect.setInt("imageTexture", 0);
-		effect.setMat4("model", sprite.model);
+		effect.uniform("imageTexture", 0);
+		effect.uniform("model", sprite.model);
 
 		sprite.render(); //Render Sprite
 

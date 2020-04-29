@@ -35,22 +35,22 @@ int main( int argc, char* args[] ) {
 
 		if(drawwire || drawtree){
 			defaultShader.use();
-			defaultShader.setMat4("model", treemesh.model);
-			defaultShader.setMat4("projectionCamera", projection*camera);
-			defaultShader.setVec3("lightCol", glm::vec3(1.0));
-			defaultShader.setVec3("lookDir", lookPos - cameraPos);
-			defaultShader.setVec3("lightDir", lookPos - glm::vec3(250.0));
-			defaultShader.setFloat("lightStrength", 0.8f);
+			defaultShader.uniform("model", treemesh.model);
+			defaultShader.uniform("projectionCamera", projection*camera);
+			defaultShader.uniform("lightCol", glm::vec3(1.0));
+			defaultShader.uniform("lookDir", lookPos - cameraPos);
+			defaultShader.uniform("lightDir", lookPos - glm::vec3(250.0));
+			defaultShader.uniform("lightStrength", 0.8f);
 
 			if(drawtree){
-				defaultShader.setVec4("treecolor", glm::vec4(treecolor[0], treecolor[1], treecolor[2], treeopacity));
-				defaultShader.setBool("wireframe", false);
+				defaultShader.uniform("treecolor", glm::vec4(treecolor[0], treecolor[1], treecolor[2], treeopacity));
+				defaultShader.uniform("wireframe", false);
 				treemesh.render(GL_TRIANGLES);
 			}
 
 			if(drawwire){
-				defaultShader.setVec3("wirecolor", glm::vec3(wirecolor[0], wirecolor[1], wirecolor[2]));
-				defaultShader.setBool("wireframe", true);
+				defaultShader.uniform("wirecolor", glm::vec3(wirecolor[0], wirecolor[1], wirecolor[2]));
+				defaultShader.uniform("wireframe", true);
 				treemesh.render(GL_LINES);
 			}
 		}
@@ -59,17 +59,17 @@ int main( int argc, char* args[] ) {
 			particleShader.use();
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, tex.texture);
-			particleShader.setInt("spriteTexture", 0);
+			particleShader.uniform("spriteTexture", 0);
 			glActiveTexture(GL_TEXTURE0+1);
 			glBindTexture(GL_TEXTURE_2D, normaltex.texture);
-			particleShader.setInt("normalTexture", 1);
-			particleShader.setMat4("projectionCamera", projection*camera);
-			particleShader.setVec4("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
+			particleShader.uniform("normalTexture", 1);
+			particleShader.uniform("projectionCamera", projection*camera);
+			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 
-			particleShader.setVec3("lightCol", glm::vec3(1.0));
-			particleShader.setVec3("lookDir", lookPos - cameraPos);
-			particleShader.setVec3("lightDir", lookPos - glm::vec3(250.0));
-			particleShader.setFloat("lightStrength", 0.8f);
+			particleShader.uniform("lightCol", glm::vec3(1.0));
+			particleShader.uniform("lookDir", lookPos - cameraPos);
+			particleShader.uniform("lightDir", lookPos - glm::vec3(250.0));
+			particleShader.uniform("lightStrength", 0.8f);
 
 			particle.render(); //Render Particle System
 		}

@@ -5,6 +5,8 @@ This was a small idea I had to grow trees, but it didn't really constitute its o
 
 This was based off of an observation I had while walking in the forest, that when a tree branch splits, it seems the sum of the cross-section of the two branches it splits into is conserved.
 
+This program allows you to do that and also relax that rule to give a more general plant growth model. This is explained below.
+
 The model is capable of growing different shapes of trees, from deciduous to evergreen. Some example screenshots are shown below.
 
 ![Cherry Tree Example Growth](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Cherry.png)
@@ -47,6 +49,16 @@ All of these properties can be controlled directly from the control panel.
         Split Size - Critical size when a branch stops being a leaf node and splits
 
 Note that these parameters are currently fixed, but could potentially be sampled from distributions instead (e.g. normal distribution around a mean) to give more realism.
+
+This is merely an approximation of reality, and isn't entirely realistic. Other possible improvements could be:
+
+        - Growth only in girth, not length
+        - More than single splits
+        - Dynamic Properties
+          - Dependency on the current branch number
+          - Different Branch Types spawning different branch types
+        - Actual Leaf Growth
+        - More intelligent choice of growth direction based on a simple rule
 
 ### Visualization
 The leaves are a particle system. They use the image `leaf.png`, and they always face the camera. You can alter color, opacity, size and spread (you can have multiple leaves around a branch).

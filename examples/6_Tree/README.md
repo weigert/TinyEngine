@@ -22,7 +22,15 @@ When a branch splits, it splits according to a split ratio X (`ratio`), so the t
 
 The tree is "fed" at a certain rate every time-step. This constant feed is passed down the tree. Every branch it touches takes a fraction of the feed (`passratio`) and uses it to grow itself. It then passes the rest to its sub-branches according to the split ratio. This process repeats until the feed is used up.
 
-Feed and growth is volume based, so the branch length and diameter are computed directly from the branch property `size` using the cube root and square root respectively. Length and girth are then scaled arbitrarily for visualization.
+The pass ratio strictly determines how the branch properties are conserved. Using an arbitrary pass-ratio, the branch scales will remain proportional (because of the split ratio), but not exactly proportional according to the cross-sectional area, the radius, or some other quantity.
+
+To conserve a quantity we can apply feedback-control. For instance, to control for conserved cross-sectional area the pass-ratio at every branching needs to be set according to:
+
+        pass = 1.0 - (A->area + B->area) / (A->area + B->area + area);
+        
+Where A and B are the child branches. Similarly to conserve radius.
+
+Feed and growth is volume based, so the branch length and radius are computed directly from the branch property `size` using the cube-root and square-root respectively. Length and radius are then scaled arbitrarily (shape factor) for visualization.
 
 Branches also have a direction property. The direction of each branch is computed as a weighted sum between the parent branches direction and a random normal vector to the parent branch. The weight is given by the split ratio, so that thicker child branches are more likely to grow straight, and small ones are more likely to grow perpendicular. Additionally, a `spread` parameter adds extra weight to the normal vector if desired so that branches tend more outwards or straight. A random normal vector can be computed by taking a random vector in 3D space and computing the cross product.
 

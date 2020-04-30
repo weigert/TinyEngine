@@ -18,7 +18,7 @@ bool drawwire = false;
 bool drawtree = true;
 bool drawleaf = true;
 
-float leafcolor[3] = {0.34, 0.545, 0.46};
+float leafcolor[3] = {0.82, 0.13, 0.23};
 float treecolor[3] = {1.00, 1.00, 1.00};
 float wirecolor[3] = {0.00, 0.00, 0.00};
 float backcolor[3] = {0.80, 0.80, 0.80};
@@ -36,7 +36,6 @@ float leafspread[3] = {50.0, 50.0, 50.0};
 float passratio = 0.3;
 float splitdecay = 1E-2;
 bool conservearea = true;
-bool conservediameter = false;
 
 #include "tree.h"
 
@@ -114,7 +113,7 @@ Handle interfaceFunc = [&](){
 
       if(ImGui::BeginTabItem("Growth")){
 
-        if(ImGui::Button("Re-Grow")){
+        if(ImGui::Button("Re-Grow [R]")){
           Branch* newroot = new Branch(tree.root->ratio, tree.root->spread, tree.root->splitsize);
           delete(tree.root);
           tree.root = newroot;
@@ -124,7 +123,6 @@ Handle interfaceFunc = [&](){
         ImGui::DragFloat("Split Ratio", &tree.root->ratio, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("Pass Ratio", &passratio, 0.01f, 0.0f, 1.0f);
         ImGui::Checkbox("Conserve Crossectional Area", &conservearea);
-        ImGui::Checkbox("Conserve Diameter Sum", &conservediameter);
         ImGui::DragFloat("Branch Spread", &tree.root->spread, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("Split Size", &tree.root->splitsize, 0.1f, 0.1f, 5.0f);
         ImGui::DragFloat("Split Decay", &splitdecay, 0.0001f, 0.0f, 0.1f);

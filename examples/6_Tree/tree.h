@@ -67,8 +67,6 @@ void Branch::grow(double feed){
 
   if(conservearea)
     pass = (A->area+B->area)/(A->area+B->area+area);
-  else if(conservediameter)
-    pass = (A->radius+B->radius)/(A->radius+B->radius+radius);
 
   area += pass * feed / length; //Grow in Girth
   feed *= ( 1.0 - pass );

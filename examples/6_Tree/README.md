@@ -48,12 +48,10 @@ Note that these parameters are currently fixed, but could potentially be sampled
 
 This is merely an approximation of reality, and isn't entirely realistic. Other possible improvements could be:
 
-        - Growth only in girth, not length
         - More than single splits
         - Dynamic Properties
           - Dependency on the current branch number
           - Different Branch Types spawning different branch types
-        - Actual Leaf Growth
         - More intelligent choice of growth direction based on a simple rule
 
 ### Visualization

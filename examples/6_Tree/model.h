@@ -1,4 +1,6 @@
 //Parameters
+#define PI 3.14159265f
+
 const int WIDTH = 800;
 const int HEIGHT = 800;
 
@@ -11,7 +13,7 @@ glm::mat4 camera = glm::lookAt(cameraPos, lookPos, glm::vec3(0,1,0));
 glm::mat4 projection;
 
 bool paused = false;
-bool autorotate = false;
+bool autorotate = true;
 bool drawwire = false;
 bool drawtree = true;
 bool drawleaf = true;
@@ -20,18 +22,20 @@ float leafcolor[3] = {0.34, 0.545, 0.46};
 float treecolor[3] = {1.00, 1.00, 1.00};
 float wirecolor[3] = {0.00, 0.00, 0.00};
 float backcolor[3] = {0.80, 0.80, 0.80};
-float leafopacity = 0.5;
+float leafopacity = 1.0;
+int leafmindepth = 8;
 float treeopacity = 1.0;
-float treescale[2] = {15.0f, 2.5f};
+float treescale[2] = {15.0f, 10.0f};
 
-int ringsize = 6;
+int ringsize = 12;
 int leafcount = 10;
 float leafsize = 5.0;
 float taper = 0.6;
-float leafspread[3] = {150.0, 50.0, 150.0};
+float leafspread[3] = {150.0, 150.0, 150.0};
 
-float passratio = 0.8;
-bool conservearea = false;
+float passratio = 0.3;
+float splitdecay = 1E-2;
+bool conservearea = true;
 bool conservediameter = false;
 
 #include "tree.h"
@@ -76,6 +80,13 @@ std::function<void()> eventHandler = [&](){
       paused = !paused;
     else if(Tiny::event.keys.back().key.keysym.sym == SDLK_a)
       autorotate = !autorotate;
+
+    //Regrow
+    else if(Tiny::event.keys.back().key.keysym.sym == SDLK_r){
+      Branch* newroot = new Branch(tree.root->ratio, tree.root->spread, tree.root->splitsize);
+      delete(tree.root);
+      tree.root = newroot;
+    }
   }
 
 };
@@ -116,6 +127,7 @@ Handle interfaceFunc = [&](){
         ImGui::Checkbox("Conserve Diameter Sum", &conservediameter);
         ImGui::DragFloat("Branch Spread", &tree.root->spread, 0.1f, 0.0f, 5.0f);
         ImGui::DragFloat("Split Size", &tree.root->splitsize, 0.1f, 0.1f, 5.0f);
+        ImGui::DragFloat("Split Decay", &splitdecay, 0.0001f, 0.0f, 0.1f);
 
         ImGui::EndTabItem();
       }
@@ -124,6 +136,7 @@ Handle interfaceFunc = [&](){
         ImGui::ColorEdit3("Color", leafcolor);
         ImGui::DragFloat("Opacity", &leafopacity, 0.01f, 0.0f, 1.0f);
         ImGui::DragInt("Count", &leafcount, 1, 0, 30);
+        ImGui::DragInt("Minimum Depth", &leafmindepth, 1, 0, 15);
         ImGui::DragFloat3("Spread", leafspread, 0.1f, 0.0f, 250.0f);
         ImGui::DragFloat("Size", &leafsize, 0.1f, 0.0f, 25.0f);
         ImGui::Checkbox("Draw", &drawleaf);

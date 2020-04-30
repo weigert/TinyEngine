@@ -7,6 +7,7 @@ struct Branch{
 
   //Parameters
   float ratio, spread, splitsize;
+  int depth = 0;
 
   Branch(float r, float s, float ss){
     ratio = r;
@@ -24,8 +25,7 @@ struct Branch{
   glm::vec3 dir = glm::vec3(0.0, 1.0, 0.0);
   double length = 0.0;
   double radius = 0.0;
-  double area = 0.0;
-  double size = 0.0;
+  double area = 0.1;
 
   void grow(double _size);
   void split();
@@ -33,7 +33,7 @@ struct Branch{
 
 class Tree{
 public:
-  Tree(){ root = new Branch(0.6, 0.5, 0.5); }
+  Tree(){ root = new Branch(0.6, 0.5, 2.5); }
   ~Tree(){ delete root; }
 
   float rate = 1.0;
@@ -46,30 +46,34 @@ public:
 
 void Branch::grow(double feed){
 
-  /*
-    Size = L * length * (W * radius^2) = X
-  */
+  //Compute Current Radius
+  radius = sqrt(area/PI);
 
-  //Compute Size Parameters
-  length = cbrt(size);
-  area = (length == 0)?0:size / (treescale[0] * length);
-  radius = (area == 0)?0:treescale[1]*sqrt( area );
+  if(leaf){
+    length += cbrt(feed);  //Grow in Length
+    area += feed/length;   //Grow In Area
 
-  double pass;
-  if(leaf || size == 0) pass = 0.0;
-  else if(conservearea) pass = 1.0 - (A->area+B->area)/(A->area+B->area+area);
-  else if(conservediameter) pass = 1.0 - (A->radius+B->radius)/(A->radius+B->radius+radius);
-  else pass = passratio;
+    //Split Condition
+    if(length > splitsize * exp(-splitdecay * depth))
+      split();  //Split Behavior
 
-  size += (1.0-pass)*feed;
-
-  if(leaf && size > splitsize)
-    split();  //Split Behavior
-
-  if(!leaf){  //Grow Children
-    A->grow(ratio*pass*feed);
-    B->grow((1-ratio)*pass*feed);
+    return;
   }
+
+  //We are not a leaf!
+
+  double pass = passratio;
+
+  if(conservearea)
+    pass = (A->area+B->area)/(A->area+B->area+area);
+  else if(conservediameter)
+    pass = (A->radius+B->radius)/(A->radius+B->radius+radius);
+
+  area += pass * feed / length; //Grow in Girth
+  feed *= ( 1.0 - pass );
+
+  A->grow(ratio*feed);
+  B->grow((1-ratio)*feed);
 }
 
 void Branch::split(){
@@ -79,6 +83,8 @@ void Branch::split(){
   B = new Branch(ratio, spread, splitsize);
   A->ID = rand()%1000;
   B->ID = rand()%1000;
+  A->depth = depth+1;
+  B->depth = depth+1;
 
   //Random Vector in Space
   glm::vec3 O = glm::normalize(glm::vec3((double)(rand()%100)/100.0-0.5, (double)(rand()%100)/100.0, (double)(rand()%100)/100.0-0.5));
@@ -96,16 +102,12 @@ void Branch::split(){
 
 Tree tree;
 
-#define PI 3.14159265f
 
 // Model Constructing Function for Tree
 std::function<void(Model*)> _construct = [&](Model* h){
 
   //Basically Add Lines for the Tree!
   std::function<void(Branch*, glm::vec3)> addBranch = [&](Branch* b, glm::vec3 p){
-
-    //No Leaves
-    if(b->leaf) return;
 
     glm::vec3 start = p;
     glm::vec3 end   = p + glm::vec3(b->length*treescale[0])*b->dir;
@@ -152,6 +154,9 @@ std::function<void(Model*)> _construct = [&](Model* h){
 
     }
 
+    //No Leaves
+    if(b->leaf) return;
+
     addBranch(b->A, end);
     addBranch(b->B, end);
   };
@@ -174,6 +179,8 @@ std::function<void(Particle*)> addLeaves = [&](Particle* p){
   std::function<void(Branch*, glm::vec3)> addLeaf = [&](Branch* b, glm::vec3 pos){
 
     if(b->leaf){
+
+      if(b->depth < leafmindepth) return;
 
       for(int i = 0; i < leafcount; i++){
         //Hashed Random Displace

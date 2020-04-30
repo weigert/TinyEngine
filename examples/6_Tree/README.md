@@ -88,17 +88,4 @@ Control Panel:
     Toggle Pause - P
     Toggle Auto-Rotate - A
     Toggle Control Panel - ESC
-<<<<<<< HEAD
-=======
     Regrow Tree - R
-
-### Screenshots
-
-![Naked Tree](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Naked.png)
-
-Tree without leaves, example growth with relatively balanced parameters.
-
-![Tree with Leaves](https://github.com/weigert/TinyEngine/blob/master/examples/6_Tree/screenshots/Leaves.png)
-
-The same tree but with leaves.
->>>>>>> 01315544ba478c8973e777dba43db45bf4504a87

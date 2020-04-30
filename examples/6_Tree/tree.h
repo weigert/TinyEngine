@@ -33,7 +33,7 @@ struct Branch{
 
 class Tree{
 public:
-  Tree(){ root = new Branch(0.6, 0.5, 2.5); }
+  Tree(){ root = new Branch(0.6, 0.6, 2.5); }
   ~Tree(){ delete root; }
 
   float rate = 1.0;
@@ -51,6 +51,7 @@ void Branch::grow(double feed){
 
   if(leaf){
     length += cbrt(feed);  //Grow in Length
+    feed -= length * area; //Reduce Feed
     area += feed/length;   //Grow In Area
 
     //Split Condition
@@ -71,6 +72,9 @@ void Branch::grow(double feed){
 
   area += pass * feed / length; //Grow in Girth
   feed *= ( 1.0 - pass );
+
+  //Just to Prevent too large depth
+  if(feed < 1E-6) return;
 
   A->grow(ratio*feed);
   B->grow((1-ratio)*feed);

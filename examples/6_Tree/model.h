@@ -22,7 +22,7 @@ float leafcolor[3] = {0.34, 0.545, 0.46};
 float treecolor[3] = {1.00, 1.00, 1.00};
 float wirecolor[3] = {0.00, 0.00, 0.00};
 float backcolor[3] = {0.80, 0.80, 0.80};
-float leafopacity = 1.0;
+float leafopacity = 0.9;
 int leafmindepth = 8;
 float treeopacity = 1.0;
 float treescale[2] = {15.0f, 10.0f};
@@ -31,7 +31,7 @@ int ringsize = 12;
 int leafcount = 10;
 float leafsize = 5.0;
 float taper = 0.6;
-float leafspread[3] = {150.0, 150.0, 150.0};
+float leafspread[3] = {50.0, 50.0, 50.0};
 
 float passratio = 0.3;
 float splitdecay = 1E-2;
@@ -125,7 +125,7 @@ Handle interfaceFunc = [&](){
         ImGui::DragFloat("Pass Ratio", &passratio, 0.01f, 0.0f, 1.0f);
         ImGui::Checkbox("Conserve Crossectional Area", &conservearea);
         ImGui::Checkbox("Conserve Diameter Sum", &conservediameter);
-        ImGui::DragFloat("Branch Spread", &tree.root->spread, 0.1f, 0.0f, 5.0f);
+        ImGui::DragFloat("Branch Spread", &tree.root->spread, 0.01f, 0.0f, 5.0f);
         ImGui::DragFloat("Split Size", &tree.root->splitsize, 0.1f, 0.1f, 5.0f);
         ImGui::DragFloat("Split Decay", &splitdecay, 0.0001f, 0.0f, 0.1f);
 

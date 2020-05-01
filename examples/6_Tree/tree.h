@@ -86,7 +86,7 @@ void Branch::split(){
   /*  Ideal Growth Direction:
         Perpendicular to direction with highest leaf density! */
 
-  glm::vec3 D = leafdensity(1);                     //Direction of Highest Density
+  glm::vec3 D = leafdensity(localdepth);            //Direction of Highest Density
   glm::vec3 N = glm::normalize(glm::cross(dir, D)); //Normal Vector
   glm::vec3 M = -1.0f*N;                            //Reflection
 
@@ -147,7 +147,7 @@ glm::vec3 Branch::leafdensity(int searchdepth){
   };
 
   //Average relative to ancestor, shifted by rel ( + Noise )
-  return glm::normalize(leafaverage(C) - rel) + r;
+  return directedness*glm::normalize(leafaverage(C) - rel) + (1.0f-directedness)*r;
 };
 
 Branch* root;

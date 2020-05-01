@@ -25,7 +25,7 @@ float backcolor[3] = {0.80, 0.80, 0.80};
 float leafopacity = 0.9;
 int leafmindepth = 8;
 float treeopacity = 1.0;
-float treescale[2] = {15.0f, 10.0f};
+float treescale[2] = {15.0f, 5.0f};
 
 int ringsize = 12;
 int leafcount = 10;
@@ -36,6 +36,8 @@ float leafspread[3] = {50.0, 50.0, 50.0};
 float growthrate = 1.0;
 float passratio = 0.3;
 float splitdecay = 1E-2;
+float directedness = 0.5;
+int localdepth = 2;
 bool conservearea = true;
 
 #include "tree.h"
@@ -120,13 +122,22 @@ Handle interfaceFunc = [&](){
           root = newroot;
         }
 
+
+        ImGui::Text("Growth Behavior");
         ImGui::DragFloat("Growth Rate", &growthrate, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Split Ratio", &root->ratio, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Pass Ratio", &passratio, 0.01f, 0.0f, 1.0f);
         ImGui::Checkbox("Conserve Crossectional Area", &conservearea);
-        ImGui::DragFloat("Branch Spread", &root->spread, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Split Size", &root->splitsize, 0.1f, 0.1f, 5.0f);
-        ImGui::DragFloat("Split Decay", &splitdecay, 0.0001f, 0.0f, 0.1f);
+        if(!conservearea)
+          ImGui::DragFloat("Pass Ratio", &passratio, 0.01f, 0.0f, 1.0f);
+
+        ImGui::Text("Split Behavior");
+        ImGui::DragFloat("Ratio", &root->ratio, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Size", &root->splitsize, 0.1f, 0.1f, 5.0f);
+        ImGui::DragFloat("Decay", &splitdecay, 0.0001f, 0.0f, 0.1f);
+
+        ImGui::Text("Growth Direction");
+        ImGui::DragFloat("Spread", &root->spread, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Directedness", &directedness, 0.0001f, 0.0f, 1.0f);
+        ImGui::DragInt("Local Depth", &localdepth, 1, 0, 15);
 
         ImGui::EndTabItem();
       }

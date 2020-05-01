@@ -132,11 +132,11 @@ Handle interfaceFunc = [&](){
         ImGui::Text("Split Behavior");
         ImGui::DragFloat("Ratio", &root->ratio, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("Size", &root->splitsize, 0.1f, 0.1f, 5.0f);
-        ImGui::DragFloat("Decay", &splitdecay, 0.0001f, 0.0f, 0.1f);
+        ImGui::DragFloat("Decay", &splitdecay, 0.001f, 0.0f, 1.0f);
 
         ImGui::Text("Growth Direction");
         ImGui::DragFloat("Spread", &root->spread, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Directedness", &directedness, 0.0001f, 0.0f, 1.0f);
+        ImGui::DragFloat("Directedness", &directedness, 0.01f, 0.0f, 1.0f);
         ImGui::DragInt("Local Depth", &localdepth, 1, 0, 15);
 
         ImGui::EndTabItem();

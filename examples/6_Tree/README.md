@@ -55,7 +55,6 @@ This is merely an approximation of reality, and isn't entirely realistic. Other 
           - Dependency on the branch depth
         - Different branch types, with varying properties
           - Also spawning different branch types
-        - More intelligent choice of growth direction based on a simple rule
 
 ### Visualization
 The leaves are a particle system. They use the image `leaf.png`, and they always face the camera. You can alter color, opacity, size and spread (you can have multiple leaves around a branch).

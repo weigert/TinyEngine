@@ -3,7 +3,6 @@
 in vec2 ex_Tex;
 
 uniform sampler2D spriteTexture;
-uniform sampler2D normalTexture;
 uniform vec4 leafcolor;
 
 uniform vec3 lightDir;

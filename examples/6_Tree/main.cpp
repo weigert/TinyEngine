@@ -3,7 +3,7 @@
 
 int main( int argc, char* args[] ) {
 
-	Tiny::view.lineWidth = 1.5f;
+	Tiny::view.lineWidth = 1.0f;
 
 	Tiny::init("Procedural Tree", WIDTH, HEIGHT);
 	Tiny::event.handler = eventHandler;
@@ -22,7 +22,6 @@ int main( int argc, char* args[] ) {
 
 	//Setup a Texture to Draw
 	Texture tex(image::load("leaf.png"));
-	Texture normaltex(image::load("leafnormal.png"));
 
 	//Setup the Particle Shader
 	Shader particleShader("shader/particle.vs", "shader/particle.fs", {"in_Quad", "in_Tex", "in_Model"});
@@ -60,9 +59,6 @@ int main( int argc, char* args[] ) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, tex.texture);
 			particleShader.uniform("spriteTexture", 0);
-			glActiveTexture(GL_TEXTURE0+1);
-			glBindTexture(GL_TEXTURE_2D, normaltex.texture);
-			particleShader.uniform("normalTexture", 1);
 			particleShader.uniform("projectionCamera", projection*camera);
 			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 
@@ -84,7 +80,7 @@ int main( int argc, char* args[] ) {
 		}
 
 		if(!paused)
-			tree.grow();
+			root->grow(growthrate);
 
 		//Update Rendering Structures
 		treemesh.construct(_construct);
@@ -92,6 +88,9 @@ int main( int argc, char* args[] ) {
 		particle.update();
 
 	});
+
+	//Get rid of this thing!
+	delete root;
 
 	Tiny::quit();
 

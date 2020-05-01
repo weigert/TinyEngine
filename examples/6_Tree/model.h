@@ -33,6 +33,7 @@ float leafsize = 5.0;
 float taper = 0.6;
 float leafspread[3] = {50.0, 50.0, 50.0};
 
+float growthrate = 1.0;
 float passratio = 0.3;
 float splitdecay = 1E-2;
 bool conservearea = true;
@@ -40,9 +41,9 @@ bool conservearea = true;
 #include "tree.h"
 
 void setup(){
-  //Projection Matrix (Orthographic)
   projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -800.0f, 500.0f);
   srand(time(NULL));
+  root = new Branch({0.6, 0.45, 2.5}); //Create Root
 };
 
 // Event Handler
@@ -82,9 +83,9 @@ std::function<void()> eventHandler = [&](){
 
     //Regrow
     else if(Tiny::event.keys.back().key.keysym.sym == SDLK_r){
-      Branch* newroot = new Branch(tree.root->ratio, tree.root->spread, tree.root->splitsize);
-      delete(tree.root);
-      tree.root = newroot;
+      Branch* newroot = new Branch(root, true);
+      delete(root);
+      root = newroot;
     }
   }
 
@@ -114,17 +115,17 @@ Handle interfaceFunc = [&](){
       if(ImGui::BeginTabItem("Growth")){
 
         if(ImGui::Button("Re-Grow [R]")){
-          Branch* newroot = new Branch(tree.root->ratio, tree.root->spread, tree.root->splitsize);
-          delete(tree.root);
-          tree.root = newroot;
+          Branch* newroot = new Branch(root, true);
+          delete(root);
+          root = newroot;
         }
 
-        ImGui::DragFloat("Growth Rate", &tree.rate, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Split Ratio", &tree.root->ratio, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Growth Rate", &growthrate, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Split Ratio", &root->ratio, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat("Pass Ratio", &passratio, 0.01f, 0.0f, 1.0f);
         ImGui::Checkbox("Conserve Crossectional Area", &conservearea);
-        ImGui::DragFloat("Branch Spread", &tree.root->spread, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Split Size", &tree.root->splitsize, 0.1f, 0.1f, 5.0f);
+        ImGui::DragFloat("Branch Spread", &root->spread, 0.01f, 0.0f, 5.0f);
+        ImGui::DragFloat("Split Size", &root->splitsize, 0.1f, 0.1f, 5.0f);
         ImGui::DragFloat("Split Decay", &splitdecay, 0.0001f, 0.0f, 0.1f);
 
         ImGui::EndTabItem();

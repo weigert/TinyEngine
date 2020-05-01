@@ -2,17 +2,28 @@ struct Branch{
 
   int ID = 0;         //For Leaf Hashing
   bool leaf = true;
-  Branch* A;
-  Branch* B;
+
+  Branch *A, *B, *P;  //Child A, B and Parent
 
   //Parameters
   float ratio, spread, splitsize;
   int depth = 0;
 
-  Branch(float r, float s, float ss){
-    ratio = r;
-    spread = s;
-    splitsize = ss;
+  //Constructors
+  Branch(float r, float s, float ss):
+    ratio       {r},
+    spread      {s},
+    splitsize   {ss}
+  {};
+
+  Branch(Branch* b, bool root):
+    ratio       {b->ratio},
+    spread      {b->spread},
+    splitsize   {b->splitsize}
+  {
+    if(root) return;
+    depth = b->depth+1;
+    P = b;  //Set Parent
   };
 
   ~Branch(){
@@ -21,38 +32,25 @@ struct Branch{
     delete(B);
   }
 
-  //Position Data
+  //Size / Direction Data
   glm::vec3 dir = glm::vec3(0.0, 1.0, 0.0);
-  double length = 0.0;
-  double radius = 0.0;
-  double area = 0.1;
+  float length = 0.0, radius = 0.0, area = 0.1;
 
   void grow(double _size);
   void split();
-};
 
-class Tree{
-public:
-  Tree(){ root = new Branch(0.6, 0.6, 2.5); }
-  ~Tree(){ delete root; }
-
-  float rate = 1.0;
-
-  Branch* root;
-  void grow(){
-    root->grow(rate);
-  }
+  //Compute Direction to Highest Local Leaf Density
+  glm::vec3 leafdensity(int searchdepth);
 };
 
 void Branch::grow(double feed){
 
-  //Compute Current Radius
-  radius = sqrt(area/PI);
+  radius = sqrt(area/PI);   //Current Radius
 
   if(leaf){
-    length += cbrt(feed);  //Grow in Length
-    feed -= length * area; //Reduce Feed
-    area += feed/length;   //Grow In Area
+    length += cbrt(feed);   //Grow in Length
+    feed -= length * area;  //Reduce Feed
+    area += feed/length;    //Grow In Area
 
     //Split Condition
     if(length > splitsize * exp(-splitdecay * depth))
@@ -61,49 +59,98 @@ void Branch::grow(double feed){
     return;
   }
 
-  //We are not a leaf!
-
   double pass = passratio;
 
-  if(conservearea)
+  if(conservearea)  //Feedback Control for Area Conservation
     pass = (A->area+B->area)/(A->area+B->area+area);
 
-  area += pass * feed / length; //Grow in Girth
-  feed *= ( 1.0 - pass );
+  area += pass * feed / length;   //Grow in Girth
+  feed *= ( 1.0 - pass );         //Reduce Feed
 
-  //Just to Prevent too large depth
-  if(feed < 1E-6) return;
+  if(feed < 1E-5) return;         //Prevent Over-Branching
 
-  A->grow(ratio*feed);
-  B->grow((1-ratio)*feed);
+  A->grow(feed*ratio);            //Grow Children
+  B->grow(feed*(1.0-ratio));
 }
 
 void Branch::split(){
+
   leaf = false;
 
-  A = new Branch(ratio, spread, splitsize);
-  B = new Branch(ratio, spread, splitsize);
-  A->ID = rand()%1000;
-  B->ID = rand()%1000;
-  A->depth = depth+1;
-  B->depth = depth+1;
+  //Add Child Branches
+  A = new Branch(this, false);
+  B = new Branch(this, false);
+  A->ID = 2 * ID + 0; //Every Leaf ID is Unique (because binary!)
+  B->ID = 2 * ID + 1;
 
-  //Random Vector in Space
-  glm::vec3 O = glm::normalize(glm::vec3((double)(rand()%100)/100.0-0.5, (double)(rand()%100)/100.0, (double)(rand()%100)/100.0-0.5));
+  /*  Ideal Growth Direction:
+        Perpendicular to direction with highest leaf density! */
 
-  //Randomly Oriented Normal Vector to Previous Branch
-  glm::vec3 N = glm::cross(glm::normalize(dir), O);
+  glm::vec3 D = leafdensity(1);                     //Direction of Highest Density
+  glm::vec3 N = glm::normalize(glm::cross(dir, D)); //Normal Vector
+  glm::vec3 M = -1.0f*N;                            //Reflection
 
-  //Reflect around vertical axis
-  glm::vec3 M = glm::vec3(-1.0, 1.0, -1.0)*N;
+  float flip = (rand()%2)?1.0:-1.0; //Random Direction Flip
+  A->dir = glm::normalize( glm::mix(flip*spread*N, dir,     ratio) );
+  B->dir = glm::normalize( glm::mix(flip*spread*M, dir, 1.0-ratio) );
 
-  //Set Directions
-  A->dir = glm::normalize( glm::mix(spread*N, dir, ratio) );
-  B->dir = glm::normalize( glm::mix(spread*M, dir, 1.0-ratio) );
 }
 
-Tree tree;
+glm::vec3 Branch::leafdensity(int searchdepth){
 
+  //Random Vector! (for noise)
+  glm::vec3 r = glm::vec3(rand()%100,rand()%100,rand()%100)/glm::vec3(100)-glm::vec3(0.5);
+
+  if(depth == 0) return r;
+
+  /*
+    General Idea: Branches grow away from areas with a high leaf density!
+
+    Therefore, if we can compute a vector that points towards the area with
+    the locally highest leaf density, we can use that to compute our normal
+    for branching.
+
+    Locally high density is determined by descending the tree to some maximum
+    search depth (finding an ancestor node), and computing some leaf-density
+    metric over the descendant node leaves. This is implemented recursively.
+
+    Metric 1: Uniform Weights in Space.
+      Problem: Causes strange spiral artifacts at high-search depths, because it
+        computes the average leaf position of the entire tree. Therefore,
+        the tree grows in a strange way, away from the center.
+
+    Metric 2: Distance weighted average position (i.e. relative vector)
+      Problem: This causes strange cone artifacts when using a sufficiently large
+        search depth. This is also more expensive to compute, and wonky because
+        we compute the distance-weighted average distance (what?? exactly).
+
+    Since both metrics give similar results at a small search-depth (e.g. 2),
+    meaning we only search locally, I will use the one that is simpler to compute.
+    That is Method 1.
+
+    I did throw in a weighting by the branch ratio though, just because I can.
+    That means that the tree should tend to grow away from branches with the most
+    growth potential.
+
+  */
+
+  Branch* C = this;                                 //Ancestor node
+  glm::vec3 rel = glm::vec3(0);                     //Relative position to start node
+  while(C->depth > 0 && searchdepth-- >= 0){        //Descend tree
+    rel += C->length*C->dir;                        //Add relative position
+    C = C->P;                                       //Move to parent
+  }
+
+  std::function<glm::vec3(Branch*)> leafaverage = [&](Branch* b)->glm::vec3{
+    if(b->leaf) return b->length*b->dir;
+    return b->length*b->dir + ratio*leafaverage(b->A) + (1.0f-ratio)*leafaverage(b->B);
+  };
+
+  //Average relative to ancestor, shifted by rel ( + Noise )
+  return glm::normalize(leafaverage(C) - rel) + r;
+};
+
+Branch* root;
 
 // Model Constructing Function for Tree
 std::function<void(Model*)> _construct = [&](Model* h){
@@ -164,7 +211,7 @@ std::function<void(Model*)> _construct = [&](Model* h){
   };
 
   //Recursive add Branches
-  addBranch(tree.root, glm::vec3(0.0));
+  addBranch(root, glm::vec3(0.0));
 };
 
 //Hash Function for Leaf Displacement!
@@ -205,5 +252,5 @@ std::function<void(Particle*)> addLeaves = [&](Particle* p){
     addLeaf(b->B, end);
   };
 
-  addLeaf(tree.root, glm::vec3(0.0));
+  addLeaf(root, glm::vec3(0.0));
 };

@@ -42,6 +42,7 @@ using slist = std::initializer_list<std::string>;
 #include "include/view.cpp"
 #include "include/event.cpp"
 #include "include/audio.cpp"
+#include "include/net.cpp"
 
 /* TINY ENGINE */
 

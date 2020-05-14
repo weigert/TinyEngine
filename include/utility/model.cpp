@@ -24,14 +24,16 @@ public:
 
   void setup();
   void update();
-  void construct(std::function<void(Model* m)> constructor){
+
+  template<typename... Args>
+  void construct(std::function<void(Model*, Args...)> constructor, Args&&... args){
     positions.clear();  //Clear all Data
     normals.clear();
     colors.clear();
     indices.clear();
 
-    (constructor)(this);  //Call user-defined constructor
-    update();             //Update VAO / VBO / IBO
+    (constructor)(this, args...);  //Call user-defined constructor
+    update();                      //Update VAO / VBO / IBO
   };
 
   void translate(const glm::vec3 &axis);

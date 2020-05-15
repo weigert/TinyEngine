@@ -25,6 +25,8 @@ using slist = std::initializer_list<std::string>;
 #include <boost/filesystem/path.hpp>
 
 //Helpers
+#include "include/helpers/log.h"
+#include "include/helpers/parse.h"
 #include "include/helpers/helper.h"
 #include "include/helpers/ease.h"
 #include "include/helpers/color.h"
@@ -42,7 +44,8 @@ using slist = std::initializer_list<std::string>;
 #include "include/view.cpp"
 #include "include/event.cpp"
 #include "include/audio.cpp"
-#include "include/net.cpp"
+
+#include "include/network/net.cpp"
 
 /* TINY ENGINE */
 

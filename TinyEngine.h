@@ -24,7 +24,15 @@ using slist = std::initializer_list<std::string>;
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
+//Network
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <chrono>
+#include <thread>
+
 //Helpers
+#include "include/helpers/input.h"
 #include "include/helpers/log.h"
 #include "include/helpers/parse.h"
 #include "include/helpers/helper.h"
@@ -41,11 +49,14 @@ using slist = std::initializer_list<std::string>;
 #include "include/utility/billboard.cpp"
 #include "include/utility/model.cpp"
 
+//Utility Classes for Network
+#include "include/network/buffer.cpp"
+#include "include/network/socket.cpp"
+
+#include "include/net.cpp"
 #include "include/view.cpp"
 #include "include/event.cpp"
 #include "include/audio.cpp"
-
-#include "include/network/net.cpp"
 
 /* TINY ENGINE */
 
@@ -55,8 +66,13 @@ namespace Tiny {
 static View view;       //Window and Interface
 static Event event;     //Event Handler
 static Audio audio;     //Audio Processor
+static Net net;         //Network Handler
 
-bool init(std::string windowName, int width, int height){
+bool windowmode = false;
+
+bool window(std::string windowName, int width, int height){
+  windowmode = true;
+
   //Initialize SDL Core
   if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){
     printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
@@ -86,23 +102,37 @@ bool init(std::string windowName, int width, int height){
 }
 
 void quit(){
-  view.cleanup();
-  audio.cleanup();
-  TTF_Quit();
-  SDL_Quit();
+  if(windowmode){
+    view.cleanup();
+    audio.cleanup();
+    TTF_Quit();
+    SDL_Quit();
+  }
+  if(net.open)
+    net.close();
 };
 
 template<typename F, typename... Args>
 void loop(F function, Args&&... args){
-  while(!event.quit){
-    event.input();        //Handle Input
-    event.handle(view);
+  if(windowmode)
+    while(!event.quit){
+      event.input();        //Handle Input
+      event.handle(view);
 
-    audio.process();      //Audio Processor
+      if(net.open)
+        net.handle();        //Handle Network Messages
 
-    function(args...);    //User-defined Game Loop
+      audio.process();      //Audio Processor
 
-    view.render();        //Render View
+      function(args...);    //User-defined Game Loop
+
+      view.render();        //Render View
+
+    }
+  else{
+    while(net.open){
+      net.handle();        //Handle Network Messages
+    }
   }
 };
 

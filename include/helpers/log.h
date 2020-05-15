@@ -5,8 +5,6 @@ Description:
 Author: Nicholas McDonald
 */
 
-#include <cstdarg>
-
 template<size_t N>
 std::ostream& operator<<(std::ostream& os, const int (&m)[N]){
   for(int i = 0; i < N; i++)

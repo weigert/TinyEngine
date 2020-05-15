@@ -6,7 +6,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.vsync = true;
 
-	Tiny::init("Julia Set Explorer", 1000, 1000);
+	Tiny::window("Julia Set Explorer", 1000, 1000);
 
 	Tiny::event.handler = eventHandler;
 	Tiny::view.interface = interfaceFunc;

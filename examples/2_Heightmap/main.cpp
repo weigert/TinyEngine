@@ -4,7 +4,7 @@
 int main( int argc, char* args[] ) {
 
 	//Launch the Window
-	Tiny::init("Heightmap Render", WIDTH, HEIGHT);
+	Tiny::window("Heightmap Render", WIDTH, HEIGHT);
 
 	//Add an Event Handler for camera movement
 	Tiny::event.handler = eventHandler;

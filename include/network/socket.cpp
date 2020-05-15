@@ -1,9 +1,8 @@
-
 class Socket {
 public:
 
   int sockfd;
-  sockaddr_in local, target;
+  sockaddr_in connection;
   unsigned int len;
 
   ~Socket(){
@@ -16,19 +15,17 @@ public:
       return false;
     }
 
-    memset(&local, 0, sizeof(local));
-    memset(&target, 0, sizeof(target));
+    memset(&connection, 0, sizeof(connection));
+    connection.sin_family = AF_INET;
+    connection.sin_addr.s_addr = INADDR_ANY;
+    connection.sin_port = htons(port);
 
-    local.sin_family = AF_INET; //IPv4
-    local.sin_addr.s_addr = inet_addr("127.0.0.1"); //INADDR_ANY
-    local.sin_port = htons(port);
-
-    if ( bind(sockfd, (const struct sockaddr *)&local, sizeof(local)) < 0 ) {
+    if ( bind(sockfd, (const struct sockaddr *)&connection, sizeof(connection)) < 0 ) {
       std::cout<<"Bind Failed"<<std::endl;
       return false;
     }
 
-    std::cout<<"Hosting on port "<<port<<std::endl;
+    std::cout<<"Listening on "<<port<<std::endl;
     return true;
   }
 
@@ -38,23 +35,22 @@ public:
       return false;
     }
 
-    memset(&local, 0, sizeof(local));
-    memset(&target, 0, sizeof(target));
+    memset(&connection, 0, sizeof(connection));
 
-    target.sin_family       = AF_INET;                      // IPv4
-    target.sin_addr.s_addr  = inet_addr(address.c_str());   //INADDR_ANY;
-    target.sin_port         = htons(port);
+    connection.sin_family       = AF_INET;                      // IPv4
+    connection.sin_addr.s_addr  = inet_addr(address.c_str());   //INADDR_ANY;
+    connection.sin_port         = htons(port);
 
-    std::cout<<"Connecting to "<<address<<":"<<port<<std::endl;
+    std::cout<<"Communicating with "<<address<<":"<<port<<std::endl;
     return true;
   }
 
   void send(Buffer* buf, sockaddr_in addr){
-    sendto(sockfd, (char *)buf->raw, buf->max, MSG_CONFIRM, (const struct sockaddr *) &addr, sizeof(addr));
+    sendto(sockfd, (char *)buf->raw, buffer::max, MSG_CONFIRM, (const struct sockaddr *) &addr, sizeof(addr));
   }
 
   int receive(Buffer* buf, sockaddr_in& addr){
     len = sizeof(addr);
-    return recvfrom(sockfd, (char *)buf->raw, buf->max, MSG_DONTWAIT, (struct sockaddr *) &addr, &len);
+    return recvfrom(sockfd, (char *)buf->raw, buffer::max, MSG_DONTWAIT, (struct sockaddr *) &addr, &len);
   }
 };

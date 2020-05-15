@@ -3,7 +3,7 @@
 
 int main( int argc, char* args[] ) {
 
-	Tiny::init("Shader Effects Example", 1000, 1000);
+	Tiny::window("Shader Effects Example", 1000, 1000);
 
 	Tiny::event.handler = [](){ /* ... */ };
 

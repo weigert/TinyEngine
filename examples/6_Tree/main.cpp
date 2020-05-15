@@ -5,7 +5,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.lineWidth = 1.0f;
 
-	Tiny::init("Procedural Tree", WIDTH, HEIGHT);
+	Tiny::window("Procedural Tree", WIDTH, HEIGHT);
 	Tiny::event.handler = eventHandler;
 	Tiny::view.interface = interfaceFunc;
 

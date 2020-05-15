@@ -3,7 +3,7 @@
 int main( int argc, char* args[] ) {
 
 	//Initialize a Window
-	Tiny::init("Example Window", 600, 400);
+	Tiny::window("Example Window", 600, 400);
 
 	//Add the Event Handler
 	Tiny::event.handler = [&](){

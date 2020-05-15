@@ -5,7 +5,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.vsync = false;
 
-	Tiny::init("Cellular Automata Example", 1200, 800);
+	Tiny::window("Cellular Automata Example", 1200, 800);
 
 	Tiny::event.handler = eventHandler;
 

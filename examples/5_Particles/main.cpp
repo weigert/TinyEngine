@@ -4,7 +4,7 @@
 int main( int argc, char* args[] ) {
 
 	//Launch the Window
-	Tiny::init("Particle System", WIDTH, HEIGHT);
+	Tiny::window("Particle System", WIDTH, HEIGHT);
 
 	//Add an Event Handler for camera movement
 	Tiny::event.handler = eventHandler;

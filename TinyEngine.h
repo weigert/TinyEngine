@@ -49,6 +49,9 @@ using slist = std::initializer_list<std::string>;
 #include "include/utility/billboard.cpp"
 #include "include/utility/model.cpp"
 
+//Requires Models
+#include "include/helpers/object.h"
+
 //Utility Classes for Network
 #include "include/network/buffer.cpp"
 #include "include/network/socket.cpp"
@@ -78,6 +81,11 @@ bool window(std::string windowName, int width, int height){
     printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
     return false;
   }
+
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
   //Initialize SDL_Image
   if( !( IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG ) ){

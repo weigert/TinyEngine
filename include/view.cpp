@@ -28,6 +28,8 @@ bool View::init(std::string _name, int _width, int _height){
   WIDTH = _width;
   HEIGHT = _height;
 
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
   //Initialize the Window and Context
   gWindow = SDL_CreateWindow(_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
   if( gWindow == NULL ){

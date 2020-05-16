@@ -26,6 +26,7 @@ public:
   void use();                   //Use the program
 
   template<typename T> void uniform(std::string name, const T u);
+  template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
 };
 
 void Shader::setup(std::string vs, std::string fs){
@@ -110,8 +111,12 @@ std::string Shader::readGLSLFile(std::string file, int32_t &size){
 
 template<typename T>
 void Shader::uniform(std::string name, T u){
-  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl;
+  std::cout<<"Error: Data type not recognized for uniform "<<name<<std::endl;
 };
+
+template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]){
+  std::cout<<"Error: Data type not recognized for uniform "<<name<<std::endl;
+}
 
 template<> void Shader::uniform(std::string name, const bool u){
   glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), u);
@@ -138,6 +143,14 @@ template<> void Shader::uniform(std::string name, const glm::vec3 u){
 }
 
 template<> void Shader::uniform(std::string name, const glm::vec4 u){
+  glUniform4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
+}
+
+template<> void Shader::uniform(std::string name, const float (&u)[3]){
+  glUniform3fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
+}
+
+template<> void Shader::uniform(std::string name, const float (&u)[4]){
   glUniform4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
 }
 

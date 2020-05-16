@@ -6,24 +6,24 @@ uniform sampler2D imageTexture;
 
 float size = 100.0f;
 
-vec4 live = vec4(0.0, 0.0, 0.0, 1.0);
-vec4 dead = vec4(1.0, 1.0, 1.0, 1.0);
+vec3 live = vec3(0.0, 0.0, 0.0);
+vec3 dead = vec3(1.0, 1.0, 1.0);
 
 //Conways Game of Life
-vec4 rule(){
+vec3 rule(){
   //Self
-  bool s = (texture(imageTexture, ex_Tex) == live);
+  bool s = (texture(imageTexture, ex_Tex).xyz == live);
 
   //Neighbors
   int n = 0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2( 1, 0)) == live)?1:0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2(-1, 0)) == live)?1:0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2( 0, 1)) == live)?1:0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2( 0,-1)) == live)?1:0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2( 1, 1)) == live)?1:0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2(-1,-1)) == live)?1:0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2(-1, 1)) == live)?1:0;
-  n += (textureOffset(imageTexture, ex_Tex, ivec2( 1,-1)) == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2( 1, 0)).xyz == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2(-1, 0)).xyz == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2( 0, 1)).xyz == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2( 0,-1)).xyz == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2( 1, 1)).xyz == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2(-1,-1)).xyz == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2(-1, 1)).xyz == live)?1:0;
+  n += (textureOffset(imageTexture, ex_Tex, ivec2( 1,-1)).xyz == live)?1:0;
 
   //Rule
   if(s && (n == 2 || n == 3)) return live;
@@ -32,5 +32,5 @@ vec4 rule(){
 }
 
 void main(){
-  fragColor = rule();
+  fragColor = vec4(rule(), 1.0);
 }

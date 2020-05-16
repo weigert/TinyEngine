@@ -20,12 +20,12 @@ int main( int argc, char* args[] ) {
 	addLeaves(&particle);
 	particle.update();
 
-	//Setup a Texture to Draw
-	Texture tex(image::load("leaf.png"));
+	Texture tex;
+	tex.raw<GL_TEXTURE_2D>(image::load("leaf.png"));
 
 	//Setup the Particle Shader
-	Shader particleShader("shader/particle.vs", "shader/particle.fs", {"in_Quad", "in_Tex", "in_Model"});
-	Shader defaultShader("shader/default.vs", "shader/default.fs", {"in_Position", "in_Normal"});
+	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
+	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 
@@ -56,9 +56,7 @@ int main( int argc, char* args[] ) {
 
 		if(drawleaf){
 			particleShader.use();
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, tex.texture);
-			particleShader.uniform("spriteTexture", 0);
+			particleShader.texture("spriteTexture", tex.texture);
 			particleShader.uniform("projectionCamera", projection*camera);
 			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 

@@ -1,9 +1,10 @@
 class Shader{
 public:
-  Shader(std::string vs, std::string fs, slist _list){
-    setup(vs, fs);        //Setup the Shader
-    for(auto &n : _list)  //Add all Attributes of Shader
-      addInput(&n-_list.begin(), n);
+  template<typename... Args>
+  Shader(slist shaders, slist inputs){
+    setup(shaders);        //Setup the Shader
+    for(auto &n : inputs)  //Add all Attributes of Shader
+      addInput(&n - inputs.begin(), n);
     link();
   };
 
@@ -14,9 +15,10 @@ public:
   }
 
   GLuint shaderProgram;   //Shader Program ID
-  GLuint vertexShader, fragmentShader;
+  GLuint vertexShader, geometryShader, fragmentShader;
+  int boundtextures;
 
-  void setup(std::string vs, std::string fs);
+  void setup(slist shaders);
   void addInput(int pos, std::string attrName);
   void cleanup();
   int  addProgram(std::string fileName, GLenum shaderType);  //General Shader Addition
@@ -25,16 +27,27 @@ public:
   void link();                  //Link the entire program
   void use();                   //Use the program
 
+  void texture(std::string name, const GLuint tex); //Bind Texture
   template<typename T> void uniform(std::string name, const T u);
   template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
 };
 
-void Shader::setup(std::string vs, std::string fs){
+void Shader::setup(slist _s){
   shaderProgram = glCreateProgram();  //Generate Shader
 
   boost::filesystem::path data_dir(boost::filesystem::current_path());
-  vertexShader   = addProgram((data_dir/vs).string(), GL_VERTEX_SHADER);
-  fragmentShader = addProgram((data_dir/fs).string(), GL_FRAGMENT_SHADER);
+  std::vector<std::string> s = _s;
+
+  if(s.size() == 2){
+    vertexShader   = addProgram((data_dir/s[0]).string(), GL_VERTEX_SHADER);
+    fragmentShader = addProgram((data_dir/s[1]).string(), GL_FRAGMENT_SHADER);
+  }
+  else if(s.size() == 3){
+    vertexShader   = addProgram((data_dir/s[0]).string(), GL_VERTEX_SHADER);
+    geometryShader = addProgram((data_dir/s[1]).string(), GL_GEOMETRY_SHADER);
+    fragmentShader = addProgram((data_dir/s[2]).string(), GL_FRAGMENT_SHADER);
+  }
+  else std::cout<<"Number of shaders not recognized."<<std::endl;
 }
 
 int Shader::addProgram(std::string fileName, GLenum shaderType){
@@ -87,6 +100,7 @@ void Shader::link(){
 }
 
 void Shader::use(){
+  boundtextures = 0;
   glUseProgram(shaderProgram);
 }
 
@@ -111,12 +125,14 @@ std::string Shader::readGLSLFile(std::string file, int32_t &size){
 
 template<typename T>
 void Shader::uniform(std::string name, T u){
-  std::cout<<"Error: Data type not recognized for uniform "<<name<<std::endl;
-};
-
-template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]){
-  std::cout<<"Error: Data type not recognized for uniform "<<name<<std::endl;
+  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl;
 }
+
+template<typename T, size_t N>
+void Shader::uniform(std::string name, const T (&u)[N]){
+  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl;
+}
+
 
 template<> void Shader::uniform(std::string name, const bool u){
   glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), u);
@@ -142,15 +158,15 @@ template<> void Shader::uniform(std::string name, const glm::vec3 u){
   glUniform3fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
 }
 
-template<> void Shader::uniform(std::string name, const glm::vec4 u){
-  glUniform4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
-}
-
 template<> void Shader::uniform(std::string name, const float (&u)[3]){
   glUniform3fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
 }
 
 template<> void Shader::uniform(std::string name, const float (&u)[4]){
+  glUniform4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
+}
+
+template<> void Shader::uniform(std::string name, const glm::vec4 u){
   glUniform4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, &u[0]);
 }
 
@@ -160,4 +176,17 @@ template<> void Shader::uniform(std::string name, const glm::mat3 u){
 
 template<> void Shader::uniform(std::string name, const glm::mat4 u){
   glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, &u[0][0]);
+}
+
+template<> void Shader::uniform(std::string name, const std::vector<glm::mat4> u){
+  glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), u.size(), GL_FALSE, &u[0][0][0]);
+}
+
+/* Texure Setter */
+
+void Shader::texture(std::string name, const GLuint tex){
+  glActiveTexture(GL_TEXTURE0+boundtextures);
+  glBindTexture(GL_TEXTURE_2D, tex);
+  uniform(name, boundtextures);
+  boundtextures++;
 }

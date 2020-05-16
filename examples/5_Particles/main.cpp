@@ -26,11 +26,9 @@ int main( int argc, char* args[] ) {
 	}
 	particle.update();
 
-	//Setup a Texture to Draw
-	Texture tex(image::load("dot.png"));
-
-	//Setup the Particle Shader
-	Shader particleShader("shader/particle.vs", "shader/particle.fs", {"in_Quad", "in_Tex", "in_Model"});
+	Texture tex;
+	tex.raw<GL_TEXTURE_2D>(image::load("dot.png"));
+	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
 
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 

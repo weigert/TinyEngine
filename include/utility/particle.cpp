@@ -1,56 +1,23 @@
 class Particle{
 public:
   Particle(){       //Construct from an SDL Surface
-    setup();
+    glGenBuffers(1, &instance);
   };
 
   ~Particle(){
-    cleanup();
+    glDeleteBuffers(1,  &instance);
   }
 
-  GLuint vao, vbo[2], instance;
+  Primitive<SQUARE3D> raw;          //3D Particle System
 
-  void setup();
-  void update();
-  void cleanup();
-
-  const GLfloat vert[12] = {-1.0, -1.0,  0.0,
-                            -1.0,  1.0,  0.0,
-                             1.0, -1.0,  0.0,
-                             1.0,  1.0,  0.0};
-
-  const GLfloat tex[8]  = { 0.0,  1.0,
-                            0.0,  0.0,
-                            1.0,  1.0,
-                            1.0,  0.0};
-
+  GLuint instance;
   std::vector<glm::mat4> models;    //Positions Container
+  void update();
   void render();                    //Render to target
 };
 
-void Particle::setup(){
-  //Setup the VAO
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-
-  //Setup the VBOs
-  glGenBuffers(2, &vbo[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-  glBufferData(GL_ARRAY_BUFFER, 12*sizeof(GLfloat), &vert[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-  glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat), &tex[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-  //Setup Instance VBO
-  glGenBuffers(1, &instance);
-}
-
 void Particle::update(){
-  glBindVertexArray(vao);
+  glBindVertexArray(raw.vao);
   glBindBuffer(GL_ARRAY_BUFFER, instance);
   glBufferData(GL_ARRAY_BUFFER, models.size()*sizeof(glm::mat4), &models[0], GL_STATIC_DRAW);
 
@@ -70,15 +37,7 @@ void Particle::update(){
   glVertexAttribDivisor(5, 1);
 }
 
-void Particle::cleanup(){
-  //Delete Textures and VAO
-  glDisableVertexAttribArray(vao);
-  glDeleteBuffers(2, vbo);
-  glDeleteBuffers(1,  &instance);
-  glDeleteVertexArrays(1, &vao);
-}
-
 void Particle::render(){
-  glBindVertexArray(vao);
+  glBindVertexArray(raw.vao);
   glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, models.size());
 }

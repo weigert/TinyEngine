@@ -11,6 +11,8 @@ int main( int argc, char* args[] ) {
 
 	logger::prog = "Chat Server";
 
+	buffer::check();
+
 	Tiny::net.handler["PONG"] = [&](Message m){
 		timer::stop();
 		int latency = timer::time<std::chrono::microseconds>();
@@ -19,14 +21,14 @@ int main( int argc, char* args[] ) {
 
 	Tiny::net.handler["CONNECT"] = [&](Message m){
 		std::string name;
-		buffer::decode(m.b->raw, name);
+		buffer::decode(m.b, name);
 		logger::write(name, "connected");
 	};
 
 	Tiny::net.handler["MSG"] = [&](Message m){
 		std::string name;
 		std::string msg;
-		buffer::decode(m.b->raw, name, msg);
+		buffer::decode(m.b, name, msg);
 		std::cout<<"["<<name<<"] "<<msg<<std::endl;
 	};
 
@@ -36,7 +38,7 @@ int main( int argc, char* args[] ) {
 	Tiny::net.connect(ipaddress);
 
 	//Connection Request
-	buffer::encode(buf->raw, "CONNECT", username);
+	buffer::encode(buf, "CONNECT", username);
 	Tiny::net.sock.send(buf, Tiny::net.server);
 
 	std::string _input;
@@ -46,13 +48,14 @@ int main( int argc, char* args[] ) {
 	while(true){
 
 		if(input::read(_input)){ //Asynchronous Read
-			if(_input == "/PING"){
-				buffer::encode(buf->raw, "PING");
+			buf->flush();
+			if(_input == "/ping"){
+				buffer::encode(buf, "PING");
 				Tiny::net.sock.send(buf, Tiny::net.server);
 				timer::start();
 			}
 			else{
-				buffer::encode(buf->raw, "MSG", username, _input);
+				buffer::encode(buf, "MSG", username, _input);
 				Tiny::net.sock.send(buf, Tiny::net.server);
 			}
 		}

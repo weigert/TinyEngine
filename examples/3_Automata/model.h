@@ -16,10 +16,8 @@ void setup(){
 std::function<void()> eventHandler = [&](){
 
   // Pause and Unpause
-  if(!Tiny::event.keys.empty()){
-    if(Tiny::event.keys.back().key.keysym.sym == SDLK_p){
+  if(!Tiny::event.press.empty())
+    if(Tiny::event.press.back() == SDLK_p)
       paused = !paused;
-    }
-  }
 
 };

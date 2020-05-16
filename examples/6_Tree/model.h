@@ -51,40 +51,36 @@ void setup(){
 // Event Handler
 std::function<void()> eventHandler = [&](){
 
-  if(!Tiny::event.scroll.empty()){
-
-    if(Tiny::event.scroll.back().wheel.y > 0.99){
-      zoom /= zoomInc;
-      projection = glm::ortho(-(float)WIDTH*zoom, (float)WIDTH*zoom, -(float)HEIGHT*zoom, (float)HEIGHT*zoom, -800.0f, 500.0f);
-    }
-    else if(Tiny::event.scroll.back().wheel.y < -0.99){
-      zoom *= zoomInc;
-      projection = glm::ortho(-(float)WIDTH*zoom, (float)WIDTH*zoom, -(float)HEIGHT*zoom, (float)HEIGHT*zoom, -800.0f, 500.0f);
-    }
-    else if(Tiny::event.scroll.back().wheel.x < -0.8){
-      rotation += 1.5f;
-      camera = glm::rotate(camera, glm::radians(1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
-    }
-    else if(Tiny::event.scroll.back().wheel.x > 0.8){
-      rotation -= 1.5f;
-      camera = glm::rotate(camera, glm::radians(-1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
-    }
-
-    //Adjust Stuff
+  if(Tiny::event.scroll.posy){
+    zoom /= zoomInc;
+    projection = glm::ortho(-(float)WIDTH*zoom, (float)WIDTH*zoom, -(float)HEIGHT*zoom, (float)HEIGHT*zoom, -800.0f, 500.0f);
+  }
+  if(Tiny::event.scroll.negy){
+    zoom *= zoomInc;
+    projection = glm::ortho(-(float)WIDTH*zoom, (float)WIDTH*zoom, -(float)HEIGHT*zoom, (float)HEIGHT*zoom, -800.0f, 500.0f);
+  }
+  if(Tiny::event.scroll.posx){
+    rotation += 1.5f;
     if(rotation < 0.0) rotation = 360.0 + rotation;
     else if(rotation > 360.0) rotation = rotation - 360.0;
-    camera = glm::rotate(glm::lookAt(cameraPos, lookPos, glm::vec3(0,1,0)), glm::radians(rotation), glm::vec3(0,1,0));
+    camera = glm::rotate(camera, glm::radians(1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+  }
+  if(Tiny::event.scroll.negx){
+    rotation -= 1.5f;
+    if(rotation < 0.0) rotation = 360.0 + rotation;
+    else if(rotation > 360.0) rotation = rotation - 360.0;
+    camera = glm::rotate(camera, glm::radians(-1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
   }
 
   //Pause Toggle
-  if(!Tiny::event.keys.empty()){
-    if(Tiny::event.keys.back().key.keysym.sym == SDLK_p)
+  if(!Tiny::event.press.empty()){
+    if(Tiny::event.press.back() == SDLK_p)
       paused = !paused;
-    else if(Tiny::event.keys.back().key.keysym.sym == SDLK_a)
+    else if(Tiny::event.press.back() == SDLK_a)
       autorotate = !autorotate;
 
     //Regrow
-    else if(Tiny::event.keys.back().key.keysym.sym == SDLK_r){
+    else if(Tiny::event.press.back() == SDLK_r){
       Branch* newroot = new Branch(root, true);
       delete(root);
       root = newroot;

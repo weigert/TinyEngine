@@ -11,8 +11,6 @@ int main( int argc, char* args[] ) {
 
 	logger::prog = "Chat Server";
 
-	buffer::check();
-
 	Tiny::net.handler["PONG"] = [&](Message m){
 		timer::stop();
 		int latency = timer::time<std::chrono::microseconds>();

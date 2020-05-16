@@ -93,6 +93,7 @@ std::function<void(Model* m)> _construct = [&](Model* h){
       h->indices.push_back(h->positions.size()/3+0);
       h->indices.push_back(h->positions.size()/3+1);
       h->indices.push_back(h->positions.size()/3+2);
+      h->indices.push_back(h->positions.size()/3+0);
 
       h->positions.push_back(a.x);
       h->positions.push_back(a.y);
@@ -116,6 +117,7 @@ std::function<void(Model* m)> _construct = [&](Model* h){
       h->indices.push_back(h->positions.size()/3+0);
       h->indices.push_back(h->positions.size()/3+1);
       h->indices.push_back(h->positions.size()/3+2);
+      h->indices.push_back(h->positions.size()/3+0);
 
       h->positions.push_back(d.x);
       h->positions.push_back(d.y);

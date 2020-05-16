@@ -16,12 +16,11 @@ int main( int argc, char* args[] ) {
 	Model treemesh(_construct);														//Construct a Mesh
 
 	//Leaves as Particles
-	Particle particle;
-	addLeaves(&particle);
-	particle.update();
+	Square3D flat;															//Geometry for Particle System
+	Particle particle(&flat);										//Make Particle System
+	addLeaves<Square3D>(&particle);							//Generate the model matrices
 
-	Texture tex;
-	tex.raw<GL_TEXTURE_2D>(image::load("leaf.png"));
+	Texture tex(image::load("leaf.png"));
 
 	//Setup the Particle Shader
 	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
@@ -65,7 +64,7 @@ int main( int argc, char* args[] ) {
 			particleShader.uniform("lightDir", lookPos - glm::vec3(250.0));
 			particleShader.uniform("lightStrength", 0.8f);
 
-			particle.render(); //Render Particle System
+			particle.render(GL_TRIANGLE_STRIP); //Render Particle System
 		}
 	};
 
@@ -82,7 +81,7 @@ int main( int argc, char* args[] ) {
 
 		//Update Rendering Structures
 		treemesh.construct(_construct);
-		addLeaves(&particle);
+		addLeaves<Square3D>(&particle);
 		particle.update();
 
 	});

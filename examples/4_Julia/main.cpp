@@ -11,8 +11,7 @@ int main( int argc, char* args[] ) {
 	Tiny::event.handler  = eventHandler;
 	Tiny::view.interface = interfaceFunc;
 
-	Target<GL_TEXTURE_2D> field(SIZE, SIZE, false); //Render target (2d texture)
-	Primitive<SQUARE2D> flat;												//Flat geometry primitive
+	Square2D flat;												//Flat geometry primitive
 	Shader julia({"shader/julia.vs", "shader/julia.fs"}, {"in_Quad", "in_Tex"});
 
 	//Render Pipeline
@@ -21,9 +20,7 @@ int main( int argc, char* args[] ) {
 		//Target screen for drawing
 		Tiny::view.target(color::black);
 
-		//Setup textures and shader uniforms
 		julia.use();
-		julia.texture("imageTexture", field.texture.texture);
 		julia.uniform("maxiter", res);
 		julia.uniform("radius", radius);
 		julia.uniform("zoom", zoom);

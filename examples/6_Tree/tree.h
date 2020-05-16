@@ -221,7 +221,8 @@ double hashrand(int i){
 }
 
 //Construct Leaf Particle System from Tree Data
-std::function<void(Particle*)> addLeaves = [&](Particle* p){
+template<typename T>
+std::function<void(Particle<T>*)> addLeaves = [&](Particle<T>* p){
   p->models.clear();
 
   //Explore the Tree and Add Leaves!
@@ -253,4 +254,5 @@ std::function<void(Particle*)> addLeaves = [&](Particle* p){
   };
 
   addLeaf(root, glm::vec3(0.0));
+  p->update();
 };

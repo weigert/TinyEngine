@@ -9,14 +9,8 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.interface = interfaceFunc;
 
-	//Create Render Target and load raw image data into the texture
-	Target<GL_TEXTURE_2D> board(1200, 800, false);
-	board.texture.raw<GL_TEXTURE_2D>(image::load("canyon.png"));
-
-	//Create a flat model primitive for drawing the billboard to screen
-	Primitive<SQUARE2D> flat;
-
-	//Load our effect shader and set the inputs of the shader
+	Texture tex(image::load("canyon.png"));
+	Square2D flat;
 	Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
 
 	//Render Pipeline
@@ -31,7 +25,7 @@ int main( int argc, char* args[] ) {
 		effect.uniform("bits", bits);
 
 		//Load the Texture
-		effect.texture("imageTexture", board.texture.texture);
+		effect.texture("imageTexture", tex.texture);
 
 		//Render the shader using our flat geometry
 		effect.uniform("model", flat.model);

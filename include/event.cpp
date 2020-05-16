@@ -16,7 +16,7 @@ public:
   void input();                   //Take inputs and add them to stack
 
   void handle(View &view);        //General Event Handler
-  Handle handler;                 //User defined event Handler
+  Handle handler = [](){};        //User defined event Handler
 
   bool fullscreenToggle = false;
 

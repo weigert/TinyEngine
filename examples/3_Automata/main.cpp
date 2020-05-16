@@ -14,14 +14,12 @@ int main( int argc, char* args[] ) {
 	//Setup Model Data
 	setup();
 
-	//Utility Classes
-	Target<GL_TEXTURE_2D> field(600, 400, false); //Render target for automata
-	field.texture.raw<GL_TEXTURE_2D>(image::make<int>(glm::vec2(600, 400), data, [](int t){
+	Billboard target(image::make<int>(glm::vec2(600, 400), data, [](int t){
 		if(t == 0) return glm::vec4(1.0, 1.0, 1.0, 1.0);
 		else return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	}));
 
-	Primitive<SQUARE2D> flat;
+	Square2D flat;
 
 	//Shader for drawing billboard to screen and for doing an automata step
 	Shader shader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
@@ -32,11 +30,10 @@ int main( int argc, char* args[] ) {
 
 		if(!paused){
 
-			//Render Billboard to Self for Automata Pass
-			field.target();				//Render Target
+			target.target();
 
 			automata.use();				//Use the Automata Shader
-			automata.texture("imageTexture", field.texture.texture);
+			automata.texture("imageTexture", target.texture.texture);
 			automata.uniform("model", flat.model);
 
 			flat.render();										//Render Field to Self
@@ -47,10 +44,11 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(color::black);
 
 		shader.use(); 										//Setup Shader
-		shader.texture("imageTexture", field.texture.texture);
+		shader.texture("imageTexture", target.texture.texture);
 		shader.uniform("model", flat.model);
 
 		flat.render();										//Render Objects
+
 	};
 
 	Tiny::loop([&](){

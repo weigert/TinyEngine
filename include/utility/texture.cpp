@@ -1,82 +1,66 @@
+class Texture;
+using tfunc = std::function<void(Texture*)>;
+
 class Texture{
 public:
-  Texture(){       //Only construct (empty texture)
-    glGenTextures( 1, &texture );
+  Texture(){ glGenTextures( 1, &texture ); };
+  Texture(SDL_Surface* s):Texture(){ raw(s); };
+  Texture(int W, int H, bool d = false):Texture(){
+    if(!d) empty(W, H);
+    else depth(W, H);
   };
 
   ~Texture(){
     glDeleteTextures(1, &texture);
   }
 
+  static tfunc parameter;
   GLuint texture;
+  GLenum type = GL_TEXTURE_2D;
 
-  template<GLenum T>
-  void raw(SDL_Surface* TextureImage){
-    std::cout<<"Texture format not recognized."<<std::endl;
+  void empty(int WIDTH, int HEIGHT, tfunc param = parameter){
+    glBindTexture( type, texture );
+    glTexImage2D(type, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    (param)(this);
   }
-  template<GLenum T>
-  void empty(int WIDTH, int HEIGHT){
-    std::cout<<"Texture format not recognized."<<std::endl;
+
+  void depth(int WIDTH, int HEIGHT, tfunc param = parameter){
+    glBindTexture( type, texture );
+    glTexImage2D(type, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    (param)(this);
   }
-  template<GLenum T>
-  void depth(int WIDTH, int HEIGHT){
-    std::cout<<"Texture format not recognized."<<std::endl;
+
+  void raw(SDL_Surface* s, tfunc param = parameter){
+    glBindTexture( type, texture );
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexImage2D(type, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
+    (param)(this);
   }
 };
 
-template<> void Texture::empty<GL_TEXTURE_2D>(int WIDTH, int HEIGHT){
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-}
-
-template<> void Texture::empty<GL_TEXTURE_CUBE_MAP>(int WIDTH, int HEIGHT){
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-  for(unsigned int i = 0; i < 6; i++)
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-}
-
-template<> void Texture::depth<GL_TEXTURE_2D>(int WIDTH, int HEIGHT){
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+tfunc Texture::parameter = [](Texture* t){
+  glTexParameteri(t->type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(t->type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(t->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(t->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexParameteri(t->type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 };
 
-template<> void Texture::depth<GL_TEXTURE_CUBE_MAP>(int WIDTH, int HEIGHT){
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+class Cubetexture: public Texture{
+public:
+  GLenum type = GL_TEXTURE_CUBE_MAP;
 
-  for(unsigned int i = 0; i < 6; i++)
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  void empty(int WIDTH, int HEIGHT, tfunc param = parameter){
+    glBindTexture(type, texture);
+    for(unsigned int i = 0; i < 6; i++)
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    (param)(this);
+  }
 
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  void depth(int WIDTH, int HEIGHT, tfunc param = parameter){
+    glBindTexture(type, texture);
+    for(unsigned int i = 0; i < 6; i++)
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    (param)(this);
+  };
 };
-
-template<> void Texture::raw<GL_TEXTURE_2D>(SDL_Surface* s){
-  glBindTexture( GL_TEXTURE_2D, texture );
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-}
-
-template<> void Texture::raw<GL_TEXTURE_CUBE_MAP>(SDL_Surface* s){
-  glBindTexture( GL_TEXTURE_CUBE_MAP, texture );
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-}

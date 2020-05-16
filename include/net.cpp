@@ -40,13 +40,19 @@ public:
 };
 
 bool Net::host(){
-  if(!sock.host(port)) return false;
+  if(!sock.open(INADDR_ANY, port))
+    return false;
+  if(!sock.sockbind())
+    return false;
+
   listen();
   return true;
 }
 
 bool Net::connect(std::string address){
-  if(!sock.connect(address, port)) return false;
+  if(!sock.open(inet_addr(address.c_str()), port))
+    return false;
+
   server = sock.connection;
   listen();
   return true;

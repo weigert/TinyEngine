@@ -1,18 +1,20 @@
 # TinyEngine
-Small OpenGL3 based 3D Engine / Wrapper in C++
+Small OpenGL3 based 3D Engine / Wrapper in C++ with Networking
 
 ![Rendering Example Program](banner.png)
 
 	LINES OF CODE (without unreasonable compression):
-		Main File: 106
-		Main Classes: 258
-		Utility Classes: 546
-		Helpers Namespaces: 206
-		Total: 1116
+		Main File: 150
+		Main Classes: 383
+		Utility Classes: 544
+		Network Classes: 104
+		Helpers Namespaces: 486
+		Total: 1667
 
 	History:
 		12. April 2020: 885
 		29. April 2020: 1116
+		17. May 2020: 1667
 
 ## Description
 Based on many previous OpenGL3 projects, I have a very good idea of what features I need in an engine to build visually appealing 3D visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -29,28 +31,39 @@ If anybody likes the structure, they are free to adopt it or recommended additio
 Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/2020/04/14/animated-multi-julia-sets/).
 
 ## Structure
-The engine consists of three main components:
-  - View Class: Window handling and rendering.
-  - Event Class: Event handling for keyboard and mouse.
-  - Audio Class: Audio interface for playing / looping sounds.
+The engine consists of four main components:
+  - View Class: 	Window handling and rendering.
+  - Event Class: 	Event handling for keyboard and mouse.
+  - Audio Class: 	Audio interface for playing / looping sounds.
+  - Net Class:		Networking interface for sending and receiving data packages
 
-A number of utility classes allow for simple integration of typical OpenGL behavior:
-  - Shader: Load, compile, link and use shader programs easily.
-  - Model: 3D model wrapper. Construct using user-defined function. Handles updating, rendering and movement.
-  - Sprite: 2D texture wrapper. Handles loading from images, updating, rendering.
-  - Billboard: FBO render target wrapper, easy targeting for drawing and rendering.
+A number of utility classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
+
+  - Texture: Depth and / or color components. Construct as empty, from raw surface data or raw data using an algorithm.
+  - Shader: Load, compile, link and use shader programs easily (vertex, fragment, geometry)
+  - Model: Model data wrapper. Construct using user-defined function. Handles data loading / updating, rendering, movement.
+  - Target: Lets you bind a texture for render targeting (FBO wrapper). 2D (billboards) and 3D (cubemaps).
+  - Particle: Instanced rendering wrapper. Lets you push a bunch of model matrices and then instance render any model.
  
 The behavior is combined through a standard game pipeline. Applications can define functions that are executed in certain parts of the pipeline. These include:
+
   - User defined event-handler: Can read inputs from the event class and execute arbitrary code.
   - User defined render-pipeline: Combines all of the utility classes to draw to the window, however you like.
   - User defined graphical interface: Can create an ImGUI window and read from / act on your data structures.
   - User defined game loop: Executed every cycle. Arbitrary code acting on your data structures.
+  - User defined network event-handlers: Based on messages received via the network interface, execute code
 
 A number of helper namespaces then supply additional algorithms and functions that are useful:
-  - timer: Benchmarking and code execution on a timed cycle in a separate thread.
+  - timer: Benchmarking and code execution on a timed cycle in a separate thread
+  - ease: A few ease functions
+  - input: Asynchronous (i.e. non-blocking) console input
+  - log: Logging helper for debugging
+  - object: Load .obj and .mtl files into the model utility class
+  - parse: Command line argument parser
   - image: Loading / saving images from files, constructing textures from raw data using user-defined methods.
   - draw: Pre-made methods for generating textures from raw data.
-  - color: Color helper, with bezier color interpolation from color schemes. Color hashing.
+  - helper: Generally useful functions. Also a hash function for integers to receive a number in the range (0, 1)
+  - color: Color helper, with bezier color interpolation from color schemes
 
 ## Dependencies
 
@@ -77,27 +90,38 @@ Include the main file `TinyEngine.h` and construct the problem as described belo
 Open a window using:
 
     //...
-    Tiny::init("Example Window", 500, 500);
- 
+    Tiny::window("Example Window", 500, 500);
+
 Add an event handler:
 
     //Event Handler
-    Tiny::event.handler = [&](){ /* ... */ };
+    Tiny::event.handler = [&](){ /* ... triggers are in Tiny::event ... */ 
+    	if(Tiny::event.press["SDLK_a"])
+		std::cout<<"A is being pressed!"<<std::endl;
+		
+	//...
+    };
 
 Define a user interface (by default visibility is toggled with ESC):
 
     //Graphical User Interface
-    Tiny::view.interface = [&](){ /* ... */ };
+    Tiny::view.interface = [&](){ /* ... your IMGUI code here... */ 
+    	  ImGui::Begin("Example Interface", NULL, ImGuiWindowFlags_None);
+	  
+	  //...
+	  
+	  ImGui::End();
+    };
 
-Define a rendering pipeline:
+Define a rendering pipeline (after defining your utility classes to be used in the pipeline):
 
     //Rendering Pipeline
-    	Tiny::view.pipeline = [&](){ /* ... */ };
+    Tiny::view.pipeline = [&](){ /* ... */ };
 
 Execute the full game loop with any additional code:
 
     //Execute the render loop
-	  Tiny::loop([&](){
+    Tiny::loop([&](){
 		  //Your additional code here...
     });
     
@@ -108,68 +132,13 @@ Close the program using:
     
 All of these elements can be defined directly using lambdas, or set using functionals. Just make sure context is always available, and it will work. Access the audio interface using `Tiny::audio`. Any additional parameters in the view or event class should be set before opening the window.
 
+See the example programs (they are very brief) to see how a typical program is constructed, and what utility classes are applied.
+
 ### Utility Classes
-Utility classes wrap boilerplate OpenGL behavior. The classes are extremely small, so it is worth reading through their code to understand what they do and how they can be modified for your specific needs. Otherwise, their default constructors are usually sufficient! These classes have a destructor included that deletes all the data inside, so you don't have to.
+Information on how to use the utility classes is given in the Wiki:
 
-Shader:
+[Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
 
-      //Construction
-      Shader shader("vertexshader.vs", "fragmentshader.fs", {"all", "shader", "input", "properties"});
-      
-      //Activation
-      shader.use();
-      
-      //Uniform Setting (fully templated - automatic handling of type)
-      shader.uniform(string name, int value);
-      shader.uniform(string name, glm::vec3 vec);
-      shader.uniform(string name, glm::mat4 mat);
-      //... etc
-      
-Sprite:
-
-      //Construction
-      Sprite sprite(SDL_Surface* s);
-      Sprite sprite(image::load("filename.png"));         //From image
-      Sprite sprite(image::make(size, data, algorithm));  //From algorithm
-      
-      //Updating
-      sprite.update(SDL_Surface* s);
-      
-      //Rendering
-      sprite.render();
-      
-Model:
-
-      //Construction
-      Model model(algorithm); //User-defined construction algorithm
-      
-      //Reconstruct model
-      model.construct(algorithm);
-      
-      //Update buffer data
-      model.update();
-      
-      //Rendering
-      model.render();
-      
-Algorithm is passed as a functional or lambda, that needs to capture the data that the model will be constructed from.
-
-Billboard:
-
-      //Construction
-      Billboard billboard(int width, int height, bool depthOnly);
-      
-      //Targeting
-      billboard.target(vec3 clearcolor); //This billboard ('s FBO) is now the render target
-      
-      //Rendering
-      billboard.render();
-      
-To target the main window again, call:
-
-      //
-      Tiny::view.target(vec3 clearcolor);
-      
 ### Rendering Pipeline
 The rendering pipeline can be constructed in any way, but generally consists of the following steps:
  

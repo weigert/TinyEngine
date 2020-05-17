@@ -1,12 +1,4 @@
-/*
-    Non-Blocking Console Input
-*/
-
-#include <mutex>
-#include <condition_variable>
-#include <termios.h>
-
-namespace input{
+namespace input{ //Non-Blocking Console Input
 
   std::thread iothread;
   std::mutex mutex;
@@ -33,18 +25,12 @@ namespace input{
     dirty = clean;
   }
 
-  //Blocking Input Reading!
-  void in(std::string& tmp) {
-    std::getline(std::cin, tmp);
-    sanitize(tmp);
-  }
-
-  void start(){ //Launch
-
+  void start(){
     iothread = std::thread([&](){
       std::string tmp;
       while (true) {
-        in(tmp);
+        std::getline(std::cin, tmp);
+        sanitize(tmp);
         std::lock_guard lock{mutex};
         lines.push_front(std::move(tmp));
         cv.notify_one();

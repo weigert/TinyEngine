@@ -14,11 +14,9 @@ int main( int argc, char* args[] ) {
 	Square2D flat;												//Flat geometry primitive
 	Shader julia({"shader/julia.vs", "shader/julia.fs"}, {"in_Quad", "in_Tex"});
 
-	//Render Pipeline
 	Tiny::view.pipeline = [&](){
 
-		//Target screen for drawing
-		Tiny::view.target(color::black);
+		Tiny::view.target(color::black);	//Target Screen
 
 		julia.use();
 		julia.uniform("maxiter", res);
@@ -29,8 +27,6 @@ int main( int argc, char* args[] ) {
 		julia.uniform("diverge", glm::vec4(dc[0], dc[1], dc[2], dc[3]));
 		julia.uniform("bias", glm::vec2(bias[0], bias[1]));
 		julia.uniform("offset", glm::vec2(px, py));
-
-		//Render to screen using flat geometry
 		julia.uniform("model", flat.model);
 		flat.render();
 

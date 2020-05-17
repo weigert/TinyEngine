@@ -1,13 +1,6 @@
-/*
-    Basic Command-Line Arguments Extractor
-*/
-
 namespace parse{
 
-  //Ignore the program name as an argumens
-  bool ignoreprog = true;
-
-  /* Recursive Argument Identifier */
+  bool ignoreprog = true; //Ignore Program Name Argument
 
   template <typename T>
   bool arg(char* a, T& t){

@@ -5,12 +5,13 @@ public:
     setup(shaders);        //Setup the Shader
     for(auto &n : inputs)  //Add all Attributes of Shader
       addInput(&n - inputs.begin(), n);
-    link();
+    link();                 //Link the shader program!
   };
 
   ~Shader(){
     glDeleteProgram(shaderProgram);
     glDeleteShader(fragmentShader);
+    glDeleteShader(geometryShader);
     glDeleteShader(vertexShader);
   }
 
@@ -27,7 +28,7 @@ public:
   void link();                  //Link the entire program
   void use();                   //Use the program
 
-  void texture(std::string name, const GLuint tex); //Bind Texture
+  template<typename T> void texture(std::string name, const T& t);
   template<typename T> void uniform(std::string name, const T u);
   template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
 };
@@ -133,7 +134,6 @@ void Shader::uniform(std::string name, const T (&u)[N]){
   std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl;
 }
 
-
 template<> void Shader::uniform(std::string name, const bool u){
   glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), u);
 }
@@ -182,11 +182,10 @@ template<> void Shader::uniform(std::string name, const std::vector<glm::mat4> u
   glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), u.size(), GL_FALSE, &u[0][0][0]);
 }
 
-/* Texure Setter */
-
-void Shader::texture(std::string name, const GLuint tex){
-  glActiveTexture(GL_TEXTURE0+boundtextures);
-  glBindTexture(GL_TEXTURE_2D, tex);
+template<typename T>
+void Shader::texture(std::string name, const T& t){
+  glActiveTexture(GL_TEXTURE0 + boundtextures);
+  glBindTexture(t.type, t.texture);
   uniform(name, boundtextures);
   boundtextures++;
 }

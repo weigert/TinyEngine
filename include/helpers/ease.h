@@ -1,5 +1,3 @@
-/* Ease Function Helper */
-
 namespace ease{
   float sharpen(float t, int n){
     return pow(sin(3.14159265*t/2.0), n);

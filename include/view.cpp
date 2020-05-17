@@ -22,10 +22,10 @@ class View{
     float lineWidth = 1.0f;
 };
 
-bool View::init(std::string _name, int _width, int _height){
-  WIDTH = _width;
-  HEIGHT = _height;
+bool View::init(std::string _name, int W, int H){
+  WIDTH = W; HEIGHT = H;
 
+  //Core OpenGL Profile!
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   //Initialize the Window and Context
@@ -37,23 +37,18 @@ bool View::init(std::string _name, int _width, int _height){
   SDL_SetWindowResizable(gWindow, SDL_TRUE);
   gContext = SDL_GL_CreateContext(gWindow);
 
-  //Initialize OPENGL Stuff
 	SDL_GL_SetSwapInterval(vsync);
-	glewExperimental = GL_TRUE;
+	glewExperimental = GL_TRUE;     //Launch GLEW
 	glewInit();
 
-  //Setup the Guy
-  IMGUI_CHECKVERSION();
+  IMGUI_CHECKVERSION();           //Setup ImGUI
   ImGui::CreateContext();
   io = ImGui::GetIO(); (void)io;
-
   ImGui_ImplSDL2_InitForOpenGL(gWindow, gContext);
-  ImGui_ImplOpenGL3_Init("#version 130");
-
+  ImGui_ImplOpenGL3_Init("#version 330 core");
   ImGui::StyleColorsCustom();
 
-  //Configure Global OpenGL State
-  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);        //Setup Global OpenGL State!
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_BLEND) ;
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -66,7 +61,7 @@ bool View::init(std::string _name, int _width, int _height){
 }
 
 void View::cleanup(){
-  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplOpenGL3_Shutdown();   //Shutdown ImGUI
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
@@ -75,10 +70,9 @@ void View::cleanup(){
 }
 
 void View::render(){
+  (pipeline)();                   //User-Defined Pipeline call
 
-  (pipeline)();               //User-Defined
-
-  if(showInterface)
+  if(showInterface)               //Draw the interface on top
     drawInterface();
 
   SDL_GL_SwapWindow(gWindow); //Update Window
@@ -90,7 +84,7 @@ void View::drawInterface(){
   ImGui::NewFrame();
 
   (interface)();  //Draw user-defined interface
-  //ImGui::ShowDemoWindow();
+  //ImGui::ShowDemoWindow();  //Demo-Window (if you want)
 
   ImGui::Render();
   glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);

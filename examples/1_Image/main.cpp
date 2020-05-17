@@ -9,27 +9,21 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.interface = interfaceFunc;
 
-	Texture tex(image::load("canyon.png"));
-	Square2D flat;
+	Texture tex(image::load("canyon.png"));		//Load Texture with Image
+	Square2D flat;														//Create Primitive Model
 	Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
 
-	//Render Pipeline
 	Tiny::view.pipeline = [&](){
 
-		//Target the screen for drawing, clear color black
-		Tiny::view.target(color::black);
+		Tiny::view.target(color::black);				//Target Main Screen
 
-		effect.use();	//Setup Shader and uniforms
-		effect.uniform("index", ind);
+		effect.use();														//Use Effect Shader
+		effect.uniform("index", ind);						//Define Uniforms
 		effect.uniform("res", res);
 		effect.uniform("bits", bits);
-
-		//Load the Texture
-		effect.texture("imageTexture", tex.texture);
-
-		//Render the shader using our flat geometry
-		effect.uniform("model", flat.model);
-		flat.render(); //Render Sprite
+		effect.texture("imageTexture", tex);		//Load Texture
+		effect.uniform("model", flat.model);		//Add Model Matrix
+		flat.render();													//Render Primitive
 
 	};
 

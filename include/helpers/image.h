@@ -1,5 +1,3 @@
-/* Image Helper - Create Surfaces from Files or Data */
-
 namespace image {
 
   SDL_Surface* load(std::string path){

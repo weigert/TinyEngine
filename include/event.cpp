@@ -1,3 +1,12 @@
+#include <unordered_map>
+
+struct Scroll{
+  bool posx, posy, negx, negy;
+  void reset(){
+    posx = posy = negx = negy = false;
+  }
+};
+
 class Event{
 private:
   SDL_Event in;
@@ -7,79 +16,107 @@ public:
   void input();                   //Take inputs and add them to stack
 
   void handle(View &view);        //General Event Handler
-  Handle handler;                 //User defined event Handler
+  Handle handler = [](){};        //User defined event Handler
 
   bool fullscreenToggle = false;
 
-  std::deque<SDL_Event> keys;
-  bool keyEventTrigger = false;
-  std::deque<SDL_Event> scroll;  //Scrolling Motion Inputs
+  //Keyboard Events
+  std::unordered_map<SDL_Keycode, bool> active;
+  std::deque<SDL_Keycode> press;
+
+  //Movement Events
+  bool mousemove = false;
+  SDL_MouseMotionEvent mouse;
+
+  //Clicking Events
+  std::unordered_map<Uint8, bool> clicked;  //Active Buttons
+  std::deque<Uint8> click;                  //Button Events
+
+  Scroll scroll;
   SDL_Event windowEvent;         //Window Resizing Event
   bool windowEventTrigger = false;
-  SDL_Event mouseEvent;          //Mouse Click Event
-  bool mouseEventTrigger = false;
-  SDL_Event moveEvent;           //Mouse Movement Events
-  bool moveEventTrigger = false;
 };
 
 void Event::input(){
   if(SDL_PollEvent(&in) == 0) return;
-
-  if(in.type == SDL_QUIT) quit = true;
   ImGui_ImplSDL2_ProcessEvent(&in);
 
-  if(in.type == SDL_KEYUP){
-    if(in.key.keysym.sym == SDLK_F11) fullscreenToggle = true;
-    else keys.push_front(in);
-    return;
-  }
-
-  if(in.type == SDL_MOUSEWHEEL){
-    scroll.push_front(in);
-    return;
-  }
-
-  if(in.type == SDL_MOUSEBUTTONDOWN ||
-     in.type == SDL_MOUSEBUTTONUP){
-       mouseEvent = in;
-       mouseEventTrigger = true;
-       return;
-  }
-
-  if(in.type == SDL_MOUSEBUTTONDOWN ||
-     in.type == SDL_MOUSEBUTTONUP){
-       moveEvent = in;
-       moveEventTrigger = true;
-       return;
-  }
-
-  if(in.type == SDL_WINDOWEVENT){
-    windowEvent = in;
-    windowEventTrigger = true;
-    return;
+  switch(in.type){
+    case SDL_QUIT:
+      quit = true;
+      break;
+    case SDL_KEYDOWN:
+      active[in.key.keysym.sym] = true;
+      break;
+    case SDL_KEYUP:
+      active[in.key.keysym.sym] = false;
+      press.push_back(in.key.keysym.sym);
+      break;
+    case SDL_MOUSEWHEEL:
+      scroll.posy = (in.wheel.y > 0.99);
+      scroll.negy = (in.wheel.y < -0.99);
+      scroll.posx = (in.wheel.x > 0.99);
+      scroll.negx = (in.wheel.x < -0.99);
+      break;
+    case SDL_MOUSEMOTION:
+      mouse = in.motion;
+      mousemove = true;
+      break;
+    case SDL_MOUSEBUTTONDOWN:
+      clicked[in.button.button] = true;
+      break;
+    case SDL_MOUSEBUTTONUP:
+      clicked[in.button.button] = false;
+      click.push_back(in.button.button);
+      break;
+    case SDL_WINDOWEVENT:
+      if(in.window.event == SDL_WINDOWEVENT_RESIZED){
+        windowEvent = in;
+        windowEventTrigger = true;
+      }
+      break;
   }
 }
 
 void Event::handle(View &view){
-  (handler)();  //Call user-defined handler first
 
-  if(fullscreenToggle){
-    view.fullscreen = !view.fullscreen; //Toggle Fullscreen!
-    if(!view.fullscreen) SDL_SetWindowFullscreen(view.gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    else SDL_SetWindowFullscreen(view.gWindow, 0);
-    fullscreenToggle = false;
-  }
-
-  if(windowEventTrigger && windowEvent.window.event == SDL_WINDOWEVENT_RESIZED){
+  if(windowEventTrigger){
     view.WIDTH = windowEvent.window.data1;
     view.HEIGHT = windowEvent.window.data2;
-    windowEventTrigger = false;
+    std::cout<<view.WIDTH<<" "<<view.HEIGHT<<std::endl;
   }
 
-  if(!keys.empty() && keys.back().key.keysym.sym == SDLK_ESCAPE){
-    view.showInterface = !view.showInterface;
+  (handler)();  //Call user-defined handler
+
+  if(!press.empty()){
+
+    if(press.back() == SDLK_ESCAPE)
+      view.showInterface = !view.showInterface;
+
+    if(press.back() == SDLK_F11)
+      fullscreenToggle = true;
+
+    press.pop_back();
   }
 
-  if(!scroll.empty()) scroll.pop_back();
-  if(!keys.empty()) keys.pop_back();
+  if(fullscreenToggle){
+    view.fullscreen = !view.fullscreen;
+
+    if(view.fullscreen)
+      SDL_SetWindowFullscreen(view.gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+    else
+      SDL_SetWindowFullscreen(view.gWindow, 0);
+
+  }
+
+  //Remove Events
+  if(!click.empty()) click.pop_back();
+
+  scroll.reset();
+
+  //Reset Triggers
+  mousemove = false;
+  windowEventTrigger = false;
+  fullscreenToggle = false;
 }

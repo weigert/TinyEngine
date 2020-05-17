@@ -1,14 +1,13 @@
-#include <chrono>
-#include <thread>
-
 namespace timer{
+using namespace std::chrono;
 
+  //Benchmark Code directly in a lambda
   template<typename D, typename F, typename... Args>
   void benchmark(F function, Args&&... args){
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = high_resolution_clock::now();
     function(args...);
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<D>(stop - start);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<D>(stop - start);
     std::cout<<"Execution Time: "<<duration.count()<<std::endl;
   };
 
@@ -18,12 +17,33 @@ namespace timer{
         });
   */
 
+  //Time Points
+  bool started = false;
+  time_point<high_resolution_clock> A;
+  time_point<high_resolution_clock> B;
+  bool start(){
+    if(started) return false;
+    A = high_resolution_clock::now();
+    started = true;
+    return true;
+  }
+  bool stop(){
+    if(!started) return false;
+    B = high_resolution_clock::now();
+    started = false;
+    return true;
+  }
+  template<typename D>
+  int time(){
+    return duration_cast<D>(B-A).count();
+  }
+
   //Timer Class - Execute code on a timed cycle
   template<typename D>
   class Timer{
     std::atomic<bool> active = false;
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> curTime;
+    time_point<high_resolution_clock> curTime;
     D delayTime = D(0);
 
     std::thread t;
@@ -64,9 +84,9 @@ namespace timer{
       t = std::thread([=](){
         while(active){
           std::this_thread::sleep_for(*duration-delayTime);
-          curTime = std::chrono::high_resolution_clock::now();
+          curTime = high_resolution_clock::now();
           function(args...);
-          delayTime = std::chrono::duration_cast<D>(std::chrono::high_resolution_clock::now() - curTime);
+          delayTime = duration_cast<D>(high_resolution_clock::now() - curTime);
         }
         return;
       });

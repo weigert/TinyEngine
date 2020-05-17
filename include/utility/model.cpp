@@ -1,15 +1,114 @@
-class Model{
-public:
-  Model(){setup();};
+struct Primitive{
 
-  Model(std::function<void(Model* m)> c){
-    setup();
+  Primitive(){
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    addBuffers(2);
+  }
+
+  ~Primitive(){
+    glDisableVertexAttribArray(vao);
+    clearBuffers();
+    glDeleteVertexArrays(1, &vao);
+  }
+
+  void addBuffers(int n){
+    GLuint nvbo;
+    for(int i = 0; i < n; i++){
+      glGenBuffers(1, &nvbo);
+      vbo.push_back(nvbo);
+    }
+  }
+
+  void clearBuffers(){
+    while(!vbo.empty()){
+      glDeleteBuffers(1, &(vbo.back()));
+      vbo.pop_back();
+    }
+  }
+
+  GLuint vao;
+  std::vector<GLuint> vbo;
+  size_t SIZE = 4;
+
+  template<typename T>
+  void bind(int index, int count, int size, T* data){
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[index]);
+    glBufferData(GL_ARRAY_BUFFER, count*sizeof(T), data, GL_STATIC_DRAW);
+    attrib<T>(index, size);
+  }
+
+  template<typename T>
+  void attrib(int index, int size){
+    std::cout<<"Data type not recognized."<<std::endl;
+  }
+
+  void render(GLenum mode = GL_TRIANGLE_STRIP){
+    glBindVertexArray(vao);
+    glDrawArrays(mode, 0, SIZE);
+  }
+
+  glm::mat4 model = glm::mat4(1.0);
+  glm::vec3 pos   = glm::vec3(0.0);
+  glm::vec3 scale = glm::vec3(1.0);
+  const glm::vec3 up = glm::vec3(0, 1, 0);
+  float rot = 0.0;
+
+  void move(glm::vec3 p, float r = 0, glm::vec3 s = glm::vec3(1)){
+    pos = p; rot = r; scale = s;      //Change Values
+    model = glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), pos), glm::radians(rot), up), scale);
+  }
+
+  void shift(glm::vec3 p, float r = 0, glm::vec3 s = glm::vec3(0)){
+    pos += p; rot += r; scale += s;   //Change Values
+    model = glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), pos), glm::radians(rot), up), scale);
+  }
+};
+
+template<>
+void Primitive::attrib<GLfloat>(int index, int size){
+  glEnableVertexAttribArray(index);
+  glVertexAttribPointer(index, size, GL_FLOAT, GL_FALSE, 0, 0);
+}
+
+//Primitive Shapes (Pre-Made)
+
+struct Square2D: Primitive{
+  GLfloat vert[8] = {-1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0};
+  GLfloat tex [8] = { 0.0,  1.0,  0.0,  0.0,  1.0,  1.0,  1.0,  0.0};
+
+  Square2D(){
+    bind(0, 8, 2, &vert[0]);
+    bind(1, 8, 2, &tex[0]);
+  }
+};
+
+struct Square3D: Primitive{
+  GLfloat vert[12] =  {-1.0, -1.0,  0.0, -1.0,  1.0,  0.0,  1.0, -1.0,  0.0,  1.0,  1.0,  0.0};
+  GLfloat tex [8]  =  { 0.0,  1.0,  0.0,  0.0,  1.0,  1.0,  1.0,  0.0};
+
+  Square3D(){
+    bind(0, 12, 3, &vert[0]);
+    bind(1, 8,  2, &tex[0]);
+  }
+};
+
+class Model: public Primitive {
+public:
+  Model(){
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glGenBuffers(1, &ibo);
+    addBuffers(3);
+  };
+
+  Model(std::function<void(Model* m)> c):Model(){
     construct(c);
   };
 
   ~Model(){
     glDisableVertexAttribArray(vao);
-    glDeleteBuffers(3, vbo);
+    clearBuffers();
     glDeleteBuffers(1, &ibo);
     glDeleteVertexArrays(1, &vao);
   }
@@ -17,69 +116,33 @@ public:
   std::vector<GLfloat>  positions, normals, colors;
   std::vector<GLuint>   indices;
 
-	GLuint vbo[3], vao, ibo;
+	GLuint ibo;
 
-  glm::mat4 model = glm::mat4(1.0f);  //Model Matrix
-  glm::vec3 pos = glm::vec3(0.0f);    //Model Position
+  void update(){
+    glBindVertexArray(vao);
+    bind(0, positions.size(), 3, &positions[0]);
+    bind(1, normals.size(), 3, &normals[0]);
+    bind(2, colors.size(), 4, &colors[0]);
 
-  void setup();
-  void update();
-  void construct(std::function<void(Model* m)> constructor){
+    SIZE = indices.size();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, SIZE*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+  }
+
+  template<typename... Args>
+  void construct(std::function<void(Model*, Args...)> constructor, Args&&... args){
     positions.clear();  //Clear all Data
     normals.clear();
     colors.clear();
     indices.clear();
 
-    (constructor)(this);  //Call user-defined constructor
-    update();             //Update VAO / VBO / IBO
-  };
+    (constructor)(this, args...);  //Call user-defined constructor
+    update();                      //Update VAO / VBO / IBO
+  }
 
-  void translate(const glm::vec3 &axis);
-  void rotate(const glm::vec3 &axis, float angle);
-
-  void render(GLenum T);
+  void render(GLenum mode = GL_TRIANGLES){
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glDrawElements(mode, SIZE, GL_UNSIGNED_INT, 0);
+  }
 };
-
-void Model::setup(){
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-  glGenBuffers(3, vbo);
-  glGenBuffers(1, &ibo);
-}
-
-void Model::update(){
-  glBindVertexArray(vao);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);      //Positions
-  glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(GLfloat), &positions[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);      //Normals
-  glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(GLfloat), &normals[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);      //Colors
-  glBufferData(GL_ARRAY_BUFFER, colors.size()*sizeof(GLfloat), &colors[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); //Indices
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-}
-
-void Model::translate(const glm::vec3 &axis){
-  model = glm::translate(model, axis);
-  pos += axis;
-}
-
-void Model::rotate(const glm::vec3 &axis, float angle){
-  model = glm::translate(glm::rotate(glm::translate(model, -pos), angle, axis), pos);
-}
-
-void Model::render(GLenum T){
-  glBindVertexArray(vao);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-  glDrawElements(T, indices.size(), GL_UNSIGNED_INT, 0);
-}

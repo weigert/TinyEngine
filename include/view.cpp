@@ -9,24 +9,24 @@ class View{
     SDL_GLContext gContext;     //Render Context
 
     ImGuiIO io;
-    Handle interface;           //User defined Interface
+    Handle interface = [](){};  //User defined Interface
     bool showInterface = false;
     void drawInterface();
 
-    Handle pipeline;            //User defined Pipeline
+    Handle pipeline = [](){};           //User defined Pipeline
     void render();
     void target(glm::vec3 clearcolor);  //Target main window for drawing
 
-    //Flags
-    bool fullscreen = false;
+    bool fullscreen = false;    //Settings
     bool vsync = true;
-
     float lineWidth = 1.0f;
 };
 
 bool View::init(std::string _name, int _width, int _height){
   WIDTH = _width;
   HEIGHT = _height;
+
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   //Initialize the Window and Context
   gWindow = SDL_CreateWindow(_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
@@ -76,8 +76,7 @@ void View::cleanup(){
 
 void View::render(){
 
-  //User-defined rendering pipeline
-  (pipeline)();
+  (pipeline)();               //User-Defined
 
   if(showInterface)
     drawInterface();

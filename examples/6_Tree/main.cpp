@@ -5,7 +5,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.lineWidth = 1.0f;
 
-	Tiny::init("Procedural Tree", WIDTH, HEIGHT);
+	Tiny::window("Procedural Tree", WIDTH, HEIGHT);
 	Tiny::event.handler = eventHandler;
 	Tiny::view.interface = interfaceFunc;
 
@@ -16,16 +16,15 @@ int main( int argc, char* args[] ) {
 	Model treemesh(_construct);														//Construct a Mesh
 
 	//Leaves as Particles
-	Particle particle;
-	addLeaves(&particle);
-	particle.update();
+	Square3D flat;															//Geometry for Particle System
+	Particle particle(&flat);										//Make Particle System
+	addLeaves<Square3D>(&particle);							//Generate the model matrices
 
-	//Setup a Texture to Draw
 	Texture tex(image::load("leaf.png"));
 
 	//Setup the Particle Shader
-	Shader particleShader("shader/particle.vs", "shader/particle.fs", {"in_Quad", "in_Tex", "in_Model"});
-	Shader defaultShader("shader/default.vs", "shader/default.fs", {"in_Position", "in_Normal"});
+	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
+	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 
@@ -56,9 +55,7 @@ int main( int argc, char* args[] ) {
 
 		if(drawleaf){
 			particleShader.use();
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, tex.texture);
-			particleShader.uniform("spriteTexture", 0);
+			particleShader.texture("spriteTexture", tex.texture);
 			particleShader.uniform("projectionCamera", projection*camera);
 			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 
@@ -67,7 +64,7 @@ int main( int argc, char* args[] ) {
 			particleShader.uniform("lightDir", lookPos - glm::vec3(250.0));
 			particleShader.uniform("lightStrength", 0.8f);
 
-			particle.render(); //Render Particle System
+			particle.render(GL_TRIANGLE_STRIP); //Render Particle System
 		}
 	};
 
@@ -84,7 +81,7 @@ int main( int argc, char* args[] ) {
 
 		//Update Rendering Structures
 		treemesh.construct(_construct);
-		addLeaves(&particle);
+		addLeaves<Square3D>(&particle);
 		particle.update();
 
 	});

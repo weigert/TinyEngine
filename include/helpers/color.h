@@ -37,7 +37,6 @@ namespace color{
   }
 }
 
-//Overloaded Operator for De-Casteljau Algorithm
 glm::vec4 operator*(const double &d, const glm::vec4& vec) {
   return glm::vec4(d)*vec;
 }

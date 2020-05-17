@@ -4,7 +4,7 @@
 int main( int argc, char* args[] ) {
 
 	//Launch the Window
-	Tiny::init("Particle System", WIDTH, HEIGHT);
+	Tiny::window("Particle System", WIDTH, HEIGHT);
 
 	//Add an Event Handler for camera movement
 	Tiny::event.handler = eventHandler;
@@ -17,8 +17,9 @@ int main( int argc, char* args[] ) {
 	//Setup the Model Stuff
 	setup();
 
-	//Setup the Particle System
-	Particle particle;
+	Square3D model;								//Object we want to instance render!
+	Particle particle(&model);		//Particle system based on this model
+
 	for(int i = 0; i < 1000; i++){
 		//Random Positions and Rotations
 		glm::mat4 model = glm::translate(glm::mat4(1.0),  glm::vec3(rand()%101-50, rand()%101-50, rand()%101-50));
@@ -26,11 +27,8 @@ int main( int argc, char* args[] ) {
 	}
 	particle.update();
 
-	//Setup a Texture to Draw
 	Texture tex(image::load("dot.png"));
-
-	//Setup the Particle Shader
-	Shader particleShader("shader/particle.vs", "shader/particle.fs", {"in_Quad", "in_Tex", "in_Model"});
+	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
 
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 
@@ -38,9 +36,7 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(color::black);
 
 		particleShader.use();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex.texture);
-		particleShader.uniform("spriteTexture", 0);
+		particleShader.texture("spriteTexture", tex.texture);
 		particleShader.uniform("projectionCamera", projection*camera);
 		particle.render(); //Render Particle System
 

@@ -4,7 +4,7 @@
 int main( int argc, char* args[] ) {
 
 	//Launch the Window
-	Tiny::init("Heightmap Render", WIDTH, HEIGHT);
+	Tiny::window("Heightmap Render", WIDTH, HEIGHT);
 
 	//Add an Event Handler for camera movement
 	Tiny::event.handler = eventHandler;
@@ -21,7 +21,7 @@ int main( int argc, char* args[] ) {
 	Model mesh(_construct);														//Construct a Mesh
 	mesh.translate(glm::vec3(-32.0, -15.0, -32.0));		//Translate Mesh
 
-	Shader defaultShader("shader/default.vs", "shader/default.fs", {"in_Position", "in_Normal"});
+	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 

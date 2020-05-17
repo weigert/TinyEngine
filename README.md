@@ -77,66 +77,13 @@ Include the main file `TinyEngine.h` and construct the problem as described belo
     }
 
 ### Constructing a Program
-Open a window using:
-
-    //...
-    Tiny::window("Example Window", 500, 500);
-
-Add an event handler:
-
-    //Event Handler
-    Tiny::event.handler = [&](){ /* ... triggers are in Tiny::event ... */ 
-    	if(Tiny::event.press["SDLK_a"])
-		std::cout<<"A is being pressed!"<<std::endl;
-		
-	//...
-    };
-
-Define a user interface (by default visibility is toggled with ESC):
-
-    //Graphical User Interface
-    Tiny::view.interface = [&](){ /* ... your IMGUI code here... */ 
-    	  ImGui::Begin("Example Interface", NULL, ImGuiWindowFlags_None);
-	  
-	  //...
-	  
-	  ImGui::End();
-    };
-
-Define a rendering pipeline (after defining your utility classes to be used in the pipeline):
-
-    //Rendering Pipeline
-    Tiny::view.pipeline = [&](){ /* ... */ };
-
-Execute the full game loop with any additional code:
-
-    //Execute the render loop
-    Tiny::loop([&](){
-		  //Your additional code here...
-    });
-    
-Close the program using:
-
-    Tiny::quit();
-    //...
-    
-All of these elements can be defined directly using lambdas, or set using functionals. Just make sure context is always available, and it will work. Access the audio interface using `Tiny::audio`. Any additional parameters in the view or event class should be set before opening the window.
-
-See the example programs (they are very brief) to see how a typical program is constructed, and what utility classes are applied.
+Check the [TinyEngine Wiki](https://github.com/weigert/TinyEngine/wiki) for information on how to construct a basic program. 
 
 ### Utility Classes
 Information on how to use the utility classes is given in the Wiki:
 
 [Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
 
-### Rendering Pipeline
-The rendering pipeline can be constructed in any way, but generally consists of the following steps:
- 
-  - Choose rendering target (Tiny.view, billboard)
-  - Setup shader (use, set uniforms)
-  - Render models (sprites and models, possibly billboards)
-  - Repeat!
-      
 ### Compiling and Linking
 See the example programs to see exactly how to link the program (makefile). Compiled using gcc on Ubuntu 18 LTS.
 

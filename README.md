@@ -53,17 +53,7 @@ The behavior is combined through a standard game pipeline. Applications can defi
   - User defined game loop: Executed every cycle. Arbitrary code acting on your data structures.
   - User defined network event-handlers: Based on messages received via the network interface, execute code
 
-A number of helper namespaces then supply additional algorithms and functions that are useful:
-  - timer: Benchmarking and code execution on a timed cycle in a separate thread
-  - ease: A few ease functions
-  - input: Asynchronous (i.e. non-blocking) console input
-  - log: Logging helper for debugging
-  - object: Load .obj and .mtl files into the model utility class
-  - parse: Command line argument parser
-  - image: Loading / saving images from files, constructing textures from raw data using user-defined methods.
-  - draw: Pre-made methods for generating textures from raw data.
-  - helper: Generally useful functions. Also a hash function for integers to receive a number in the range (0, 1)
-  - color: Color helper, with bezier color interpolation from color schemes
+A number of helper namespaces then supply additional algorithms and functions that are useful. More information on these can be found in the wiki: [Helper Namespaces](https://github.com/weigert/TinyEngine/wiki/Helper-Namespaces).
 
 ## Dependencies
 

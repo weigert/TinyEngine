@@ -3,13 +3,18 @@ using Handle = std::function<void()>;
 #include <initializer_list>
 using slist = std::initializer_list<std::string>;
 
-//Interface Dependencies (DearImGUI)
-#include "include/imgui/imgui.h"
+#include <unordered_map>
+#include <chrono>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <termios.h>
+
+#include "include/imgui/imgui.h"                    //Interface Dependencies
 #include "include/imgui/imgui_impl_sdl.h"
 #include "include/imgui/imgui_impl_opengl3.h"
 
-//Drawing Dependencies
-#include <GL/glew.h>
+#include <GL/glew.h>                                //Rendering Dependencies
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
@@ -17,22 +22,19 @@ using slist = std::initializer_list<std::string>;
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
-//File IO
-#include <sstream>
+#include <sstream>                                  //File / Console IO
 #include <iostream>
 #include <fstream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
-//Network
-#include <sys/socket.h>
+#include <sys/socket.h>                             //Networking
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <chrono>
-#include <thread>
+#include "include/network/buffer.cpp"
+#include "include/network/socket.cpp"
 
-//Helpers
-#include "include/helpers/input.h"
+#include "include/helpers/input.h"                  //Helper Namespaces
 #include "include/helpers/log.h"
 #include "include/helpers/parse.h"
 #include "include/helpers/helper.h"
@@ -41,21 +43,15 @@ using slist = std::initializer_list<std::string>;
 #include "include/helpers/image.h"
 #include "include/helpers/timer.h"
 
-//Utility Classes for the Engine
-#include "include/utility/texture.cpp"
+#include "include/utility/texture.cpp"              //Utility Classes
 #include "include/utility/shader.cpp"
+#include "include/utility/model.cpp"
 #include "include/utility/particle.cpp"
 #include "include/utility/target.cpp"
-#include "include/utility/model.cpp"
 
-//Requires Models
-#include "include/helpers/object.h"
+#include "include/helpers/object.h"                 //(Dependency on Model)
 
-//Utility Classes for Network
-#include "include/network/buffer.cpp"
-#include "include/network/socket.cpp"
-
-#include "include/net.cpp"
+#include "include/net.cpp"                          //Main Classes
 #include "include/view.cpp"
 #include "include/event.cpp"
 #include "include/audio.cpp"
@@ -64,44 +60,45 @@ using slist = std::initializer_list<std::string>;
 
 namespace Tiny {
 
-//Main Engine Elements
-static View view;       //Window and Interface
-static Event event;     //Event Handler
-static Audio audio;     //Audio Processor
-static Net net;         //Network Handler
+//Main Engine Components
+static View view;           //Window and Interface  (Requires Initialization)
+static Event event;         //Event Handler
+static Audio audio;         //Audio Processor       (Requires Initialization)
+static Net net;             //Network Handler
 
-bool windowmode = false;
+bool windowmode = false;    //Just in case you decide to not actually open a window
 
-bool window(std::string windowName, int width, int height){
+bool window(std::string windowName, int width, int height){ //Open a window
   windowmode = true;
 
-  //Initialize SDL Core
+  //Launch SDL dependencies...
   if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){
     printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
     return false;
   }
 
+  //Flags necessary to launch OpenGL core profile!
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-  //Initialize SDL_Image
   if( !( IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG ) ){
     printf( "SDL_Image could not initialize! Error: %s\n", IMG_GetError() );
     return false;
   }
 
-  //Initialize SDL_TTF
-  TTF_Init();
+  if( TTF_Init() == -1 ){ //for some reason this is -1
+    printf( "SDL_ttf could not initialize! Error: %s\n", TTF_GetError() );
+    return false;
+  }
 
-  //Initialize the View
-  if(!view.init(windowName, width, height)){
+  if(!view.init(windowName, width, height)){ //Start the View Class
     std::cout<<"Failed to launch visual interface."<<std::endl;
     return false;
   }
 
-  if(!audio.init()){
+  if(!audio.init()){ //Start the Audio Interface
     std::cout<<"Failed to launch audio interface."<<std::endl;
 		return false;
 	}
@@ -110,12 +107,12 @@ bool window(std::string windowName, int width, int height){
 
 void quit(){
   if(windowmode){
-    view.cleanup();
+    view.cleanup();  //Cleanup Classes
     audio.cleanup();
-    TTF_Quit();
+    TTF_Quit();      //Stop SDL Dependencies
     SDL_Quit();
   }
-  if(net.open)
+  if(net.open)       //Shutdown network interface if openened
     net.close();
 };
 
@@ -123,11 +120,11 @@ template<typename F, typename... Args>
 void loop(F function, Args&&... args){
   if(windowmode)
     while(!event.quit){
-      event.input();        //Handle Input
-      event.handle(view);
+      event.input();        //Get Input
+      event.handle(view);   //Call the event-handling system
 
       if(net.open)
-        net.handle();        //Handle Network Messages
+        net.handle();       //Handle Network Messages
 
       audio.process();      //Audio Processor
 
@@ -136,12 +133,11 @@ void loop(F function, Args&&... args){
       view.render();        //Render View
 
     }
-  else{
+  else{ //It is possible to just use the network interface without a window
     while(net.open){
       net.handle();        //Handle Network Messages
     }
   }
 };
 
-//End of Namespace
 };

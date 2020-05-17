@@ -1,10 +1,3 @@
-/*
-TinyEngine Helper: Log
-Description:
-
-Author: Nicholas McDonald
-*/
-
 template<size_t N>
 std::ostream& operator<<(std::ostream& os, const int (&m)[N]){
   for(int i = 0; i < N; i++)
@@ -31,12 +24,6 @@ void raw(T m, Types... r){
   std::cout<<m<<" ";
   raw(r...);
 }
-
-/*
-
-WRAPPED
-
-*/
 
 template <typename T>
 void write(T m){

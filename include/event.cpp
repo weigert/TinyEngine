@@ -1,5 +1,3 @@
-#include <unordered_map>
-
 struct Scroll{
   bool posx, posy, negx, negy;
   void reset(){
@@ -29,8 +27,8 @@ public:
   SDL_MouseMotionEvent mouse;
 
   //Clicking Events
-  std::unordered_map<Uint8, bool> clicked;  //Active Buttons
-  std::deque<Uint8> click;                  //Button Events
+  std::unordered_map<Uint8, bool> click;      //Active Buttons
+  std::deque<Uint8> clicked;                  //Button Events
 
   Scroll scroll;
   SDL_Event windowEvent;         //Window Resizing Event
@@ -50,7 +48,7 @@ void Event::input(){
       break;
     case SDL_KEYUP:
       active[in.key.keysym.sym] = false;
-      press.push_back(in.key.keysym.sym);
+      press.push_front(in.key.keysym.sym);
       break;
     case SDL_MOUSEWHEEL:
       scroll.posy = (in.wheel.y > 0.99);
@@ -63,11 +61,11 @@ void Event::input(){
       mousemove = true;
       break;
     case SDL_MOUSEBUTTONDOWN:
-      clicked[in.button.button] = true;
+      click[in.button.button] = true;
       break;
     case SDL_MOUSEBUTTONUP:
-      clicked[in.button.button] = false;
-      click.push_back(in.button.button);
+      click[in.button.button] = false;
+      clicked.push_front(in.button.button);
       break;
     case SDL_WINDOWEVENT:
       if(in.window.event == SDL_WINDOWEVENT_RESIZED){
@@ -83,40 +81,26 @@ void Event::handle(View &view){
   if(windowEventTrigger){
     view.WIDTH = windowEvent.window.data1;
     view.HEIGHT = windowEvent.window.data2;
-    std::cout<<view.WIDTH<<" "<<view.HEIGHT<<std::endl;
   }
 
   (handler)();  //Call user-defined handler
 
   if(!press.empty()){
-
-    if(press.back() == SDLK_ESCAPE)
+    if(press.back() == SDLK_ESCAPE) //Toggle interface visibility
       view.showInterface = !view.showInterface;
 
-    if(press.back() == SDLK_F11)
-      fullscreenToggle = true;
+    if(press.back() == SDLK_F11){   //Toggle fullscreen
+      view.fullscreen = !view.fullscreen;
+      if(!view.fullscreen) SDL_SetWindowFullscreen(view.gWindow, 0);
+      else SDL_SetWindowFullscreen(view.gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
 
     press.pop_back();
   }
 
-  if(fullscreenToggle){
-    view.fullscreen = !view.fullscreen;
-
-    if(view.fullscreen)
-      SDL_SetWindowFullscreen(view.gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
-
-    else
-      SDL_SetWindowFullscreen(view.gWindow, 0);
-
-  }
-
-  //Remove Events
-  if(!click.empty()) click.pop_back();
-
+  //Reset Event Triggers
+  if(!clicked.empty()) clicked.pop_back();
   scroll.reset();
-
-  //Reset Triggers
   mousemove = false;
   windowEventTrigger = false;
-  fullscreenToggle = false;
 }

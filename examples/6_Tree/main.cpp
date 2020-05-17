@@ -55,7 +55,7 @@ int main( int argc, char* args[] ) {
 
 		if(drawleaf){
 			particleShader.use();
-			particleShader.texture("spriteTexture", tex.texture);
+			particleShader.texture("spriteTexture", tex);
 			particleShader.uniform("projectionCamera", projection*camera);
 			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 

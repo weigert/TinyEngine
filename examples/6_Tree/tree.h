@@ -214,12 +214,6 @@ std::function<void(Model*)> _construct = [&](Model* h){
   addBranch(root, glm::vec3(0.0));
 };
 
-//Hash Function for Leaf Displacement!
-std::hash<std::string> position_hash;
-double hashrand(int i){
-  return (double)(position_hash(std::to_string(i))%1000)/1000.0;
-}
-
 //Construct Leaf Particle System from Tree Data
 template<typename T>
 std::function<void(Particle<T>*)> addLeaves = [&](Particle<T>* p){

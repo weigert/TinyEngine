@@ -10,11 +10,9 @@ glm::mat4 camera = glm::lookAt(cameraPos, lookPos, glm::vec3(0,1,0));
 glm::mat4 projection;
 
 void setup(){
-  //Projection Matrix (Orthographic)
   projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -800.0f, 500.0f);
 };
 
-// Event Handler
 std::function<void()> eventHandler = [&](){
 
   if(Tiny::event.scroll.posy && zoom <= 0.3){

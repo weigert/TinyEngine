@@ -1,14 +1,9 @@
-/*
-  Model Loading Namespace from Object Files
-*/
-
 namespace obj{
 
-  //Get Colors from material list
+  //Load Material List from .mtl
   std::unordered_map<std::string, glm::vec3> materials(std::string file){
     std::unordered_map<std::string, glm::vec3> mat;
 
-    //Open the File
     std::ifstream in(file+".mtl", std::ios::in);
     if(in){
 

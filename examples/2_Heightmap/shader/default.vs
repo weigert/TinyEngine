@@ -4,7 +4,7 @@ in vec3 in_Position;
 in vec3 in_Normal;
 
 uniform mat4 model;
-uniform mat4 projectionCamera;
+uniform mat4 vp;
 
 out vec4 ex_Color;
 out vec3 ex_Normal;
@@ -16,7 +16,7 @@ void main(void) {
 	ex_Normal = in_Normal;	//Pass Normal
 
 	//Fragment in Screen Space
-	gl_Position = projectionCamera * vec4(ex_FragPos, 1.0f);
+	gl_Position = vp * vec4(ex_FragPos, 1.0f);
 
 	//Color from Normal Vector
 	ex_Color = vec4(normalize(in_Normal), 1.0);

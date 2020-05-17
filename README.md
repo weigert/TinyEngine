@@ -1,189 +1,115 @@
 # TinyEngine
-Small OpenGL3 based 3D Engine / Wrapper in C++
+Small OpenGL3 based 2D/3D Engine / Wrapper in C++ with Networking
 
 ![Rendering Example Program](banner.png)
 
 	LINES OF CODE (without unreasonable compression):
-		Main File: 106
-		Main Classes: 258
-		Utility Classes: 546
-		Helpers Namespaces: 206
-		Total: 1116
+		Main File: 150
+		Main Classes: 383
+		Utility Classes: 544
+		Network Classes: 104
+		Helpers Namespaces: 486
+		Total: 1667
 
 	History:
 		12. April 2020: 885
 		29. April 2020: 1116
+		17. May 2020: 1667
 
 ## Description
-Based on many previous OpenGL3 projects, I have a very good idea of what features I need in an engine to build visually appealing 3D visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
+Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
 
-The goal of this "engine" is to act as an intuitive OpenGL wrapper for features which I use regularly, allowing me to develop 3D visualizations of generated data quickly and easily. I also want to keep it as small as possible, giving only necessary abstractions of boilerplate OpenGL code, and doing the rest with user-defined behaviors passed to the engine.
+The goal of this "engine" is to act as an intuitive wrapper for boilerplate OpenGL, allowing for quick and easy development of 2D / 3D visualizations of generated data. I also want to keep it as small as possible, giving only necessary abstractions of boilerplate OpenGL code, and doing the rest with user-defined behaviors passed to the engine.
 
-This is also a learning project, for practicing engine / systems design. This is not intended as an optimized game development library, but can be used to generate beatiful 3D visualizations of generated data.
+This is also a learning project, for practicing engine / systems design. This is not intended as an optimized game development library, but can be used to generate beatiful visualizations of generated data.
 
 If anybody likes the structure, they are free to adopt it or recommended additions / changes.
 
-## Examples
+As I continue to build projects using this engine, I plan on slowly expanding its feature set, as long as new features fit elegantly into the overall structure and offer a large amount of functionality for little additional effort.
+
 ![Multi-Julia Animation](julia.gif)
 
 Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/2020/04/14/animated-multi-julia-sets/).
 
 ## Structure
-The engine consists of three main components:
-  - View Class: Window handling and rendering.
-  - Event Class: Event handling for keyboard and mouse.
-  - Audio Class: Audio interface for playing / looping sounds.
+The main engine interface is wrapped in a namespace `Tiny`. This namespace has four (global) static members, which are its main component classes:
 
-A number of utility classes allow for simple integration of typical OpenGL behavior:
-  - Shader: Load, compile, link and use shader programs easily.
-  - Model: 3D model wrapper. Construct using user-defined function. Handles updating, rendering and movement.
-  - Sprite: 2D texture wrapper. Handles loading from images, updating, rendering.
-  - Billboard: FBO render target wrapper, easy targeting for drawing and rendering.
+	- View Class (Tiny::view): 	Window handling, rendering, GUI interface
+	- Event Class (Tiny::event): 	Event handling for keyboard and mouse, window resizing
+	- Audio Class (Tiny::audio): 	Audio interface for playing / looping sounds
+	- Net Class (Tiny::net):	Networking interface for sending and receiving raw data buffers
+
+A number of utility classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
+
+	- Texture: 	OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
+	- Shader: 	Load, compile, link and use shader programs (vertex, fragment, geometry) easily.
+	- Model: 	OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
+	- Target: 	OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
+	- Particle: 	OpenGL instanced rendering wrapper (any Model object). Simply add model matrices and render.
+  
+More information can be found on the wiki: [Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
  
-The behavior is combined through a standard game pipeline. Applications can define functions that are executed in certain parts of the pipeline. These include:
-  - User defined event-handler: Can read inputs from the event class and execute arbitrary code.
-  - User defined render-pipeline: Combines all of the utility classes to draw to the window, however you like.
-  - User defined graphical interface: Can create an ImGUI window and read from / act on your data structures.
-  - User defined game loop: Executed every cycle. Arbitrary code acting on your data structures.
+The behavior is combined through a standard game pipeline. The programs behavior is additionally changed through user-defined functions which are called in the relevant parts of the pipeline:
 
-A number of helper namespaces then supply additional algorithms and functions that are useful:
-  - timer: Benchmarking and code execution on a timed cycle in a separate thread.
-  - image: Loading / saving images from files, constructing textures from raw data using user-defined methods.
-  - draw: Pre-made methods for generating textures from raw data.
-  - color: Color helper, with bezier color interpolation from color schemes. Color hashing.
+	- Tiny::event.handler: 	Lets you define behavior based on user-inputs. Tiny::event stores input data
+	- Tiny::view.interface: Lets you define an ImGUI interface that can act on your data structures
+	- Tiny::view.pipeline: 	Combines utility classes to render your data structures to targets / windows
+	- Tiny::loop: 		Executed every cycle. Arbitrary code acting on your data structures every loop
+	- Tiny::net.handler: 	(Optionally) Executes callbacks based on messages received via the network interface
 
-## Dependencies
-
-    - OpenGL3:
-    - SDL2 (Core, Image, TTF, Mixer):
-    - GLEW:
-    - Boost (System, Filesystem):
-  
-    - DearImGUI (Already included!)
-    - gcc (for compilation)
-  
-Tested on Ubuntu 18 LTS.
+A number of helper namespaces then supply additional algorithms and functions that are useful. More information on these can be found in the wiki: [Helper Namespaces](https://github.com/weigert/TinyEngine/wiki/Helper-Namespaces).
 
 ## Usage
-Include the main file `TinyEngine.h` and construct the problem as described below.
-
-    #include "TinyEngine.h"
-    int main( int argc, char* args[] ) {
-      //...
-      return 0;
-    }
+As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.
 
 ### Constructing a Program
-Open a window using:
+Building a program with TinyEngine is extremely simple!
 
-    //...
-    Tiny::init("Example Window", 500, 500);
- 
-Add an event handler:
+Example Program 0:
 
-    //Event Handler
-    Tiny::event.handler = [&](){ /* ... */ };
+    #include "../../TinyEngine.h"
 
-Define a user interface (by default visibility is toggled with ESC):
+    int main( int argc, char* args[] ) {
 
-    //Graphical User Interface
-    Tiny::view.interface = [&](){ /* ... */ };
+		Tiny::window("Example Window", 600, 400);   //Open Window
 
-Define a rendering pipeline:
+		Tiny::event.handler = [&](){ /* ... */ };   //Define Event Handler
 
-    //Rendering Pipeline
-    	Tiny::view.pipeline = [&](){ /* ... */ };
+		Tiny::view.interface = [&](){ /* ... */ };  //Define ImGUI Interface
 
-Execute the full game loop with any additional code:
+		/* ...Define Utility Classes... */
 
-    //Execute the render loop
-	  Tiny::loop([&](){
-		  //Your additional code here...
-    });
-    
-Close the program using:
+		Tiny::view.pipeline = [&](){ /* ... */ };   //Define Rendering Pipeline
 
-    Tiny::quit();
-    //...
-    
-All of these elements can be defined directly using lambdas, or set using functionals. Just make sure context is always available, and it will work. Access the audio interface using `Tiny::audio`. Any additional parameters in the view or event class should be set before opening the window.
+		Tiny::loop([&](){ //Start Main Game Loop
+            		//... additional code here
+		});
 
-### Utility Classes
-Utility classes wrap boilerplate OpenGL behavior. The classes are extremely small, so it is worth reading through their code to understand what they do and how they can be modified for your specific needs. Otherwise, their default constructors are usually sufficient! These classes have a destructor included that deletes all the data inside, so you don't have to.
+		Tiny::quit(); //Close the window, cleanup
 
-Shader:
+		return 0;
+    }
 
-      //Construction
-      Shader shader("vertexshader.vs", "fragmentshader.fs", {"all", "shader", "input", "properties"});
-      
-      //Activation
-      shader.use();
-      
-      //Uniform Setting (fully templated - automatic handling of type)
-      shader.uniform(string name, int value);
-      shader.uniform(string name, glm::vec3 vec);
-      shader.uniform(string name, glm::mat4 mat);
-      //... etc
-      
-Sprite:
+Check the [TinyEngine Wiki](https://github.com/weigert/TinyEngine/wiki) for more information on how to construct a basic program. Read the example programs to see how the utility classes are combined to create interactive 2D and 3D programs using OpenGL in very little code.
 
-      //Construction
-      Sprite sprite(SDL_Surface* s);
-      Sprite sprite(image::load("filename.png"));         //From image
-      Sprite sprite(image::make(size, data, algorithm));  //From algorithm
-      
-      //Updating
-      sprite.update(SDL_Surface* s);
-      
-      //Rendering
-      sprite.render();
-      
-Model:
-
-      //Construction
-      Model model(algorithm); //User-defined construction algorithm
-      
-      //Reconstruct model
-      model.construct(algorithm);
-      
-      //Update buffer data
-      model.update();
-      
-      //Rendering
-      model.render();
-      
-Algorithm is passed as a functional or lambda, that needs to capture the data that the model will be constructed from.
-
-Billboard:
-
-      //Construction
-      Billboard billboard(int width, int height, bool depthOnly);
-      
-      //Targeting
-      billboard.target(vec3 clearcolor); //This billboard ('s FBO) is now the render target
-      
-      //Rendering
-      billboard.render();
-      
-To target the main window again, call:
-
-      //
-      Tiny::view.target(vec3 clearcolor);
-      
-### Rendering Pipeline
-The rendering pipeline can be constructed in any way, but generally consists of the following steps:
- 
-  - Choose rendering target (Tiny.view, billboard)
-  - Setup shader (use, set uniforms)
-  - Render models (sprites and models, possibly billboards)
-  - Repeat!
-      
 ### Compiling and Linking
-See the example programs to see exactly how to link the program (makefile). Compiled using gcc on Ubuntu 18 LTS.
+See the example programs to see exactly how to link the program (makefile). Compiled using g++ on Ubuntu 18 LTS.
+
+### Dependencies
+(+ how to install on debian based systems)
+
+    - OpenGL3: apt-get install libglu1-mesa-dev
+    - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
+    - GLEW:    apt-get install libglew-dev
+    - Boost:   apt-get install libboost-system-dev libboost-filesystem-dev
+  
+    - DearImGUI (already included!)
+    - g++ (compiler)
+  
+Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS). It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
 
 ## To-Do
 	- Audio Interface isn't very good because I haven't built many audio interfaces in the past, just basic ones. I will have to do a project focused around playing sounds to improve it adequately.
-	- Event handler is capable of doing good things, but is hard to get right intuitively because many inputs are passed very quickly. I need to rethink this a little.
 	
 ## License
 MIT License

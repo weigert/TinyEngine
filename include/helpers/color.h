@@ -19,4 +19,17 @@ namespace color{
     points.insert(points.end(), p.begin(), p.end());
     return bezier(t, points);
   }
+
+  glm::vec3 pick(int i, const int N){
+    int Z = (float)((i%N));
+    int Y = (float)((i/N)%N);
+    int X = (float)((i/(N*N))%N);
+    return glm::vec3(X, Y, Z)/glm::vec3(N-1.0f);
+  }
+
+  template<typename T>
+  int index(T c, const int N){
+    glm::vec3 w = glm::vec3(N-1.0f)*glm::vec3(N*N, N, 1);
+    return c.x*w.x + c.y*w.y + c.z*w.z;
+  }
 }

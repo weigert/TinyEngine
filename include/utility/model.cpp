@@ -102,7 +102,8 @@ public:
     addBuffers(3);
   };
 
-  Model(std::function<void(Model* m)> c):Model(){
+  template<typename... Args>
+  Model(std::function<void(Model*, Args...)> c):Model(){
     construct(c);
   };
 
@@ -130,7 +131,7 @@ public:
   }
 
   template<typename... Args>
-  void construct(std::function<void(Model*, Args...)> constructor, Args&&... args){
+  void construct(std::function<void(Model*, Args...)> constructor, Args... args){
     positions.clear();  //Clear all Data
     normals.clear();
     colors.clear();

@@ -63,7 +63,7 @@ A number of helper namespaces then supply additional algorithms and functions th
 
 ## Example Images
 
-All of the programs shown below are highly interactive and allow for live manipulation of the scene. Read the very brief example programs to see how TinyEngine is used to construct nice visualizations using very little code.
+All of the programs shown below are highly interactive and allow for live manipulation of the scene. All of them run in real time and allow for camera movement. Read the very brief example programs to see how TinyEngine is used to construct nice visualizations using very little code.
 
 ![Procedural Tree](screenshots/tree.png)
 A procedural 3D tree (example program 6), that has a leaf particle system and orthogonal projection shadow mapping.

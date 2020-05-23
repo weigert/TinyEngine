@@ -68,7 +68,7 @@ A procedural 3D tree (example program 6), that has a leaf particle system and or
 ![Simple Lighting Scene](screenshots/scene.png)
 A simple scene (example program 9) that uses .obj / .mtl files generated in Blender, and then uses cubemaps for point-light shading.
 
-Other examples include in-shader raymarching, simple network console chat, simple shader-based image effects and more.
+Other examples include in-shader raymarching, GPU accelerated fractals and cellular automata, simple shader-based image effects and more.
 
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.

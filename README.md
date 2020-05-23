@@ -4,17 +4,18 @@ Small OpenGL3 based 2D/3D Engine / Wrapper in C++ with Networking
 ![Rendering Example Program](banner.png)
 
 	LINES OF CODE (without unreasonable compression):
-		Main File: 150
-		Main Classes: 383
-		Utility Classes: 544
+		Main File: 143
+		Main Classes: 365
+		Utility Classes: 509
 		Network Classes: 104
-		Helpers Namespaces: 486
-		Total: 1667
+		Helpers Namespaces: 505
+		Total: 1626
 
 	History:
 		12. April 2020: 885
 		29. April 2020: 1116
 		17. May 2020: 1667
+		23. May 2020: 1626
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.

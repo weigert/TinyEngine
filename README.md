@@ -5,18 +5,17 @@ Small OpenGL3 based 2D/3D Engine / Wrapper in C++ with Networking
 Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)
 
 	LINES OF CODE (without unreasonable compression):
-		Main File: 143
-		Main Classes: 365
+		Main File: 99
+		Main Classes: 258
 		Utility Classes: 509
-		Network Classes: 104
-		Helpers Namespaces: 505
-		Total: 1626
+		Helpers Namespaces: 199
+		Total: 1065
 
 	History:
 		12. April 2020: 885
 		29. April 2020: 1116
 		17. May 2020: 1667
-		23. May 2020: 1626
+		23. May 2020: 1065
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -48,9 +47,9 @@ A number of utility classes wrap typical OpenGL features into easily useable str
 	- Model: 	OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
 	- Target: 	OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
 	- Particle: 	OpenGL instanced rendering wrapper (any Model object). Simply add model matrices and render.
-  
+
 More information can be found on the wiki: [Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
- 
+
 The behavior is combined through a standard game pipeline. The programs behavior is additionally changed through user-defined functions which are called in the relevant parts of the pipeline:
 
 	- Tiny::event.handler: 	Lets you define behavior based on user-inputs. Tiny::event stores input data
@@ -69,7 +68,7 @@ All of the programs shown below are highly interactive and allow for live manipu
 A procedural 3D tree (example program 6), that has a leaf particle system and orthogonal projection shadow mapping.
 
 ![Simple Lighting Scene](screenshots/scene.png)
-A simple scene (example program 10) that uses .obj / .mtl files generated in Blender, and then uses cubemaps for point-light shading.
+A simple scene (example program 9) that uses .obj / .mtl files generated in Blender, and then uses cubemaps for point-light shading.
 
 Other examples include in-shader raymarching, simple network console chat, simple shader-based image effects and more.
 
@@ -116,14 +115,11 @@ See the example programs to see exactly how to link the program (makefile). Comp
     - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
     - GLEW:    apt-get install libglew-dev
     - Boost:   apt-get install libboost-system-dev libboost-filesystem-dev
-  
+
     - DearImGUI (already included!)
     - g++ (compiler)
-  
+
 Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS). It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
 
-## To-Do
-	- Audio Interface isn't very good because I haven't built many audio interfaces in the past, just basic ones. I will have to do a project focused around playing sounds to improve it adequately.
-	
 ## License
 MIT License

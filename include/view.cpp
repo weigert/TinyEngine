@@ -1,7 +1,8 @@
 class View{
   public:
     bool init(std::string windowName, int width, int height);
-    void cleanup();
+    void quit();
+    bool enabled = false;
 
     unsigned int WIDTH, HEIGHT;
 
@@ -24,6 +25,7 @@ class View{
 };
 
 bool View::init(std::string _name, int W, int H){
+  enabled = true;
   WIDTH = W; HEIGHT = H;
 
   //Core OpenGL Profile!
@@ -62,7 +64,7 @@ bool View::init(std::string _name, int W, int H){
   return true;
 }
 
-void View::cleanup(){
+void View::quit(){
   ImGui_ImplOpenGL3_Shutdown();   //Shutdown ImGUI
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();

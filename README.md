@@ -1,5 +1,5 @@
 # TinyEngine
-Small OpenGL3 based 2D/3D Engine / Wrapper in C++ with Networking
+Small OpenGL3 based 2D/3D Engine / Wrapper in C++
 
 ![Rendering Example Program](screenshots/banner.png)
 Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)

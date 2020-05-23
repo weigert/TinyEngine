@@ -1,4 +1,7 @@
 #include "../../TinyEngine.h"
+#include "../../include/helpers/image.h"
+#include "../../include/helpers/color.h"
+
 #include "effects.h"
 
 int main( int argc, char* args[] ) {

@@ -1,67 +1,48 @@
-/*
-    WORK IN PROGRESS
-*/
-
 class Audio{
 public:
-  //Storage for unprocessed soundbytes
-//  std::vector<SoundByte> unprocessed;
+  bool enabled = false;
 
-  //Vector containing the guy
-  Mix_Chunk *med = NULL;
-  Mix_Chunk *hit = NULL;
+  std::unordered_map<std::string, Mix_Chunk*> sounds;
+  std::deque<Mix_Chunk*> unprocessed;
 
   bool init();
-  bool cleanup();
+  bool quit();
+
+  void load(slist in);
+  void play(std::string sound);
   void process();
 };
 
 bool Audio::init(){
-  //Intialize Interface
-  if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) return false;
-
-/*
-  //Load the sound effects
-  med = Mix_LoadWAV( "resource/audio/acoustic.wav" );
-  hit = Mix_LoadWAV( "resource/audio/medium.wav" );
-
-  //If there was a problem loading the sound effects
-  if( med == NULL ) return false;
-  if( hit == NULL ) return false;
-*/
-
-  //If everything loaded fine
-  return true;
+  enabled = ( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) != -1 );
+  return enabled;
 }
 
-bool Audio::cleanup(){
-  //Free the Chunks
-  Mix_FreeChunk( med );
-  Mix_FreeChunk( hit );
+void Audio::load(slist in){
+  for (auto& e: in){
+    Mix_Chunk* sound = Mix_LoadWAV( e.c_str() );
+    if(sound != NULL)
+      sounds[e] = sound;
+    else std::cout<<"Failed to load audio file "<<e<<std::endl;
+  }
+}
 
-  //Close the Audio Interface
+void Audio::play(std::string sound){
+  unprocessed.push_back(sounds[sound]);
+}
+
+bool Audio::quit(){
+  for (auto& s: sounds)
+    Mix_FreeChunk( s.second );
   Mix_CloseAudio();
-
   return true;
 }
 
 void Audio::process(){
-
-  /*
-  In the future, we can also save the position where the sound-effect was emitted
-  -> to make sure that volume effects play a role.
-
-
-  I need to be able to play sounds based on queues
-  with a specific volume
-  and maybe a bunch of other possible effects...
-  */
-  /*
-
   while(!unprocessed.empty()){
-    if(unprocessed.back() != SOUND_NONE) Mix_PlayChannel( -1, hit, 0 );
-    //Play the corresponding sound-effect and remove it from the unprocessed list.
+    if(unprocessed.back() != NULL)
+      Mix_PlayChannel( -1, unprocessed.back(), 0 );
+    else std::cout<<"Failed to play sound byte"<<std::endl;
     unprocessed.pop_back();
   }
-  */
 }

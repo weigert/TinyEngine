@@ -1,9 +1,14 @@
+/*
+  Model Loading Namespace from Object Files
+*/
+
 namespace obj{
 
-  //Load Material List from .mtl
+  //Get Colors from material list
   std::unordered_map<std::string, glm::vec3> materials(std::string file){
     std::unordered_map<std::string, glm::vec3> mat;
 
+    //Open the File
     std::ifstream in(file+".mtl", std::ios::in);
     if(in){
 
@@ -30,7 +35,7 @@ namespace obj{
 
   //Construct a Model from a .Obj File
   std::function<void(Model*, std::string)> load = [](Model* h, std::string file){
-
+    h->indexed = false;
     std::unordered_map<std::string, glm::vec3> mat = materials(file);
 
     //Temporary Buffers
@@ -82,6 +87,8 @@ namespace obj{
         }
 
         //Push Face Data
+        h->indices.push_back(h->positions.size()/3);
+
         for(int i = 0; i < 3; i++){
           h->positions.push_back(vertices[vI[i]-1].x);
           h->positions.push_back(vertices[vI[i]-1].y);

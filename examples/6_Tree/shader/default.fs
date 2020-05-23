@@ -3,30 +3,60 @@
 in vec4 ex_Color;
 in vec3 ex_Normal;
 in vec3 ex_FragPos;
+in vec4 ex_Shadow;
 
 out vec4 fragColor;
 
-//Light Stuff
-uniform vec3 lightDir;
-uniform vec3 lookDir;
-uniform vec3 lightCol;
-uniform float lightStrength;
-
-uniform vec4 treecolor;
-uniform vec3 wirecolor;
+uniform vec4 drawcolor;
 
 uniform bool wireframe;
+uniform bool drawfloor;
 
-vec4 phong(){
-	//Color Calculations - Per Vertex! Not Fragment.
-	float diffuse = clamp(dot(ex_Normal, normalize(lightDir)), 0.1, 0.9);
-	float ambient = 0.1;
-	float spec = 0.8*pow(max(dot(normalize(lookDir), normalize(reflect(lightDir, ex_Normal))), 0.0), 32.0);
+uniform vec3 light;
 
-	return vec4(lightCol*lightStrength*(diffuse + ambient + spec), 1.0f);
+uniform sampler2D shadowMap;
+
+float gridSample(int size){
+  float shadow = 0.0;
+  float cur = ex_Shadow.z;
+
+  float m = 1 - dot(ex_Normal, normalize(light));
+  float bias = mix(0.005, 0.001*m, pow(m, 5));
+
+	for(int x = -size; x <= size; ++x){
+      for(int y = -size; y <= size; ++y){
+          float near = texture(shadowMap, ex_Shadow.xy + vec2(x, y) / textureSize(shadowMap, 0)).r;
+					shadow += cur-bias > near ? 1.0 : 0.0;
+      }
+  }
+
+  float norm = (2*size+1)*(2*size+1);
+  return shadow/norm;
 }
 
+float shade(){
+    float shadow = 0.0;
+		int size = 1;
+
+    if(greaterThanEqual(ex_Shadow.xy, vec2(0.0f)) == bvec2(true) && lessThanEqual(ex_Shadow.xy, vec2(1.0f)) == bvec2(true))
+      shadow = gridSample(size);
+
+		return shadow;
+}
+
+uniform vec3 lightcolor;
+
+vec4 directionalLight(){
+	float orthoshade = 0.5*shade();
+	return vec4((1.0-orthoshade)*lightcolor, 1.0);
+}
+
+uniform bool drawshadow;
+
 void main(void) {
-  if(!wireframe) fragColor = treecolor;
-  else fragColor = vec4(wirecolor, 1.0);
+	vec4 _light = vec4(1.0);
+	if(drawshadow) _light = directionalLight();
+	if(drawfloor) fragColor = _light*drawcolor;
+  else if(!wireframe) fragColor = _light*drawcolor;
+  else fragColor = drawcolor;
 }

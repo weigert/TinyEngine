@@ -73,6 +73,8 @@ void Event::input(){
         windowEventTrigger = true;
       }
       break;
+    default:
+      break;
   }
 }
 
@@ -98,8 +100,7 @@ void Event::handle(View &view){
     press.pop_back();
   }
 
-  //Reset Event Triggers
-  if(!clicked.empty()) clicked.pop_back();
+  if(!clicked.empty()) clicked.pop_back();  //Reset Event Triggers
   scroll.reset();
   mousemove = false;
   windowEventTrigger = false;

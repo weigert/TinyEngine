@@ -1,7 +1,8 @@
 class View{
   public:
     bool init(std::string windowName, int width, int height);
-    void cleanup();
+    void quit();
+    bool enabled = false;
 
     unsigned int WIDTH, HEIGHT;
 
@@ -19,10 +20,12 @@ class View{
 
     bool fullscreen = false;    //Settings
     bool vsync = true;
+    bool ccw = true;
     float lineWidth = 1.0f;
 };
 
 bool View::init(std::string _name, int W, int H){
+  enabled = true;
   WIDTH = W; HEIGHT = H;
 
   //Core OpenGL Profile!
@@ -53,14 +56,15 @@ bool View::init(std::string _name, int W, int H){
   glEnable(GL_BLEND) ;
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_CULL_FACE);
-  glFrontFace(GL_CW);
+  if(ccw) glFrontFace(GL_CCW);
+  else glFrontFace(GL_CW);
   glLineWidth(lineWidth);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return true;
 }
 
-void View::cleanup(){
+void View::quit(){
   ImGui_ImplOpenGL3_Shutdown();   //Shutdown ImGUI
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();

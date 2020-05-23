@@ -1,7 +1,8 @@
 # TinyEngine
 Small OpenGL3 based 2D/3D Engine / Wrapper in C++ with Networking
 
-![Rendering Example Program](banner.png)
+![Rendering Example Program](screenshots/banner.png)
+Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)
 
 	LINES OF CODE (without unreasonable compression):
 		Main File: 143
@@ -28,7 +29,7 @@ If anybody likes the structure, they are free to adopt it or recommended additio
 
 As I continue to build projects using this engine, I plan on slowly expanding its feature set, as long as new features fit elegantly into the overall structure and offer a large amount of functionality for little additional effort.
 
-![Multi-Julia Animation](julia.gif)
+![Multi-Julia Animation](screenshots/julia.gif)
 
 Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/2020/04/14/animated-multi-julia-sets/).
 
@@ -59,6 +60,16 @@ The behavior is combined through a standard game pipeline. The programs behavior
 	- Tiny::net.handler: 	(Optionally) Executes callbacks based on messages received via the network interface
 
 A number of helper namespaces then supply additional algorithms and functions that are useful. More information on these can be found in the wiki: [Helper Namespaces](https://github.com/weigert/TinyEngine/wiki/Helper-Namespaces).
+
+## Example Images
+
+All of the programs shown below are highly interactive and allow for live manipulation of the scene. Read the very brief example programs to see how TinyEngine is used to construct nice visualizations using very little code.
+
+![Procedural Tree](screenshots/tree.png)
+A procedural 3D tree (example program 6), that has a leaf particle system and orthogonal projection shadow mapping.
+
+![Simple Lighting Scene](screenshots/scene.png)
+A simple scene (example program 10) that uses .obj / .mtl files generated in Blender, and then uses cubemaps for point-light shading.
 
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.

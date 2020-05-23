@@ -51,8 +51,8 @@ struct Primitive{
   glm::mat4 model = glm::mat4(1.0);
   glm::vec3 pos   = glm::vec3(0.0);
   glm::vec3 scale = glm::vec3(1.0);
-  const glm::vec3 up = glm::vec3(0, 1, 0);
   float rot = 0.0;
+  const glm::vec3 up = glm::vec3(0, 1, 0);
 
   void move(glm::vec3 p, float r = 0, glm::vec3 s = glm::vec3(1)){
     pos = p; rot = r; scale = s;      //Change Values
@@ -74,20 +74,20 @@ void Primitive::attrib<GLfloat>(int index, int size){
 //Primitive Shapes (Pre-Made)
 
 struct Square2D: Primitive{
-  GLfloat vert[8] = {-1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0};
-  GLfloat tex [8] = { 0.0,  1.0,  0.0,  0.0,  1.0,  1.0,  1.0,  0.0};
+  GLfloat vert[8] = {-1.0,  1.0, -1.0, -1.0,  1.0,  1.0,  1.0, -1.0};
+  GLfloat tex [8] = { 0.0,  0.0,  0.0,  1.0,  1.0,  0.0,  1.0,  1.0};
 
-  Square2D(){
+  Square2D():Primitive(){
     bind(0, 8, 2, &vert[0]);
     bind(1, 8, 2, &tex[0]);
   }
 };
 
 struct Square3D: Primitive{
-  GLfloat vert[12] =  {-1.0, -1.0,  0.0, -1.0,  1.0,  0.0,  1.0, -1.0,  0.0,  1.0,  1.0,  0.0};
-  GLfloat tex [8]  =  { 0.0,  1.0,  0.0,  0.0,  1.0,  1.0,  1.0,  0.0};
+  GLfloat vert[12] =  {-1.0,  1.0,  0.0, -1.0, -1.0,  0.0,  1.0,  1.0,  0.0,  1.0, -1.0,  0.0};
+  GLfloat tex [8]   = { 0.0,  0.0,  0.0,  1.0,  1.0,  0.0,  1.0,  1.0};
 
-  Square3D(){
+  Square3D():Primitive(){
     bind(0, 12, 3, &vert[0]);
     bind(1, 8,  2, &tex[0]);
   }
@@ -95,16 +95,18 @@ struct Square3D: Primitive{
 
 class Model: public Primitive {
 public:
-  Model(){
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glGenBuffers(1, &ibo);
-    addBuffers(3);
+  Model():Primitive(){
+    glGenBuffers(1, &ibo);  //Additional Index Buffer
+    addBuffers(1);          //Additional Color Buffer
   };
 
-  template<typename... Args>
-  Model(std::function<void(Model*, Args...)> c):Model(){
+  Model(std::function<void(Model*)> c):Model(){
     construct(c);
+  };
+
+  template<typename... T>   //Pass Parameters to Model Constructing Function
+  Model(std::function<void(Model*, T...)> c, T... t):Model(){
+    construct(c, t...);
   };
 
   ~Model(){
@@ -117,6 +119,7 @@ public:
   std::vector<GLfloat>  positions, normals, colors;
   std::vector<GLuint>   indices;
 
+  bool indexed = true;
 	GLuint ibo;
 
   void update(){
@@ -130,20 +133,33 @@ public:
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, SIZE*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
   }
 
-  template<typename... Args>
-  void construct(std::function<void(Model*, Args...)> constructor, Args... args){
-    positions.clear();  //Clear all Data
+  void construct(std::function<void(Model*)> constructor){
+    positions.clear();
     normals.clear();
     colors.clear();
     indices.clear();
 
-    (constructor)(this, args...);  //Call user-defined constructor
-    update();                      //Update VAO / VBO / IBO
+    (constructor)(this);  //Call user-defined constructor
+    update();                //Update VAO / VBO / IBO
+  }
+
+  template<typename... T>
+  void construct(std::function<void(Model*, T...)> constructor, T... t){
+    positions.clear();
+    normals.clear();
+    colors.clear();
+    indices.clear();
+
+    (constructor)(this, t...);  //Call user-defined constructor
+    update();                   //Update VAO / VBO / IBO
   }
 
   void render(GLenum mode = GL_TRIANGLES){
     glBindVertexArray(vao);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glDrawElements(mode, SIZE, GL_UNSIGNED_INT, 0);
+    if(indexed){
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+      glDrawElements(mode, SIZE, GL_UNSIGNED_INT, 0);
+    }
+    else glDrawArrays(mode, 0, positions.size()/3);
   }
 };

@@ -33,9 +33,9 @@ glm::vec3 lookpos = glm::vec3(0.0);
 std::function<void()> eventHandler = [&](){
 
   if(Tiny::event.scroll.posy)
-    zoom *= 0.9;
-  if(Tiny::event.scroll.negy)
     zoom /= 0.9;
+  if(Tiny::event.scroll.negy)
+    zoom *= 0.9;
   if(Tiny::event.scroll.posx)
     camerapos = glm::rotate(glm::mat4(1),  0.05f, up)*glm::vec4(camerapos, 1.0);
   if(Tiny::event.scroll.negx)
@@ -50,21 +50,10 @@ Handle interfaceFunc = [&](){
   ImGui::SetNextWindowPos(ImVec2(50, 470), ImGuiCond_Once);
 
   //Open Window
-  ImGui::Begin("Julia Set Controller", NULL, ImGuiWindowFlags_NoResize);
+  ImGui::Begin("Raymarching Controller", NULL, ImGuiWindowFlags_NoResize);
 
-    if(ImGui::BeginTabBar("Tab Bar", ImGuiTabBarFlags_None)){
-      //Current Position Information
-      if(ImGui::BeginTabItem("Info")){
-
-        ImGui::EndTabItem();
-      }
-      if(ImGui::BeginTabItem("Visual")){
-        ImGui::ColorEdit3("Converge Color", cc);
-        ImGui::ColorEdit3("Diverge Color", dc);
-        ImGui::EndTabItem();
-      }
-      ImGui::EndTabBar();
-    }
+    ImGui::ColorEdit3("Intersect Color", cc);
+    ImGui::ColorEdit3("Miss Color", dc);
 
   ImGui::End();
 };

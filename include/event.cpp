@@ -73,6 +73,8 @@ void Event::input(){
         windowEventTrigger = true;
       }
       break;
+    default:
+      break;
   }
 }
 

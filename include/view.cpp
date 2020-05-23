@@ -19,6 +19,7 @@ class View{
 
     bool fullscreen = false;    //Settings
     bool vsync = true;
+    bool ccw = true;
     float lineWidth = 1.0f;
 };
 
@@ -53,7 +54,8 @@ bool View::init(std::string _name, int W, int H){
   glEnable(GL_BLEND) ;
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_CULL_FACE);
-  glFrontFace(GL_CW);
+  if(ccw) glFrontFace(GL_CCW);
+  else glFrontFace(GL_CW);
   glLineWidth(lineWidth);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

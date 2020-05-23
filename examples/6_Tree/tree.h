@@ -175,12 +175,12 @@ std::function<void(Model*)> _construct = [&](Model* h){
     for(int i = 0; i < ringsize; i++){
       //Bottom Triangle
       h->indices.push_back(_b+i*2+0);
-      h->indices.push_back(_b+i*2+1);
       h->indices.push_back(_b+(i*2+2)%(2*ringsize));
+      h->indices.push_back(_b+i*2+1);
       //Upper Triangle
       h->indices.push_back(_b+(i*2+2)%(2*ringsize));
-      h->indices.push_back(_b+i*2+1);
       h->indices.push_back(_b+(i*2+3)%(2*ringsize));
+      h->indices.push_back(_b+i*2+1);
     }
 
     for(int i = 0; i < ringsize; i++){
@@ -216,7 +216,7 @@ std::function<void(Model*)> _construct = [&](Model* h){
 
 //Construct Leaf Particle System from Tree Data
 template<typename T>
-std::function<void(Particle<T>*)> addLeaves = [&](Particle<T>* p){
+std::function<void(Particle<T>*, bool)> addLeaves = [&](Particle<T>* p, bool face){
   p->models.clear();
 
   //Explore the Tree and Add Leaves!
@@ -231,9 +231,12 @@ std::function<void(Particle<T>*)> addLeaves = [&](Particle<T>* p){
         glm::vec3 d = glm::vec3(hashrand(b->ID+i), hashrand(b->ID+i+leafcount), hashrand(b->ID+i+2*leafcount))-glm::vec3(0.5);
         d = d * glm::vec3(leafspread[0], leafspread[1], leafspread[2]);
 
-        //Rotate Towards Camera and Scale
+        //Rotate Towards Camera (or not) and Scale
         glm::mat4 model = glm::translate(glm::mat4(1.0), pos+d);
-        model = glm::rotate(model, -glm::radians(rotation - 45.0f), glm::vec3(0.0, 1.0, 0.0));
+
+        if(face) model = glm::rotate(model, glm::radians(45.0f-rotation), glm::vec3(0.0, 1.0, 0.0));
+        else model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
+
         p->models.push_back(glm::scale(model, glm::vec3(leafsize)));
 
       }

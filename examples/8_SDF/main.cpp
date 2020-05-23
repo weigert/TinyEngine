@@ -23,6 +23,9 @@ int main( int argc, char* args[] ) {
 		sdf.uniform("converge", glm::vec4(cc[0], cc[1], cc[2], cc[3]));
 		sdf.uniform("diverge", glm::vec4(dc[0], dc[1], dc[2], dc[3]));
 		sdf.uniform("offset", glm::vec2(px, py));
+		sdf.uniform("drawlines", drawlines);
+		sdf.uniform("thickness", thickness);
+		sdf.uniform("density", density);
 		sdf.uniform("model", flat.model);
 		flat.render();										//Render with Flat Geometry
 

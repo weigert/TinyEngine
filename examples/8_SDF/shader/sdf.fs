@@ -18,8 +18,10 @@ float box(vec2 p, vec2 b){
   return length(max(q,0.0)) + min(max(q.x,q.y),0.0);
 }
 
-//Separating Boundary
-//This is the line where the two distances are equal to both shapes.
+uniform bool drawlines;
+uniform float thickness;
+uniform float density;
+
 bool isoline(float a, float b){
   return (abs(b-a) < 0.01);
 }
@@ -33,7 +35,7 @@ float sdf(vec2 p){
 }
 
 vec4 sdfcol(float t){
-  if(mod(abs(t), 0.1) < 0.05f) return vec4(vec3(0.0), 1.0);
+  if(mod(abs(t), density) < thickness && drawlines) return vec4(vec3(0.0), 1.0);
 
   if(t > 0) return converge;
   else return diverge;

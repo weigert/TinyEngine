@@ -5,17 +5,19 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.vsync = false;															//Turn off VSYNC before opening window
 
-	Tiny::window("Cellular Automata Example", 1200, 800);	//Open Window
+	Tiny::window("GPU Accelerated Cellular Automata Example", WIDTH, HEIGHT);	//Open Window
 	Tiny::event.handler = eventHandler;										//Define Event Handler
 	Tiny::view.interface = [](){ /* ... */ }; 						//No Interface
 
 	setup();	//Setup Model Data
 
 	//Construct a billboard, using a texture generated from the raw data
-	Billboard target(image::make<int>(glm::vec2(600, 400), data, [](int t){
-		if(t == 0) return glm::vec4(1.0, 1.0, 1.0, 1.0);
+	Billboard targetA(image::make<bool>(glm::vec2(WIDTH, HEIGHT), data, [](bool t){
+		if(t) return glm::vec4(1.0, 1.0, 1.0, 1.0);
 		else return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	}));
+	Billboard targetB(WIDTH, HEIGHT, true, false); //color, no depth
+	bool flip = true;
 
 	Square2D flat;	//Flat square primitive for drawing billboard to screen
 
@@ -26,18 +28,28 @@ int main( int argc, char* args[] ) {
 	Tiny::view.pipeline = [&](){
 
 		if(!paused){
-
-			target.target();		//Use target as the render target!
-			automata.use();																				//Use the Automata Shader
-			automata.texture("imageTexture", target.texture);			//Target texture!
-			automata.uniform("model", flat.model);
-			flat.render();			//Render target texture to itself using primitive and automata shader
-
+			if(flip){
+				targetB.target(false);		//Use target as the render target (no clearing)!
+				automata.use();																				//Use the Automata Shader
+				automata.texture("imageTexture", targetA.texture);		//Target texture!
+				automata.uniform("model", flat.model);
+				flat.render();			//Render target texture to itself using primitive and automata shader
+			}
+			else{
+				targetA.target(false);		//Use target as the render target (no clearing)!
+				automata.use();																				//Use the Automata Shader
+				automata.texture("imageTexture", targetB.texture);		//Target texture!
+				automata.uniform("model", flat.model);
+				flat.render();			//Render target texture to itself using primitive and automata shader
+			}
+			flip = !flip;
 		}
 
 		Tiny::view.target(color::black);									//Target screen
 		shader.use(); 																		//Setup Shader
-		shader.texture("imageTexture", target.texture);
+		if(flip) shader.texture("imageTexture", targetB.texture);
+		else 		 shader.texture("imageTexture", targetA.texture);
+		shader.texture("imageTexture", targetA.texture);
 		shader.uniform("model", flat.model);
 		flat.render();																		//Render Objects
 

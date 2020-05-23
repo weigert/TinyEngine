@@ -1,14 +1,14 @@
 //Parameters
 #define PI 3.14159265f
 
-const int WIDTH = 800;
+const int WIDTH = 1200;
 const int HEIGHT = 800;
 
 float zoom = 0.5;
 float zoomInc = 0.99;
 float rotation = 0.0f;
 glm::vec3 cameraPos = glm::vec3(50, 200, 50);
-glm::vec3 lookPos = glm::vec3(0, 200, 0);
+glm::vec3 lookPos = glm::vec3(0, 180, 0);
 glm::mat4 camera = glm::lookAt(cameraPos, lookPos, glm::vec3(0,1,0));
 glm::mat4 projection;
 
@@ -22,6 +22,7 @@ float leafcolor[3] = {0.82, 0.13, 0.23};
 float treecolor[3] = {1.00, 1.00, 1.00};
 float wirecolor[3] = {0.00, 0.00, 0.00};
 float backcolor[3] = {0.80, 0.80, 0.80};
+float lightcolor[3] = {1.00, 1.00, 1.00};
 float leafopacity = 0.9;
 int leafmindepth = 8;
 float treeopacity = 1.0;
@@ -40,10 +41,23 @@ float directedness = 0.5;
 int localdepth = 2;
 bool conservearea = true;
 
+bool drawshadow = true;
+bool selfshadow = true;
+bool leafshadow = true;
+glm::vec3 lightpos = glm::vec3(50);
+glm::mat4 bias = glm::mat4(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0
+);
+glm::mat4 lproj = glm::ortho(-300.0f, 300.0f, -300.0f, 400.0f, -200.0f, 800.0f);;
+glm::mat4 lview = glm::lookAt(lightpos, glm::vec3(0), glm::vec3(0,1,0));
+
 #include "tree.h"
 
 void setup(){
-  projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -800.0f, 500.0f);
+  projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -500.0f, 800.0f);
   srand(time(NULL));
   root = new Branch({0.6, 0.45, 2.5}); //Create Root
 };
@@ -53,11 +67,11 @@ std::function<void()> eventHandler = [&](){
 
   if(Tiny::event.scroll.posy){
     zoom /= zoomInc;
-    projection = glm::ortho(-(float)WIDTH*zoom, (float)WIDTH*zoom, -(float)HEIGHT*zoom, (float)HEIGHT*zoom, -800.0f, 500.0f);
+    projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -500.0f, 800.0f);
   }
   if(Tiny::event.scroll.negy){
     zoom *= zoomInc;
-    projection = glm::ortho(-(float)WIDTH*zoom, (float)WIDTH*zoom, -(float)HEIGHT*zoom, (float)HEIGHT*zoom, -800.0f, 500.0f);
+    projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -500.0f, 800.0f);
   }
   if(Tiny::event.scroll.posx){
     rotation += 1.5f;
@@ -104,6 +118,7 @@ Handle interfaceFunc = [&](){
         ImGui::Checkbox("Auto-Rotate [A]", &autorotate);
 
         ImGui::ColorEdit3("Background", backcolor);
+//        ImGui::ColorEdit3("Light Color", lightcolor);
 
         ImGui::Text("Made by Nicholas McDonald");
         ImGui::EndTabItem();
@@ -117,7 +132,6 @@ Handle interfaceFunc = [&](){
           delete(root);
           root = newroot;
         }
-
 
         ImGui::Text("Growth Behavior");
         ImGui::DragFloat("Growth Rate", &growthrate, 0.01f, 0.0f, 5.0f);
@@ -145,7 +159,9 @@ Handle interfaceFunc = [&](){
         ImGui::DragInt("Minimum Depth", &leafmindepth, 1, 0, 15);
         ImGui::DragFloat3("Spread", leafspread, 0.1f, 0.0f, 250.0f);
         ImGui::DragFloat("Size", &leafsize, 0.1f, 0.0f, 25.0f);
-        ImGui::Checkbox("Draw", &drawleaf);
+        ImGui::Checkbox("Draw", &drawleaf); ImGui::SameLine();
+        ImGui::Checkbox("Shade", &leafshadow); ImGui::SameLine();
+        ImGui::Checkbox("Self-Shade", &selfshadow);
 
         ImGui::EndTabItem();
       }
@@ -157,8 +173,9 @@ Handle interfaceFunc = [&](){
         ImGui::DragFloat2("Scale", treescale, 0.01f, 0.1f, 50.0f);
         ImGui::DragFloat("Taper", &taper, 0.01f, 0.0f, 1.0f);
 
-        ImGui::Checkbox("Draw Tree", &drawtree); ImGui::SameLine();
-        ImGui::Checkbox("Draw Wire", &drawwire);
+        ImGui::Checkbox("Draw", &drawtree); ImGui::SameLine();
+        ImGui::Checkbox("Wire", &drawwire); ImGui::SameLine();
+        ImGui::Checkbox("Shade", &drawshadow);
 
         ImGui::DragInt("Mesh", &ringsize, 1, 3, 12);
 
@@ -168,4 +185,38 @@ Handle interfaceFunc = [&](){
     }
 
   ImGui::End();
+};
+
+std::function<void(Model* m)> construct_floor = [&](Model* h){
+
+  float floor[24] = {
+    -1.0, 0.0, -1.0,
+    -1.0, 0.0,  1.0,
+     1.0, 0.0, -1.0,
+     1.0, 0.0,  1.0,
+  };
+
+  for(int i = 0; i < 12; i++)
+    h->positions.push_back(floor[i]);
+
+  h->indices.push_back(0);
+  h->indices.push_back(1);
+  h->indices.push_back(2);
+
+  h->indices.push_back(1);
+  h->indices.push_back(3);
+  h->indices.push_back(2);
+
+  glm::vec3 floorcolor = glm::vec3(0.65, 0.5, 0.3);
+
+  for(int i = 0; i < 4; i++){
+    h->normals.push_back(0.0);
+    h->normals.push_back(1.0);
+    h->normals.push_back(0.0);
+
+    h->colors.push_back(floorcolor.x);
+    h->colors.push_back(floorcolor.y);
+    h->colors.push_back(floorcolor.z);
+    h->colors.push_back(1.0);
+  }
 };

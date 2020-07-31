@@ -148,7 +148,7 @@ glm::vec3 Branch::leafdensity(int searchdepth){
 
   //Average relative to ancestor, shifted by rel ( + Noise )
   return directedness*glm::normalize(leafaverage(C) - rel) + (1.0f-directedness)*r;
-};
+}
 
 Branch* root;
 

@@ -21,6 +21,7 @@ class View{
     bool fullscreen = false;    //Settings
     bool vsync = true;
     bool ccw = true;
+    unsigned int antialias = 16;
     float lineWidth = 1.0f;
 };
 
@@ -30,6 +31,9 @@ bool View::init(std::string _name, int W, int H){
 
   //Core OpenGL Profile!
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+  if(antialias)
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, antialias);
 
   //Initialize the Window and Context
   gWindow = SDL_CreateWindow(_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
@@ -51,6 +55,8 @@ bool View::init(std::string _name, int W, int H){
   ImGui_ImplOpenGL3_Init("#version 330 core");
   ImGui::StyleColorsCustom();
 
+  if(antialias)
+  glEnable(GL_MULTISAMPLE);
   glEnable(GL_DEPTH_TEST);        //Setup Global OpenGL State!
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_BLEND) ;

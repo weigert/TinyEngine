@@ -4,7 +4,7 @@ TINY = ../../include/imgui/imgui.cpp ../../include/imgui/imgui_demo.cpp ../../in
 TINYLINK = -lX11 -lpthread -lSDL2 -lnoise -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lGL -lGLEW -lboost_serialization -lboost_system -lboost_filesystem
 
 CC = g++ -std=c++17
-COMPILER_FLAGS = -Wfatal-errors -O
+COMPILER_FLAGS = -Wall -O
 LINKER_FLAGS = -I/usr/local/include -L/usr/local/lib
 OBJ_NAME = main
 

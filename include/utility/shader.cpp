@@ -7,7 +7,7 @@ public:
     for(auto &n : in)                   //Add all Attributes of Shader
       glBindAttribLocation(program, &n - in.begin(), n.c_str());
     link();                             //Link the shader program!
-  };
+  }
 
   ~Shader(){
     glDeleteProgram(program);
@@ -80,11 +80,11 @@ void Shader::error(GLuint s, bool t){
   int m;
   if(t) glGetShaderiv(s, GL_INFO_LOG_LENGTH, &m);
   else glGetProgramiv(s, GL_INFO_LOG_LENGTH, &m);
-  char* _log = new char[m];
-  if(t) glGetShaderInfoLog(s, m, &m, _log);
-  else glGetProgramInfoLog(s, m, &m, _log);
-  std::cout<<"Linker Error: "<<_log<<std::endl;
-  delete _log;
+  char* l = new char[m];
+  if(t) glGetShaderInfoLog(s, m, &m, l);
+  else glGetProgramInfoLog(s, m, &m, l);
+  std::cout<<"Linker Error: "<<l<<std::endl;
+  delete[] l;
 }
 
 void Shader::use(){

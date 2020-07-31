@@ -18,8 +18,12 @@ int main( int argc, char* args[] ) {
 	Model treemesh(_construct);											//Construct a Mesh
 
 	Square3D flat;																	//Geometry for Particle System
-	Particle particle(&flat);												//Make Particle System
-	addLeaves<Square3D>(&particle, true);						//Generate the model matrices
+
+	std::vector<glm::mat4> leaves;
+	addLeaves(leaves, true);												//Generate the model matrices
+
+	Instance particle(&flat);												//Make Particle System
+	particle.addBuffer(leaves);											//Add Matrices
 
 	Texture tex(image::load("leaf.png"));
 
@@ -45,7 +49,9 @@ int main( int argc, char* args[] ) {
 			particledepth.use();
 			particledepth.uniform("dvp", lproj*lview);
 			particledepth.texture("spriteTexture", tex);
-			addLeaves<Square3D>(&particle, false);	//Generate the model matrices
+			addLeaves(leaves, false);						//Generate the model matrices
+			particle.updateBuffer(leaves, 0);
+
 			particle.render(GL_TRIANGLE_STRIP); 		//Render Particle System
 		}
 
@@ -103,7 +109,8 @@ int main( int argc, char* args[] ) {
 			}
 
 			particleShader.uniform("lookDir", lookPos - cameraPos);
-			addLeaves<Square3D>(&particle, true);
+			addLeaves(leaves, true);
+			particle.updateBuffer(leaves, 0);
 			particle.render(GL_TRIANGLE_STRIP); //Render Particle System
 		}
 	};
@@ -121,7 +128,7 @@ int main( int argc, char* args[] ) {
 
 		//Update Rendering Structures
 		treemesh.construct(_construct);
-		particle.update();
+		particle.updateBuffer(leaves, 0);
 
 	});
 

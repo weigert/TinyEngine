@@ -24,7 +24,7 @@ using slist = std::initializer_list<std::string>;
 #include "include/utility/texture.cpp"              //Utility Classes
 #include "include/utility/shader.cpp"
 #include "include/utility/model.cpp"
-#include "include/utility/particle.cpp"
+#include "include/utility/instance.cpp"
 #include "include/utility/target.cpp"
 
 #include "include/view.cpp"
@@ -86,8 +86,6 @@ template<typename F, typename... Args>
 void loop(F function, Args&&... args){
   while(!event.quit){
 
-    auto start = std::chrono::high_resolution_clock::now();
-
     if(Tiny::view.enabled){
       event.input();        //Get Input
       event.handle(view);   //Call the event-handling system
@@ -98,10 +96,6 @@ void loop(F function, Args&&... args){
     function(args...);      //User-defined Game Loop
 
     if(Tiny::view.enabled)  view.render();        //Render View
-
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout<<"Execution Time: "<<duration.count()<<std::endl;
 
   }
 }

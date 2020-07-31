@@ -1,17 +1,24 @@
 #version 330 core
-layout (location = 0) in vec3 in_Quad;
-layout (location = 1) in vec2 in_Tex;
-layout (location = 2) in mat4 in_Model;
+layout (location = 0) in vec2 in_Quad;
+layout (location = 2) in vec2 in_Centroid;
 
-flat out int ex_ID;
-out vec2 ex_Tex;
+out vec2 ex_Quad;
+flat out vec3 ex_Color;
 out vec2 ex_Centroid;
 
-void main(){
-  //Position is Translated!
-  ex_Tex =  (in_Model*vec4(in_Quad, 1.0)).xy;
-  ex_Centroid = (in_Model*vec4(0, 0, 0, 1.0)).xy;
+uniform float R;
+uniform int NCOLOR;
 
-  ex_ID = gl_InstanceID;
-  gl_Position = in_Model*vec4(in_Quad, 1.0);
+vec3 color(int i){
+  int Z = (i%NCOLOR);
+  int Y = ((i/NCOLOR)%NCOLOR);
+  int X = ((i/(NCOLOR*NCOLOR))%NCOLOR);
+  return vec3(X, Y, Z)/vec3(NCOLOR-1.0f);
+}
+
+void main(){
+  ex_Centroid = in_Centroid;
+  ex_Color = color(gl_InstanceID);
+  ex_Quad =  R*in_Quad+in_Centroid;
+  gl_Position = vec4(ex_Quad, 0.0, 1.0);
 }

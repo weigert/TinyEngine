@@ -1,55 +1,61 @@
 #include "../../TinyEngine.h"
 #include "../../include/helpers/color.h"
 
-#include "timer.h"
 #include "poisson.h"
+//#include "model.h"
+#include <noise/noise.h>
 
-#include "instance.cpp"
+/*
 
-glm::vec3 pickvec(int i, int N);
-int getpick(glm::vec3 a, int N);
+~ GPU Accelerated Voronoi Map ~
+
+Possible OpenGL Implementations (2 Types):
+
+	(A) Naive Parallel On-Screen Clustering:
+		-> Pass all centroids as uniform, cluster in shader
+
+	(B) Depth Test Clustering:
+		-> Instanced render with centroids, distance is depth, color computed in shader
+
+	Here I implemented the second version.
+
+	Additional Optimizations:
+		-> Don't draw entire quad when points are placed using poisson disc, only a small quad
+			This reduces fragment waste because we can assume cones of a certain size.
+			2-3 Orders of Magnitude Speed Boost
+		-> Don't pass a matrix, just the centroid. Scale in the vertex shader.
+		-> Render to texture, then render quad to screen
+
+	Applications:
+		-> Dynamic Run-Time Mosaic Filters in a Shader
+		-> Dynamic Run-Time Bubble Filter
+		-> Dynamic Run-Time Mosaic Effects with Particles (e.g. Lava-, Cloud-Flow)
+		-> Voronoi Painter using Directional Poisson Disc Sampling
+		-> "Clustered Convection" by Centroid (Particle) Motion
+		-> ???
+
+	Extensions:
+		-> Rendering to Sphere using Cubemaps (trivial to extend)
+*/
 
 int main( int argc, char* args[] ) {
 
-	Tiny::view.vsync = false;
-	Tiny::window("GPU Accelerated Voronoise", 1000, 1000);
+	//Setup Window
+	Tiny::view.vsync = true;
+	Tiny::window("GPU Accelerated Voronoise", 1024, 1024);
 
 	Tiny::event.handler  = [](){}; //eventHandler;
 	Tiny::view.interface = [](){}; //interfaceFunc;
 
-	/*
-
-	~ GPU Accelerated Voronoi Map ~
-
-	Possible OpenGL Implementations (2 Types):
-
-		(A) Naive Parallel On-Screen Clustering:
-			-> Pass all centroids as uniform, cluster in shader
-
-		(B) Depth Test Clustering:
-			-> Instanced render with centroids, distance is depth, color computed in shader
-
-		Here I implemented the second version.
-
-		Additional Optimizations:
-			-> Don't draw entire quad when points are placed using poisson disc, only a small quad
-				This reduces fragment waste because we can assume cones of a certain size.
-				2-3 Orders of Magnitude Speed Boost
-			-> Don't pass a matrix, just the centroid. Scale in the vertex shader.
-	*/
-
-	//Generate Centroids (Noise)
-	std::vector<glm::vec2> centroids;
 	srand(time(NULL));
-	float K = 8*1024;
-	sample::disc(centroids, K, glm::vec2(-1), glm::vec2(1));
 
-	std::vector<glm::mat4> models;
+	//Generate Set of Centroids
+	std::vector<glm::vec2> centroids;
+	std::vector<glm::vec2> offset;
+	float K = 1024; //That's a lot of polygons
+	sample::disc(centroids, K, glm::vec2(-1), glm::vec2(1));
+	offset = centroids;
   float R = 2.0f*sqrt(4.0f/3.14159265f/K);
-	for(auto& c: centroids){
-		glm::mat4 model = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(c.x, c.y, 0)), glm::vec3(R));
-		models.push_back(model);
-	}
 
 	//Compute Color Hashing Number
 	int NCOLOR = 1;
@@ -57,32 +63,27 @@ int main( int argc, char* args[] ) {
 			NCOLOR++;
 
 	//Utility Classes
-	Square3D flat;
-	Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Model", "in_Centroid"});
+	Square2D flat;
+	Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Centroid"});
 
-	Billboard billboard(1000, 1000);
+	Billboard billboard(1024, 1024);
 	Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
-	billboard.target(color::black); //Clear Buffers Once
 
 	Instance instance(&flat);
-	instance.addBuffer(models);
+	instance.addBuffer(centroids);
 
-	//Make sure we don't over do it
-	bool updated = true;
+	noise::module::Perlin perlin;
+  perlin.SetOctaveCount(8);
+  perlin.SetFrequency(1.0);
+  perlin.SetPersistence(0.5);
 
 	Tiny::view.pipeline = [&](){
 
-		if(updated){
-
-				billboard.target(color::black);
-				voronoi.use();		//Instanced Render Pass
-				voronoi.uniform("NCOLOR", NCOLOR);
-				instance.render();
-
-				glFlush();
-
-		//	updated = false;
-		}
+		billboard.target(color::black);
+		voronoi.use();
+		voronoi.uniform("NCOLOR", NCOLOR);
+		voronoi.uniform("R", R);
+		instance.render();
 
 		Tiny::view.target(color::black);	//Target Screen
 
@@ -93,26 +94,19 @@ int main( int argc, char* args[] ) {
 
 	};
 
+	float t = 0; //Time
+
 	Tiny::loop([&](){
 
-	//	std::cout<<"Move Centroids Time"<<std::endl;
-	//	timer::benchmark<std::chrono::microseconds>([&](){
+		t += 0.01;
 
-/*
-		//Move Centroids Around
-		for(auto&c: centroids){
-			c.x += (rand()%1000-500)/100000.0f;
-			c.y += (rand()%1000-500)/100000.0f;
-			if(c.x > 1.0) c.x = -1.0;
-			if(c.y > 1.0) c.y = -1.0;
+		//Jiggle Centroids using Continuous Noise
+		for(unsigned int i = 0; i < centroids.size(); i++){
+			offset[i].x = centroids[i].x + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, t);
+			offset[i].y = centroids[i].y + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, -t);
 		}
 
-		instance.updateBuffer(centroids, 0);
-*/
-		updated = true;
-
-	//	});
-
+		instance.updateBuffer(offset, 0);
 
 	});
 
@@ -120,20 +114,3 @@ int main( int argc, char* args[] ) {
 
 	return 0;
 }
-
-/*
-//Color Conversion
-glm::vec3 pickvec(int i, int N){
-
-  int Z = (float)(i%N);
-  int Y = (float)((i/N)%N);
-  int X = (float)((i/(N*N))%N);
-
-  return glm::vec3(X, Y, Z)/glm::vec3(N-1.0f);
-}
-
-int getpick(glm::vec3 a, int N){
-  glm::vec3 b = glm::vec3(N-1.0f)*glm::vec3(N*N, N, 1);
-  return a.x*b.x + a.y*b.y + a.z*b.z;
-}
-*/

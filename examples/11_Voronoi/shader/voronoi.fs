@@ -2,18 +2,22 @@
 
 in vec2 ex_Tex;
 in vec2 ex_Centroid;
-in vec3 ex_Color;
+flat in int ex_ID;
 
 out vec4 fragColor;
 
-uniform vec2 center;
-uniform vec3 color;
-uniform float r;
+uniform int NCOLOR;
 vec3 black = vec3(0);
 
+vec3 color(int i, int N){
+  int Z = (i%N);
+  int Y = ((i/N)%N);
+  int X = ((i/(N*N))%N);
+  return vec3(X, Y, Z)/vec3(N-1.0f);
+}
+
 void main(){
-  vec2 p = (ex_Tex*2-vec2(1.0));
+  vec2 p = ex_Tex;
   gl_FragDepth = length(p-ex_Centroid);
-  if(gl_FragDepth > r) discard;
-  fragColor = vec4(ex_Color, 1.0);
+  fragColor = vec4(color(ex_ID, NCOLOR), 1.0);
 }

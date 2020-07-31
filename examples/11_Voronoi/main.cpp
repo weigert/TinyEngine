@@ -12,7 +12,7 @@ int getpick(glm::vec3 a, int N);
 int main( int argc, char* args[] ) {
 
 	Tiny::view.vsync = false;
-	Tiny::window("GPU Accelerated Voronoise", 750, 750);
+	Tiny::window("GPU Accelerated Voronoise", 1000, 1000);
 
 	Tiny::event.handler  = [](){}; //eventHandler;
 	Tiny::view.interface = [](){}; //interfaceFunc;
@@ -31,38 +31,41 @@ int main( int argc, char* args[] ) {
 
 		Here I implemented the second version.
 
+		Additional Optimizations:
+			-> Don't draw entire quad when points are placed using poisson disc, only a small quad
+				This reduces fragment waste because we can assume cones of a certain size.
+				2-3 Orders of Magnitude Speed Boost
+			-> Don't pass a matrix, just the centroid. Scale in the vertex shader.
 	*/
 
 	//Generate Centroids (Noise)
 	std::vector<glm::vec2> centroids;
-	std::vector<glm::vec3> colors;
 	srand(time(NULL));
+	float K = 8*1024;
+	sample::disc(centroids, K, glm::vec2(-1), glm::vec2(1));
 
-//	std::cout<<"Generate Sample Time"<<std::endl;
-//	timer::benchmark<std::chrono::microseconds>([&](){
+	std::vector<glm::mat4> models;
+  float R = 2.0f*sqrt(4.0f/3.14159265f/K);
+	for(auto& c: centroids){
+		glm::mat4 model = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(c.x, c.y, 0)), glm::vec3(R));
+		models.push_back(model);
+	}
 
-	sample::disc(centroids, 2048, glm::vec2(-1), glm::vec2(1));
-
-//	});
-
+	//Compute Color Hashing Number
 	int NCOLOR = 1;
 		while(pow(NCOLOR, 3) < centroids.size())
 			NCOLOR++;
 
-	for(unsigned int i = 0; i < centroids.size(); i++)
-		colors.push_back(pickvec(i, NCOLOR));
-
 	//Utility Classes
-	Square2D flat;
-	Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Centroid", "in_Color"});
+	Square3D flat;
+	Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Model", "in_Centroid"});
 
-	Billboard billboard(250, 250);
+	Billboard billboard(1000, 1000);
 	Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
 	billboard.target(color::black); //Clear Buffers Once
 
 	Instance instance(&flat);
-	instance.addBuffer(centroids);
-	instance.addBuffer(colors);
+	instance.addBuffer(models);
 
 	//Make sure we don't over do it
 	bool updated = true;
@@ -71,15 +74,9 @@ int main( int argc, char* args[] ) {
 
 		if(updated){
 
-				//billboard.target(color::black);
-				glBindFramebuffer(GL_FRAMEBUFFER, billboard.fbo);
-		    glViewport(0, 0, billboard.WIDTH, billboard.HEIGHT);
-		    glClear( GL_DEPTH_BUFFER_BIT );
-
+				billboard.target(color::black);
 				voronoi.use();		//Instanced Render Pass
-				voronoi.uniform("model", flat.model);
-				voronoi.uniform("r", 2.0f*sqrt(4.0f/3.14159265f/2048.0f));
-
+				voronoi.uniform("NCOLOR", NCOLOR);
 				instance.render();
 
 				glFlush();
@@ -101,6 +98,7 @@ int main( int argc, char* args[] ) {
 	//	std::cout<<"Move Centroids Time"<<std::endl;
 	//	timer::benchmark<std::chrono::microseconds>([&](){
 
+/*
 		//Move Centroids Around
 		for(auto&c: centroids){
 			c.x += (rand()%1000-500)/100000.0f;
@@ -110,7 +108,7 @@ int main( int argc, char* args[] ) {
 		}
 
 		instance.updateBuffer(centroids, 0);
-
+*/
 		updated = true;
 
 	//	});
@@ -123,6 +121,7 @@ int main( int argc, char* args[] ) {
 	return 0;
 }
 
+/*
 //Color Conversion
 glm::vec3 pickvec(int i, int N){
 
@@ -137,3 +136,4 @@ int getpick(glm::vec3 a, int N){
   glm::vec3 b = glm::vec3(N-1.0f)*glm::vec3(N*N, N, 1);
   return a.x*b.x + a.y*b.y + a.z*b.z;
 }
+*/

@@ -7,13 +7,12 @@ flat out vec3 ex_Color;
 out vec2 ex_Centroid;
 
 uniform float R;
-uniform int NCOLOR;
 
 vec3 color(int i){
-  int Z = (i%NCOLOR);
-  int Y = ((i/NCOLOR)%NCOLOR);
-  int X = ((i/(NCOLOR*NCOLOR))%NCOLOR);
-  return vec3(X, Y, Z)/vec3(NCOLOR-1.0f);
+  float r = ((i >>  0) & 0xff)/255.0f;
+  float g = ((i >>  8) & 0xff)/255.0f;
+  float b = ((i >> 16) & 0xff)/255.0f;
+  return vec3(r,g,b);
 }
 
 void main(){

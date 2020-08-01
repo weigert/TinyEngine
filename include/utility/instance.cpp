@@ -15,12 +15,9 @@ public:
   std::vector<GLuint> instances;    //Instance VBO Pointers
   unsigned int SIZE;                //Number of Instances
 
-  template<typename D>
-  void addBuffer(std::vector<D>& buf);
-  template<typename D>
-  void updateBuffer(std::vector<D>& buf, int index);
-  template<typename D>
-  void configBuffer(GLuint instance);
+  template<typename D> void addBuffer(std::vector<D>& buf);
+  template<typename D> void updateBuffer(std::vector<D>& buf, int index);
+  template<typename D> void configBuffer(GLuint instance);
 
   void render(GLenum mode = GL_TRIANGLE_STRIP); //Default because of primitive models
 };

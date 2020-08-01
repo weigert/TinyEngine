@@ -1,8 +1,9 @@
 #include "../../TinyEngine.h"
 #include "../../include/helpers/color.h"
+#include "../../include/helpers/image.h"
 
 #include "poisson.h"
-//#include "model.h"
+#include "model.h"
 #include <noise/noise.h>
 
 /*
@@ -29,6 +30,7 @@ Possible OpenGL Implementations (2 Types):
 	Applications:
 		-> Dynamic Run-Time Mosaic Filters in a Shader
 		-> Dynamic Run-Time Bubble Filter
+
 		-> Dynamic Run-Time Mosaic Effects with Particles (e.g. Lava-, Cloud-Flow)
 		-> Voronoi Painter using Directional Poisson Disc Sampling
 		-> "Clustered Convection" by Centroid (Particle) Motion
@@ -45,22 +47,13 @@ int main( int argc, char* args[] ) {
 	Tiny::window("GPU Accelerated Voronoise", 1024, 1024);
 
 	Tiny::event.handler  = [](){}; //eventHandler;
-	Tiny::view.interface = [](){}; //interfaceFunc;
+	Tiny::view.interface = interfaceFunc;
 
 	srand(time(NULL));
 
 	//Generate Set of Centroids
-	std::vector<glm::vec2> centroids;
-	std::vector<glm::vec2> offset;
-	float K = 1024; //That's a lot of polygons
 	sample::disc(centroids, K, glm::vec2(-1), glm::vec2(1));
 	offset = centroids;
-  float R = 2.0f*sqrt(4.0f/3.14159265f/K);
-
-	//Compute Color Hashing Number
-	int NCOLOR = 1;
-		while(pow(NCOLOR, 3) < centroids.size())
-			NCOLOR++;
 
 	//Utility Classes
 	Square2D flat;
@@ -69,11 +62,20 @@ int main( int argc, char* args[] ) {
 	Billboard billboard(1024, 1024);
 	Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
 
+	//Filter Effects
+	Shader bubble({"shader/bubble.vs", "shader/bubble.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
+	Shader mosaic({"shader/mosaic.vs", "shader/mosaic.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
+
+	bubble.buffer("centroids", centroids);
+	mosaic.buffer("centroids", centroids);
+
 	Instance instance(&flat);
 	instance.addBuffer(centroids);
 
+	Texture tex(image::load("starry_night.png"));		//Load Texture with Image
+
 	noise::module::Perlin perlin;
-  perlin.SetOctaveCount(8);
+  perlin.SetOctaveCount(4);
   perlin.SetFrequency(1.0);
   perlin.SetPersistence(0.5);
 
@@ -81,32 +83,70 @@ int main( int argc, char* args[] ) {
 
 		billboard.target(color::black);
 		voronoi.use();
-		voronoi.uniform("NCOLOR", NCOLOR);
 		voronoi.uniform("R", R);
+		voronoi.uniform("drawcenter", drawcenter);
+		voronoi.uniform("style", drawstyle);
 		instance.render();
+
+		glFlush();
 
 		Tiny::view.target(color::black);	//Target Screen
 
-		billboardshader.use();
-		billboardshader.texture("imageTexture", billboard.texture);
-		billboardshader.uniform("model", flat.model);
-		flat.render();
+		if(drawstyle == 3){
+			bubble.use();
+			bubble.texture("voronoi", billboard.texture);
+			bubble.texture("image", tex);
+			bubble.uniform("R", R);
+			bubble.uniform("model", flat.model);
+			flat.render();
+		}
 
+		else if(drawstyle == 2) {
+			mosaic.use();
+			mosaic.texture("voronoi", billboard.texture);
+			mosaic.texture("image", tex);
+			mosaic.uniform("R", R);
+			mosaic.uniform("model", flat.model);
+			flat.render();
+		}
+
+		else {
+			billboardshader.use();
+			billboardshader.texture("imageTexture", billboard.texture);
+			billboardshader.uniform("model", flat.model);
+			flat.render();
+		}
 	};
 
 	float t = 0; //Time
 
 	Tiny::loop([&](){
 
-		t += 0.01;
+		if(animate){
 
-		//Jiggle Centroids using Continuous Noise
-		for(unsigned int i = 0; i < centroids.size(); i++){
-			offset[i].x = centroids[i].x + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, t);
-			offset[i].y = centroids[i].y + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, -t);
+			t += 0.005;
+
+			//Jiggle Centroids using Continuous Noise
+			for(unsigned int i = 0; i < centroids.size(); i++){
+				offset[i].x = centroids[i].x + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, t);
+				offset[i].y = centroids[i].y + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, -t);
+			}
+
+		instance.updateBuffer(offset, 0); //Move Things as Animated!
+
 		}
 
-		instance.updateBuffer(offset, 0);
+		if(translate){ //Update Bubble Centroids (if desired and applicable)
+			if(drawstyle == 2) mosaic.buffer("centroids", offset);
+			if(drawstyle == 3) bubble.buffer("centroids", offset);
+		}
+
+		if(updated){ //Update the data in the buffers!
+			bubble.buffer("centroids", centroids);
+			mosaic.buffer("centroids", centroids);
+			instance.updateBuffer(offset, 0); //Move Things as Animated!
+			updated = false;
+		}
 
 	});
 

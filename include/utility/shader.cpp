@@ -9,6 +9,18 @@ public:
     link();                             //Link the shader program!
   }
 
+  Shader(slist shaders, slist in){
+    program = glCreateProgram();        //Generate Shader
+    setup(shaders);                     //Add Individual Shaders
+    for(auto &n : in)                   //Add all Attributes of Shader
+      glBindAttribLocation(program, &n - in.begin(), n.c_str());
+    link();                             //Link the shader program!
+  }
+
+  Shader(slist shaders, slist in, slist buf):Shader(shaders, in){
+    for(auto&b : buf) addBuffer(b);     //Add Storage Buffers to Shader
+  }
+
   ~Shader(){
     glDeleteProgram(program);
     glDeleteShader(fragmentShader);
@@ -20,6 +32,9 @@ public:
   GLuint vertexShader, geometryShader, fragmentShader;
   int boundtextures;
 
+  std::unordered_map<std::string, GLuint> ssbo; //SSBO Storage
+  std::unordered_map<std::string, GLuint> sbpi; //Shader Binding Point Index
+
   void setup(slist shaders);
   int  addProgram(std::string fileName, GLenum shaderType);  //General Shader Addition
   std::string readGLSLFile(std::string fileName, int32_t &size); //Read File
@@ -27,8 +42,10 @@ public:
   void link();                  //Link the entire program
   void error(GLuint s, bool t); //Get Compile/Link Error
   void use();                   //Use the program
+  void addBuffer(std::string name);                          //General Buffer Addition
 
   template<typename T> void texture(std::string name, const T& t);
+  template<typename T> void buffer(std::string name, std::vector<T>& buf, bool update = false);
   template<typename T> void uniform(std::string name, const T u);
   template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
 };
@@ -107,6 +124,28 @@ std::string Shader::readGLSLFile(std::string file, int32_t &size){
 
   size = fileContent.length();  //Set the Size
   return fileContent;
+}
+
+/* Shader Storage Buffer Objects */
+
+void Shader::addBuffer(std::string name){
+  unsigned int b;
+  glGenBuffers(1, &b);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, b);
+  glShaderStorageBlockBinding(program, glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name.c_str()), ssbo.size());
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo.size(), b);
+  sbpi[name] = ssbo.size();
+  ssbo[name] = b;
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+template<typename T>
+void Shader::buffer(std::string name, std::vector<T>& buf, bool update){
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo[name]);
+  if(update) glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, buf.size()*sizeof(T), &buf[0]);
+  else glBufferData(GL_SHADER_STORAGE_BUFFER, buf.size()*sizeof(T), &buf[0], GL_STATIC_DRAW);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], ssbo[name]);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 /* Uniform Setters */

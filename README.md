@@ -38,7 +38,6 @@ The main engine interface is wrapped in a namespace `Tiny`. This namespace has f
 	- View Class (Tiny::view): 	Window handling, rendering, GUI interface
 	- Event Class (Tiny::event): 	Event handling for keyboard and mouse, window resizing
 	- Audio Class (Tiny::audio): 	Audio interface for playing / looping sounds
-	- Net Class (Tiny::net):	Networking interface for sending and receiving raw data buffers
 
 A number of utility classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
 
@@ -56,9 +55,8 @@ The behavior is combined through a standard game pipeline. The programs behavior
 	- Tiny::view.interface: Lets you define an ImGUI interface that can act on your data structures
 	- Tiny::view.pipeline: 	Combines utility classes to render your data structures to targets / windows
 	- Tiny::loop: 		Executed every cycle. Arbitrary code acting on your data structures every loop
-	- Tiny::net.handler: 	(Optionally) Executes callbacks based on messages received via the network interface
 
-A number of helper namespaces then supply additional algorithms and functions that are useful. More information on these can be found in the wiki: [Helper Namespaces](https://github.com/weigert/TinyEngine/wiki/Helper-Namespaces).
+A number of helper namespaces then supply additional algorithms and functions that are useful.
 
 ## Example Images
 

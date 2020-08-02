@@ -5,17 +5,18 @@ Tiny OpenGL3 based 2D/3D Engine / Wrapper in C++
 Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)
 
 	LINES OF CODE (without unreasonable compression):
-		Main File: 99
-		Main Classes: 258
-		Utility Classes: 509
+		Main File: 103
+		Main Classes: 264
+		Utility Classes: 579
 		Helpers Namespaces: 199
-		Total: 1065
+		Total: 1145
 
 	History:
 		12. April 2020: 885
 		29. April 2020: 1116
 		17. May 2020: 1667
 		23. May 2020: 1065
+		1. August 2020: 1145
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -33,7 +34,7 @@ As I continue to build projects using this engine, I plan on slowly expanding it
 Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/2020/04/14/animated-multi-julia-sets/).
 
 ## Structure
-The main engine interface is wrapped in a namespace `Tiny`. This namespace has four (global) static members, which are its main component classes:
+The main engine interface is wrapped in a namespace `Tiny`. This namespace has three (global) static members, which are its main component classes:
 
 	- View Class (Tiny::view): 	Window handling, rendering, GUI interface
 	- Event Class (Tiny::event): 	Event handling for keyboard and mouse, window resizing
@@ -42,10 +43,10 @@ The main engine interface is wrapped in a namespace `Tiny`. This namespace has f
 A number of utility classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
 
 	- Texture: 	OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
-	- Shader: 	Load, compile, link and use shader programs (vertex, fragment, geometry) easily.
+	- Shader: 	Load, compile, link and use shader programs (vertex, fragment, geometry) easily, pass SSBO.
 	- Model: 	OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
 	- Target: 	OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
-	- Particle: 	OpenGL instanced rendering wrapper (any Model object). Simply add model matrices and render.
+	- Instance: 	OpenGL instanced rendering wrapper (any Model object, any data). Simply add model buffers and render model instanced.
 
 More information can be found on the wiki: [Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
 

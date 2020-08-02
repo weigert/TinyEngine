@@ -69,7 +69,9 @@ A procedural 3D tree (example program 6), that has a leaf particle system and or
 ![Simple Lighting Scene](screenshots/scene.png)
 A simple scene (example program 9) that uses .obj / .mtl files generated in Blender, and then uses cubemaps for point-light shading.
 
-Other examples include in-shader raymarching, GPU accelerated fractals and cellular automata, simple shader-based image effects and more.
+![Shader Based Voronoi Texture](screenshots/2048.png)
+
+An example image of a shader-based voronoi texture generator I implemented as a small experiment (example program 11). Lets you do real-time voronoi filters because its very fast. Here seen for N = 2048. See [my blog here here](https://weigert.vsos.ethz.ch/2020/08/01/gpu-accelerated-voronoi-textures-and-filters/).
 
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.

@@ -15,7 +15,7 @@ int drawstyle;
 std::vector<glm::vec2> centroids;
 std::vector<glm::vec2> offset;
 
-float K = 256;
+float K = 4*4*4*4*64;
 float R = 2.0f*sqrt(4.0f/3.14159265f/K);
 
 std::function<void()> interfaceFunc = [&](){
@@ -27,15 +27,14 @@ std::function<void()> interfaceFunc = [&](){
   ImGui::Begin("Controller", NULL, ImGuiWindowFlags_NoResize);
 
   ImGui::Checkbox("Animate", &animate); ImGui::SameLine();
-  ImGui::Checkbox("Centroids", &drawcenter);
+  ImGui::Checkbox("Centroids", &drawcenter); ImGui::SameLine();
+  ImGui::Checkbox("Non-Static", &translate);
 
   static int e;
   ImGui::RadioButton("Pick", &e, 0); ImGui::SameLine();
   ImGui::RadioButton("Depth", &e, 1); ImGui::SameLine();
   ImGui::RadioButton("Mosaic", &e, 2); ImGui::SameLine();
   ImGui::RadioButton("Bubble", &e, 3);
-
-  ImGui::Checkbox("Non-Static", &translate);
 
   drawstyle = e;
 

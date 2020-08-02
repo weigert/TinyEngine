@@ -5,6 +5,7 @@
 #include "poisson.h"
 #include "model.h"
 #include <noise/noise.h>
+#include <chrono>
 
 /*
 
@@ -40,11 +41,13 @@ Possible OpenGL Implementations (2 Types):
 		-> Rendering to Sphere using Cubemaps (trivial to extend)
 */
 
+#define SIZE 768
+
 int main( int argc, char* args[] ) {
 
 	//Setup Window
-	Tiny::view.vsync = true;
-	Tiny::window("GPU Accelerated Voronoise", 1024, 1024);
+	Tiny::view.vsync = false;
+	Tiny::window("GPU Accelerated Voronoise", SIZE, SIZE);
 
 	Tiny::event.handler  = [](){}; //eventHandler;
 	Tiny::view.interface = interfaceFunc;
@@ -59,7 +62,7 @@ int main( int argc, char* args[] ) {
 	Square2D flat;
 	Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Centroid"});
 
-	Billboard billboard(1024, 1024);
+	Billboard billboard(SIZE, SIZE);
 	Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
 
 	//Filter Effects
@@ -79,7 +82,12 @@ int main( int argc, char* args[] ) {
   perlin.SetFrequency(1.0);
   perlin.SetPersistence(0.5);
 
+	int n = 0;
+	float us = 0.0;
+
 	Tiny::view.pipeline = [&](){
+
+		auto start = std::chrono::high_resolution_clock::now();
 
 		billboard.target(color::black);
 		voronoi.use();
@@ -89,6 +97,15 @@ int main( int argc, char* args[] ) {
 		instance.render();
 
 		glFlush();
+
+		auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+		//Rolling Average
+		us = (float)((us*n+duration.count())/(n+1));
+		n++;
+
+		std::cout<<"Average Execution Time: "<<us<<std::endl;
 
 		Tiny::view.target(color::black);	//Target Screen
 

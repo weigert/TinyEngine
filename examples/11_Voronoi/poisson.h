@@ -87,9 +87,7 @@ namespace sample{
     return false;
   }
 
-
-
-
+  //Sample Set of Points in Region
   void disc(std::vector<glm::vec2>& set, int K, glm::vec2 a, glm::vec2 b){
 
     float r = sqrt(glm::dot(b-a, b-a)/3.14159265f/K);
@@ -166,4 +164,6 @@ namespace sample{
     }
     delete[] grid;
   }
+
+  //Those functions could probably be improved. Not sure how right now. Recursiveness?
 }

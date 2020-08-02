@@ -51,7 +51,7 @@ glm::mat4 bias = glm::mat4(
     0.0, 0.0, 0.5, 0.0,
     0.5, 0.5, 0.5, 1.0
 );
-glm::mat4 lproj = glm::ortho(-300.0f, 300.0f, -300.0f, 400.0f, -200.0f, 800.0f);;
+glm::mat4 lproj = glm::ortho(-300.0f, 300.0f, -300.0f, 400.0f, -200.0f, 800.0f);
 glm::mat4 lview = glm::lookAt(lightpos, glm::vec3(0), glm::vec3(0,1,0));
 
 #include "tree.h"
@@ -60,7 +60,7 @@ void setup(){
   projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -500.0f, 800.0f);
   srand(time(NULL));
   root = new Branch({0.6, 0.45, 2.5}); //Create Root
-};
+}
 
 // Event Handler
 std::function<void()> eventHandler = [&](){

@@ -45,13 +45,16 @@ float pointShadow(samplerCube cube, vec3 pos, float _far){
 }
 
 vec4 pointLight(){
-	vec3 dir = pointlightpos-ex_Model;
+	vec3 dir  = normalize(pointlightpos-ex_Model);
+	vec3 cdir = normalize(camera-ex_Model);
+	vec3 hdir = normalize(cdir + dir); //Blinn-Phong Modification
+
 	float dist = length(dir)/pointlightfar;
 	float A = 1.0/(attenuation.x + attenuation.y*dist + attenuation.z*dist*dist);
 
-	float ambient  = 0.3;
-	float diffuse  = 0.8*max(dot(ex_Normal, normalize(dir)), 0.0);
-	float specular = 0.2*pow(max(dot(normalize(ex_Model-camera), normalize(reflect(dir, ex_Normal))), 0.0), 16);
+	float ambient  = 0.1;
+	float diffuse  = 0.2*max(dot(ex_Normal, normalize(dir)), 0.0);
+	float specular = 0.2*pow(max(dot(hdir, ex_Normal), 0.0), 8);
 
   float cubeshade = pointShadow(pointshadowMap, pointlightpos, pointlightfar);
 

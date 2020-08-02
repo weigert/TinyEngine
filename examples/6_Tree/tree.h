@@ -148,7 +148,7 @@ glm::vec3 Branch::leafdensity(int searchdepth){
 
   //Average relative to ancestor, shifted by rel ( + Noise )
   return directedness*glm::normalize(leafaverage(C) - rel) + (1.0f-directedness)*r;
-};
+}
 
 Branch* root;
 
@@ -215,9 +215,8 @@ std::function<void(Model*)> _construct = [&](Model* h){
 };
 
 //Construct Leaf Particle System from Tree Data
-template<typename T>
-std::function<void(Particle<T>*, bool)> addLeaves = [&](Particle<T>* p, bool face){
-  p->models.clear();
+std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [&](std::vector<glm::mat4>& p, bool face){
+  p.clear();
 
   //Explore the Tree and Add Leaves!
   std::function<void(Branch*, glm::vec3)> addLeaf = [&](Branch* b, glm::vec3 pos){
@@ -237,7 +236,7 @@ std::function<void(Particle<T>*, bool)> addLeaves = [&](Particle<T>* p, bool fac
         if(face) model = glm::rotate(model, glm::radians(45.0f-rotation), glm::vec3(0.0, 1.0, 0.0));
         else model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
 
-        p->models.push_back(glm::scale(model, glm::vec3(leafsize)));
+        p.push_back(glm::scale(model, glm::vec3(leafsize)));
 
       }
 
@@ -251,5 +250,4 @@ std::function<void(Particle<T>*, bool)> addLeaves = [&](Particle<T>* p, bool fac
   };
 
   addLeaf(root, glm::vec3(0.0));
-  p->update();
 };

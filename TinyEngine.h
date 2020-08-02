@@ -24,12 +24,14 @@ using slist = std::initializer_list<std::string>;
 #include "include/utility/texture.cpp"              //Utility Classes
 #include "include/utility/shader.cpp"
 #include "include/utility/model.cpp"
-#include "include/utility/particle.cpp"
+#include "include/utility/instance.cpp"
 #include "include/utility/target.cpp"
 
 #include "include/view.cpp"
 #include "include/event.cpp"
 #include "include/audio.cpp"
+
+#include <chrono>
 
 /* TINY ENGINE */
 
@@ -78,11 +80,12 @@ void quit(){
   if(Tiny::audio.enabled) audio.quit();
   TTF_Quit();
   SDL_Quit();
-};
+}
 
 template<typename F, typename... Args>
 void loop(F function, Args&&... args){
   while(!event.quit){
+
     if(Tiny::view.enabled){
       event.input();        //Get Input
       event.handle(view);   //Call the event-handling system
@@ -93,7 +96,8 @@ void loop(F function, Args&&... args){
     function(args...);      //User-defined Game Loop
 
     if(Tiny::view.enabled)  view.render();        //Render View
-  }
-};
 
-};
+  }
+}
+
+}

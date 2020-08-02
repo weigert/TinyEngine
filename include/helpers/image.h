@@ -32,4 +32,4 @@ namespace image {
     return s;
   }
 
-};
+}

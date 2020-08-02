@@ -45,15 +45,15 @@ int main( int argc, char* args[] ) {
 			cubedepth.uniform("proj", pointproj);
 			cubedepth.uniform("lightPos", plightpos);
 			cubedepth.uniform("far", pointfar);
-			shader.uniform("model", lamp.model);
+			cubedepth.uniform("model", lamp.model);
 			lamp.render();
-			shader.uniform("model", table.model);
+			cubedepth.uniform("model", table.model);
 			table.render();
-			shader.uniform("model", chair.model);
+			cubedepth.uniform("model", chair.model);
 			chair.render();
-			shader.uniform("model", shelf.model);
+			cubedepth.uniform("model", shelf.model);
 			shelf.render();
-			shader.uniform("model", frame.model);
+			cubedepth.uniform("model", frame.model);
 		  frame.render();
 			lightupdate = false;
 		}

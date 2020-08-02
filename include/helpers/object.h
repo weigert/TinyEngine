@@ -31,7 +31,7 @@ namespace obj{
     }
     else std::cout<<"Failed to open file "<<file<<std::endl;
     return mat;
-  };
+  }
 
   //Construct a Model from a .Obj File
   std::function<void(Model*, std::string)> load = [](Model* h, std::string file){
@@ -107,4 +107,4 @@ namespace obj{
     in.close();
   };
 
-};
+}

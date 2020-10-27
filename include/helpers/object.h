@@ -29,7 +29,7 @@ namespace obj{
       }
       in.close();
     }
-    else std::cout<<"Failed to open file "<<file<<std::endl;
+    else std::cout<<"Failed to open file "<<file<<".mtl"<<std::endl;
     return mat;
   }
 
@@ -45,11 +45,12 @@ namespace obj{
     std::ifstream in(file+".obj", std::ios::in);
 
     if(!in){
-      std::cout<<"Failed to open file "<<file<<std::endl;
+      std::cout<<"Failed to open file "<<file<<".obj"<<std::endl;
       return;
     }
 
     glm::vec3 color = glm::vec3(1.0);
+    bool vt = false;
 
     std::string line;
     while (getline(in, line)){
@@ -57,12 +58,24 @@ namespace obj{
       //Ignore Comments
       if(line[0] == '#') continue;
 
+      //These Three Always Come First!
+
       //Extract Vertex Information
       if(line.substr(0,2) == "v "){
         std::istringstream s(line.substr(2));
         glm::vec3 v;
         s >> v.x; s >> v.y; s >> v.z;
         vertices.push_back(v);
+      }
+
+      else if(line.substr(0,3) == "vt"){
+        vt = true;
+        /*
+        std::istringstream s(line.substr(3));
+        glm::vec3 v;
+        s >> v.x; s >> v.y; s >> v.z;
+        ex_tex.push_back(v); //???
+        */
       }
 
       //Extract Normal Information
@@ -78,12 +91,20 @@ namespace obj{
 
       //Map Index Information
       else if(line.substr(0,2) == "f "){
-        //Parse Face Data
         unsigned int vI[3], uI[3], nI[3];
-        int m = std::sscanf(line.substr(2).c_str(), "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vI[0], &uI[0], &nI[0], &vI[1], &uI[1], &nI[1], &vI[2], &uI[2], &nI[2]);
-        if(m != 9){
-          std::cout<<"Face data could not be read correctly."<<std::endl;
-          return;
+        if(normals.empty() && !vt){ //Simple Format
+          int m = std::sscanf(line.substr(2).c_str(), "%d %d %d\n", &vI[0], &vI[1], &vI[2]);
+          if(m != 3){
+            std::cout<<"Face data could not be read correctly."<<std::endl;
+            return;
+          }
+        }
+        else { //Parse Face Data Normally
+          int m = std::sscanf(line.substr(2).c_str(), "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vI[0], &uI[0], &nI[0], &vI[1], &uI[1], &nI[1], &vI[2], &uI[2], &nI[2]);
+          if(m != 9){
+            std::cout<<"Face data could not be read correctly."<<std::endl;
+            return;
+          }
         }
 
         //Push Face Data
@@ -93,9 +114,25 @@ namespace obj{
           h->positions.push_back(vertices[vI[i]-1].x);
           h->positions.push_back(vertices[vI[i]-1].y);
           h->positions.push_back(vertices[vI[i]-1].z);
-          h->normals.push_back(normals[nI[i]-1].x);
-          h->normals.push_back(normals[nI[i]-1].y);
-          h->normals.push_back(normals[nI[i]-1].z);
+        }
+        if(!normals.empty())
+          for(int i = 0; i < 3; i++){
+            h->normals.push_back(normals[nI[i]-1].x);
+            h->normals.push_back(normals[nI[i]-1].y);
+            h->normals.push_back(normals[nI[i]-1].z);
+          }
+        else{
+          glm::vec3 a = vertices[vI[0]-1];
+          glm::vec3 b = vertices[vI[1]-1];
+          glm::vec3 c = vertices[vI[2]-1];
+          glm::vec3 n = glm::normalize(glm::cross(b-a, c-a));
+          for(int i = 0; i < 3; i++){
+            h->normals.push_back(n.x);
+            h->normals.push_back(n.y);
+            h->normals.push_back(n.z);
+          }
+        }
+        for(int i = 0; i < 3; i++){
           h->colors.push_back(color.x);
           h->colors.push_back(color.y);
           h->colors.push_back(color.z);

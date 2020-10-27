@@ -92,12 +92,23 @@ int main( int argc, char* args[] ) {
 
 		auto start = std::chrono::high_resolution_clock::now(); //Start Timer
 
+<<<<<<< HEAD
+		billboard.target(color::black);
+		voronoi.use();
+		voronoi.uniform("R", R);
+		voronoi.uniform("drawcenter", drawcenter);
+		voronoi.uniform("style", drawstyle);
+		voronoi.uniform("metric", metric);
+		voronoi.uniform("twist", twist);
+		instance.render();
+=======
 		billboard.target(color::black);                         //Target Vorononi FBO
 		voronoi.use();                                          //Use Voronoi Shader
 		voronoi.uniform("R", R);				//Pass Radius
 		voronoi.uniform("drawcenter", drawcenter);		//... flag
 		voronoi.uniform("style", drawstyle);			//... flag
 		instance.render();					//Render flat using this shader, once per centroid
+>>>>>>> 4c8ef38267db05651a5434d6ae47f9a3dbb7d0a0
 
 		glFlush();						//Finish Pass
 

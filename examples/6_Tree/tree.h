@@ -49,7 +49,7 @@ void Branch::grow(double feed){
 
   if(leaf){
     length += cbrt(feed);   //Grow in Length
-    feed -= length * area;  //Reduce Feed
+    feed -= cbrt(feed) * area;  //Reduce Feed
     area += feed/length;    //Grow In Area
 
     //Split Condition
@@ -65,7 +65,7 @@ void Branch::grow(double feed){
     pass = (A->area+B->area)/(A->area+B->area+area);
 
   area += pass * feed / length;   //Grow in Girth
-  feed *= ( 1.0 - pass );         //Reduce Feed
+  feed *= ( 1.0 - pass );         //Reduce Feed  
 
   if(feed < 1E-5) return;         //Prevent Over-Branching
 

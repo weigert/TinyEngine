@@ -69,26 +69,30 @@ int main( int argc, char* args[] ) {
 	Shader bubble({"shader/bubble.vs", "shader/bubble.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
 	Shader mosaic({"shader/mosaic.vs", "shader/mosaic.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
 
+	//SSBO Centroids into Filters
 	bubble.buffer("centroids", centroids);
 	mosaic.buffer("centroids", centroids);
 
+	//Prepare instance render of flat, per-centroid 
 	Instance instance(&flat);
 	instance.addBuffer(centroids);
 
-	Texture tex(image::load("starry_night.png"));		//Load Texture with Image
+	Texture tex(image::load("starry_night.png")); //Load Texture with Image
 
+	//Prepare Noise for jiggling the centroids
 	noise::module::Perlin perlin;
-  perlin.SetOctaveCount(4);
-  perlin.SetFrequency(1.0);
-  perlin.SetPersistence(0.5);
+  	perlin.SetOctaveCount(4);
+  	perlin.SetFrequency(1.0);
+  	perlin.SetPersistence(0.5);
 
 	int n = 0;
-	float us = 0.0;
+	float us = 0.0; //Rolling average execution time calculation in microseconds (us)
 
 	Tiny::view.pipeline = [&](){
 
-		auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now(); //Start Timer
 
+<<<<<<< HEAD
 		billboard.target(color::black);
 		voronoi.use();
 		voronoi.uniform("R", R);
@@ -97,20 +101,29 @@ int main( int argc, char* args[] ) {
 		voronoi.uniform("metric", metric);
 		voronoi.uniform("twist", twist);
 		instance.render();
+=======
+		billboard.target(color::black);                         //Target Vorononi FBO
+		voronoi.use();                                          //Use Voronoi Shader
+		voronoi.uniform("R", R);				//Pass Radius
+		voronoi.uniform("drawcenter", drawcenter);		//... flag
+		voronoi.uniform("style", drawstyle);			//... flag
+		instance.render();					//Render flat using this shader, once per centroid
+>>>>>>> 4c8ef38267db05651a5434d6ae47f9a3dbb7d0a0
 
-		glFlush();
+		glFlush();						//Finish Pass
 
-		auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+		auto stop = std::chrono::high_resolution_clock::now();	//TIME!
+    		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
 		//Rolling Average
 		us = (float)((us*n+duration.count())/(n+1));
 		n++;
 
-		std::cout<<"Average Execution Time: "<<us<<std::endl;
+		std::cout<<"Average Execution Time: "<<us<<std::endl; 	//Comment out for less spam
 
 		Tiny::view.target(color::black);	//Target Screen
 
+		//Pick a shader, pass textures, render as a quad.
 		if(drawstyle == 3){
 			bubble.use();
 			bubble.texture("voronoi", billboard.texture);
@@ -139,7 +152,7 @@ int main( int argc, char* args[] ) {
 
 	float t = 0; //Time
 
-	Tiny::loop([&](){
+	Tiny::loop([&](){ //Execute every frame
 
 		if(animate){
 
@@ -151,19 +164,19 @@ int main( int argc, char* args[] ) {
 				offset[i].y = centroids[i].y + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, -t);
 			}
 
-		instance.updateBuffer(offset, 0); //Move Things as Animated!
-
+		//Centroids have moved, so we update the instance buffer
+		instance.updateBuffer(offset, 0);
 		}
 
 		if(translate){ //Update Bubble Centroids (if desired and applicable)
-			if(drawstyle == 2) mosaic.buffer("centroids", offset);
+			if(drawstyle == 2) mosaic.buffer("centroids", offset); //This means the centroids are the offset centroids
 			if(drawstyle == 3) bubble.buffer("centroids", offset);
 		}
 
 		if(updated){ //Update the data in the buffers!
-			bubble.buffer("centroids", centroids);
+			bubble.buffer("centroids", centroids);			
 			mosaic.buffer("centroids", centroids);
-			instance.updateBuffer(offset, 0); //Move Things as Animated!
+			instance.updateBuffer(offset, 0); //Also update the number of centroids in the instance buffer
 			updated = false;
 		}
 

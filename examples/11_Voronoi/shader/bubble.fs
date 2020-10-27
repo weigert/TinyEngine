@@ -22,6 +22,5 @@ void main(){
   //Direction
   vec2 dir = (2*ex_Tex-1) - c[i]; //Direction to the Centroid
   float d = length(dir)/R; //Distance divided by R
-
-  fragColor = texture(image, ex_Tex+dir*d);
+  fragColor = mix(texture(image, ex_Tex+dir*d), vec4(vec3(0), 1), d*d);
 }

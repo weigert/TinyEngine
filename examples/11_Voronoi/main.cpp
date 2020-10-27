@@ -94,6 +94,8 @@ int main( int argc, char* args[] ) {
 		voronoi.uniform("R", R);
 		voronoi.uniform("drawcenter", drawcenter);
 		voronoi.uniform("style", drawstyle);
+		voronoi.uniform("metric", metric);
+		voronoi.uniform("twist", twist);
 		instance.render();
 
 		glFlush();

@@ -12,10 +12,13 @@ bool drawcolor = true;
 bool drawpick = false;
 int drawstyle;
 
+int metric;
+float twist = 1.0;
+
 std::vector<glm::vec2> centroids;
 std::vector<glm::vec2> offset;
 
-float K = 4*4*4*4*64;
+float K = 64;
 float R = 2.0f*sqrt(4.0f/3.14159265f/K);
 
 std::function<void()> interfaceFunc = [&](){
@@ -35,8 +38,13 @@ std::function<void()> interfaceFunc = [&](){
   ImGui::RadioButton("Depth", &e, 1); ImGui::SameLine();
   ImGui::RadioButton("Mosaic", &e, 2); ImGui::SameLine();
   ImGui::RadioButton("Bubble", &e, 3);
-
   drawstyle = e;
+
+  static int f;
+  ImGui::RadioButton("L1", &f, 0); ImGui::SameLine();
+  ImGui::RadioButton("L2", &f, 1); ImGui::SameLine();
+  ImGui::RadioButton("LTwist", &f, 2);
+  metric = f;
 
   ImGui::SliderFloat("Centroids", &K, 256, 16*1024);
   if(ImGui::Button("Re-Seed")){
@@ -47,6 +55,8 @@ std::function<void()> interfaceFunc = [&](){
     R = 2.0f*sqrt(4.0f/3.14159265f/K);
     updated = true;
   }
+
+  ImGui::SliderFloat("Twist", &twist, 0.0, 6.0);
 
   ImGui::End();
 

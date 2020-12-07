@@ -44,6 +44,13 @@ public:
     glClearColor(a[0], a[1], a[2], 1.0f);
     target();
   }
+
+  template<typename T>                 //Raw Buffer Sampling
+  void sample(T* m, glm::vec2 p, glm::vec2 d, GLenum ATTACH = GL_COLOR_BUFFER_BIT, GLenum FORMAT = GL_RGBA){
+    if(d.x <= 0 || d.y <= 0 || p.x+d.x > WIDTH || p.y+d.y > HEIGHT) return;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo); glReadBuffer(ATTACH);
+    glReadPixels(p.x, p.y, d.x, d.y, FORMAT, GL_UNSIGNED_BYTE, m);
+  }
 };
 
 class Billboard: public Target{   //Billboard specialization

@@ -63,12 +63,12 @@ bool window(std::string windowName, int width, int height){ //Open a window
   }
 
   if(!view.init(windowName, width, height)){ //Start the View Class
-    std::cout<<"Failed to launch visual interface."<<std::endl;
+    printf("Failed to launch visual interface.\n");
     return false;
   }
 
   if(!audio.init()){ //Start the Audio Interface
-    std::cout<<"Failed to launch audio interface."<<std::endl;
+    printf("Failed to launch audio interface.\n");
 		return false;
 	}
 
@@ -79,6 +79,7 @@ void quit(){
   if(Tiny::view.enabled)  view.quit();
   if(Tiny::audio.enabled) audio.quit();
   TTF_Quit();
+  IMG_Quit();
   SDL_Quit();
 }
 

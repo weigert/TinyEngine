@@ -2,34 +2,28 @@
 #include "../../include/helpers/image.h"
 #include "../../include/helpers/color.h"
 
-#include "effects.h"
-
 int main( int argc, char* args[] ) {
 
 	Tiny::window("Shader Effects Example", 1200, 800);
 
 	Tiny::event.handler = [](){ /* ... */ };
 
-	Tiny::view.interface = interfaceFunc;
+	int ind = 0;    //Effect Index
+	int res = 100;  //Pixelate Effect
+	int bits = 4;   //Bitreduce Effect
+
+	Tiny::view.interface = [&](){
+	  ImGui::Text("Shader Effects");
+	  ImGui::DragInt("Effect", &ind, 1, 0, 2);
+	  ImGui::DragInt("Resolution", &res, 1, 1, 400);
+	  ImGui::DragInt("Bits", &bits, 1, 1, 16);
+	};
 
 	Texture tex(image::load("canyon.png"));		//Load Texture with Image
 	Square2D flat;														//Create Primitive Model
 	Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
-	Shader blur({"shader/blur.vs", "shader/blur.fs"}, {"in_Quad", "in_Tex"});
-
-	Billboard board(1200, 800);
 
 	Tiny::view.pipeline = [&](){
-
-		//Two-Pass Blur onto board FBO
-		board.target(color::black);
-		blur.use();
-		blur.texture("imageTexture", tex);
-		blur.uniform("horizontal", true);
-		blur.uniform("model", flat.model);
-		flat.render();
-		blur.uniform("horizontal", false);
-		flat.render();
 
 		Tiny::view.target(color::black);				//Target Main Screen
 
@@ -37,7 +31,7 @@ int main( int argc, char* args[] ) {
 		effect.uniform("index", ind);						//Define Uniforms
 		effect.uniform("res", res);
 		effect.uniform("bits", bits);
-		effect.texture("imageTexture", board.texture);		//Load Texture
+		effect.texture("imageTexture", tex);		//Load Texture
 		effect.uniform("model", flat.model);		//Add Model Matrix
 		flat.render();													//Render Primitive
 

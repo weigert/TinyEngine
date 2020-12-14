@@ -1,13 +1,15 @@
 #include "../../TinyEngine.h"
 #include "../../include/helpers/color.h"
+#include "../../include/helpers/camera.h"
 
 #include "model.h"
 
 int main( int argc, char* args[] ) {
 
-	Tiny::window("Heightmap Render", WIDTH, HEIGHT);	//Open Window
+	Tiny::window("Heightmap Render", 1200, 800);	//Open Window
 	Tiny::event.handler = eventHandler;								//Event Handler
 	Tiny::view.interface = [&](){ /* ... */ };				//No Interface
+	cam::init();
 
 	setup();																					//Prepare Model Stuff
 
@@ -21,13 +23,13 @@ int main( int argc, char* args[] ) {
 
 		defaultShader.use();														//Prepare Shader
 		defaultShader.uniform("model", mesh.model);			//Set Model Matrix
-		defaultShader.uniform("vp", projection*camera);	//View Projection Matrix
+		defaultShader.uniform("vp", cam::vp);	//View Projection Matrix
 		mesh.render(GL_LINES);													//Render Model with Lines
 
 	};
 
 	Tiny::loop([&](){ //Autorotate Camera
-		camera = glm::rotate(camera, glm::radians(0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
+		cam::pan(0.1f);
 	});
 
 	Tiny::quit();

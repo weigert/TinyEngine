@@ -15,8 +15,21 @@ int main( int argc, char* args[] ) {
 	Texture tex(image::load("canyon.png"));		//Load Texture with Image
 	Square2D flat;														//Create Primitive Model
 	Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
+	Shader blur({"shader/blur.vs", "shader/blur.fs"}, {"in_Quad", "in_Tex"});
+
+	Billboard board(1200, 800);
 
 	Tiny::view.pipeline = [&](){
+
+		//Two-Pass Blur onto board FBO
+		board.target(color::black);
+		blur.use();
+		blur.texture("imageTexture", tex);
+		blur.uniform("horizontal", true);
+		blur.uniform("model", flat.model);
+		flat.render();
+		blur.uniform("horizontal", false);
+		flat.render();
 
 		Tiny::view.target(color::black);				//Target Main Screen
 
@@ -24,7 +37,7 @@ int main( int argc, char* args[] ) {
 		effect.uniform("index", ind);						//Define Uniforms
 		effect.uniform("res", res);
 		effect.uniform("bits", bits);
-		effect.texture("imageTexture", tex);		//Load Texture
+		effect.texture("imageTexture", board.texture);		//Load Texture
 		effect.uniform("model", flat.model);		//Add Model Matrix
 		flat.render();													//Render Primitive
 

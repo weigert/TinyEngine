@@ -73,7 +73,7 @@ int main( int argc, char* args[] ) {
 	bubble.buffer("centroids", centroids);
 	mosaic.buffer("centroids", centroids);
 
-	//Prepare instance render of flat, per-centroid 
+	//Prepare instance render of flat, per-centroid
 	Instance instance(&flat);
 	instance.addBuffer(centroids);
 
@@ -92,7 +92,6 @@ int main( int argc, char* args[] ) {
 
 		auto start = std::chrono::high_resolution_clock::now(); //Start Timer
 
-<<<<<<< HEAD
 		billboard.target(color::black);
 		voronoi.use();
 		voronoi.uniform("R", R);
@@ -101,19 +100,11 @@ int main( int argc, char* args[] ) {
 		voronoi.uniform("metric", metric);
 		voronoi.uniform("twist", twist);
 		instance.render();
-=======
-		billboard.target(color::black);                         //Target Vorononi FBO
-		voronoi.use();                                          //Use Voronoi Shader
-		voronoi.uniform("R", R);				//Pass Radius
-		voronoi.uniform("drawcenter", drawcenter);		//... flag
-		voronoi.uniform("style", drawstyle);			//... flag
-		instance.render();					//Render flat using this shader, once per centroid
->>>>>>> 4c8ef38267db05651a5434d6ae47f9a3dbb7d0a0
 
 		glFlush();						//Finish Pass
 
 		auto stop = std::chrono::high_resolution_clock::now();	//TIME!
-    		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
 		//Rolling Average
 		us = (float)((us*n+duration.count())/(n+1));
@@ -174,7 +165,7 @@ int main( int argc, char* args[] ) {
 		}
 
 		if(updated){ //Update the data in the buffers!
-			bubble.buffer("centroids", centroids);			
+			bubble.buffer("centroids", centroids);
 			mosaic.buffer("centroids", centroids);
 			instance.updateBuffer(offset, 0); //Also update the number of centroids in the instance buffer
 			updated = false;

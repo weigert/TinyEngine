@@ -1,9 +1,9 @@
 class Target {
 public:
-  Target(){ glGenFramebuffers(1, &fbo); };              //Default constructor
-
-  Target(int W, int H, bool c = false, bool d = true):  //Construct with a size
-    Target(){ WIDTH = W; HEIGHT = H; dAttach = d; cAttach = c; }
+  Target(int W = Tiny::view.WIDTH, int H = Tiny::view.HEIGHT, bool c = false, bool d = true){
+    WIDTH = W; HEIGHT = H; dAttach = d; cAttach = c;
+    glGenFramebuffers(1, &fbo);
+  }
 
   ~Target(){ glDeleteFramebuffers(1, &fbo); }           //Default destructor
 
@@ -57,12 +57,13 @@ class Billboard: public Target{   //Billboard specialization
 public:
   Texture texture, depth;         //Two normal textures
 
-  Billboard(int W, int H, bool c = true, bool d = true):
+  Billboard(int W = Tiny::view.WIDTH, int H = Tiny::view.HEIGHT, bool c = true, bool d = true):
   Target(W, H, c, d){
     if(dAttach) depth.depth(WIDTH, HEIGHT);
     if(cAttach) texture.empty(WIDTH, HEIGHT);
     setup(texture, depth);        //Bind the two normal textures to the billboard
   }
+  Billboard(bool c = true, bool d = true):Billboard(Tiny::view.WIDTH, Tiny::view.HEIGHT, c, d){};
 
   Billboard(SDL_Surface* s):      //Render target preloaded with an image
   Billboard(s->w, s->h, true, false){

@@ -33,22 +33,6 @@ void setup(){
 
 };
 
-std::function<void()> eventHandler = [&](){
-
-  if(Tiny::event.scroll.posy)
-    cam::zoom(0.0001);
-
-  if(Tiny::event.scroll.negy)
-    cam::zoom(-0.0001);
-
-  if(Tiny::event.scroll.posx)
-    cam::pan(1.5f);
-
-  if(Tiny::event.scroll.negx)
-    cam::pan(-1.5f);
-
-};
-
 std::function<void(Model* m)> _construct = [&](Model* h){
   //Loop over all positions and add the triangles!
   for(int i = 0; i < dim.x-1; i++){

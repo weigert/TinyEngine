@@ -7,9 +7,9 @@
 int main( int argc, char* args[] ) {
 
 	Tiny::window("Heightmap Render", 1200, 800);	//Open Window
-	Tiny::event.handler = eventHandler;								//Event Handler
-	Tiny::view.interface = [&](){ /* ... */ };				//No Interface
 	cam::init();
+	Tiny::event.handler = cam::handler;						//Event Handler
+	Tiny::view.interface = [&](){ /* ... */ };		//No Interface
 
 	setup();																					//Prepare Model Stuff
 

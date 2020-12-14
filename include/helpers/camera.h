@@ -29,4 +29,18 @@ using namespace glm;
     vp = proj*view;
   }
 
+  std::function<void()> handler = [](){
+    if(Tiny::event.scroll.posy)
+      cam::zoom(0.001);
+
+    if(Tiny::event.scroll.negy)
+      cam::zoom(-0.001);
+
+    if(Tiny::event.scroll.posx)
+      cam::pan(1.5f);
+
+    if(Tiny::event.scroll.negx)
+      cam::pan(-1.5f);
+  };
+
 }

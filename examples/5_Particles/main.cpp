@@ -1,16 +1,15 @@
 #include "../../TinyEngine.h"
 #include "../../include/helpers/image.h"
 #include "../../include/helpers/color.h"
-
-#include "model.h"
+#include "../../include/helpers/camera.h"
 
 int main( int argc, char* args[] ) {
 
-	Tiny::window("Particle System", WIDTH, HEIGHT);
-	Tiny::event.handler = eventHandler;
+	Tiny::window("Particle System", 800, 800);
+	cam::init();
+	
+	Tiny::event.handler = cam::handler;
 	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
-
-	setup(); 												//Prepare Model Stuff
 
 	Square3D model;									//Model we want to instance render!
 
@@ -31,13 +30,13 @@ int main( int argc, char* args[] ) {
 
 		particleShader.use();
 		particleShader.texture("spriteTexture", tex);
-		particleShader.uniform("projectionCamera", projection*camera);
+		particleShader.uniform("projectionCamera", cam::vp);
 		particle.render();
 
 	};
 
 	Tiny::loop([&](){ //Autorotate Camera
-		camera = glm::rotate(camera, glm::radians(0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
+		cam::pan(0.1f);
 	});
 
 	Tiny::quit();

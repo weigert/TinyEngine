@@ -1,29 +1,4 @@
-class View{
-  public:
-    bool init(std::string windowName, int width, int height);
-    void quit();
-    bool enabled = false;
-
-    unsigned int WIDTH, HEIGHT;
-
-    SDL_Window* gWindow;        //Window Pointer
-    SDL_GLContext gContext;     //Render Context
-
-    ImGuiIO io;
-    Handle interface = [](){};  //User defined Interface
-    bool showInterface = false;
-    void drawInterface();
-
-    Handle pipeline = [](){};           //User defined Pipeline
-    void render();
-    void target(glm::vec3 clearcolor);  //Target main window for drawing
-
-    bool fullscreen = false;    //Settings
-    bool vsync = true;
-    bool ccw = true;
-    unsigned int antialias = 16;
-    float lineWidth = 1.0f;
-};
+#include "view.h"
 
 bool View::init(std::string _name, int W, int H){
   enabled = true;
@@ -104,6 +79,6 @@ void View::drawInterface(){
 void View::target(glm::vec3 clearcolor){
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, WIDTH, HEIGHT);
-  glClearColor(clearcolor.x, clearcolor.y, clearcolor.z, 1.0f);
+  glClearColor(clearcolor.x, clearcolor.y, clearcolor.z, 1);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

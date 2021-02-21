@@ -1,14 +1,14 @@
 # TinyEngine
-Small OpenGL3 based 2D/3D Engine / Wrapper in C++ with Networking
+Small OpenGL based 2D/3D Engine / Wrapper in C++
 
 ![Rendering Example Program](screenshots/banner.png)
 Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)
 
 	LINES OF CODE (without unreasonable compression):
-		Main File: 99
-		Main Classes: 258
-		Utility Classes: 509
-		Helpers Namespaces: 199
+		Main File: 118
+		Main Classes: 286
+		Utility Classes: 627
+		Helpers Namespaces: 347
 		Total: 1065
 
 	History:
@@ -16,6 +16,7 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 		29. April 2020: 1116
 		17. May 2020: 1667
 		23. May 2020: 1065
+		21. Feb 2021: 1378
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -78,19 +79,19 @@ Building a program with TinyEngine is extremely simple!
 
 Example Program 0:
 
-    #include "../../TinyEngine.h"
+    #include <TinyEngine/TinyEngine>
 
     int main( int argc, char* args[] ) {
 
 		Tiny::window("Example Window", 600, 400);   //Open Window
 
-		Tiny::event.handler = [&](){ /* ... */ };   //Define Event Handler
+		Tiny::event.handler = [&](){ /*...*/ };   //Define Event Handler
 
-		Tiny::view.interface = [&](){ /* ... */ };  //Define ImGUI Interface
+		Tiny::view.interface = [&](){ /*...*/ };  //Define ImGUI Interface
 
-		/* ...Define Utility Classes... */
+		/*...Define Utility Classes...*/
 
-		Tiny::view.pipeline = [&](){ /* ... */ };   //Define Rendering Pipeline
+		Tiny::view.pipeline = [&](){ /*...*/ };   //Define Rendering Pipeline
 
 		Tiny::loop([&](){ //Start Main Game Loop
             		//... additional code here
@@ -104,7 +105,43 @@ Example Program 0:
 Check the [TinyEngine Wiki](https://github.com/weigert/TinyEngine/wiki) for more information on how to construct a basic program. Read the example programs to see how the utility classes are combined to create interactive 2D and 3D programs using OpenGL in very little code.
 
 ### Compiling and Linking
-See the example programs to see exactly how to link the program (makefile). Compiled using g++ on Ubuntu 18 LTS.
+As of 2021, TinyEngine is built as a statically linked library for easier inclusion in your project. This has a number of benefits:
+- TinyEngine does not need to be copied into your project directory
+- Easier continuous maintenance and updating
+- Faster compilation times
+
+The installation process occurs in the makefile:
+
+		sudo make setup     #Copy Core Header Files to Install Location
+		sudo make helpers   #Copy Helper Headers
+		sudo make install   #Compile TinyEngine and Copy to Install Location
+		sudo make all       #All of the above! Run this for easy install.
+
+The default install locations are `/usr/local/lib` for the compiled library and `/usr/local/include` for the header files.
+
+Check the (brief!) makefile for options (e.g. install location, compiler flags).
+
+Note that the installation has only been tested on GNU/Linux and install locations might need tuning for your system.
+
+#### Building a Project
+Building a project by default only requires inclusion of the TinyEngine header
+
+		#inlude <TinyEngine/TinyEngine>
+
+and optionally any helper namespace headers, e.g.
+
+		//...
+		#include <TinyEngine/object>
+		#include <TinyEngine/image>
+		//...
+
+TinyEngine standalone is linked using:
+
+		-lTinyEngine
+
+but also requires linking of all additional dependencies! See the example programs to see exactly how to link the program (makefile). Note that all makesfiles are identical!
+
+Compiled using g++ on Ubuntu 18/20 LTS.
 
 ### Dependencies
 (+ how to install on debian based systems)

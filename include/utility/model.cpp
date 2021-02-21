@@ -102,7 +102,6 @@ struct Cube: Primitive{
   }
 };
 
-
 class Model: public Primitive {
 public:
   Model():Primitive(){
@@ -176,10 +175,8 @@ public:
   template<typename D>
   void add(std::vector<GLfloat>& v, D& a);
 };
+
 //Primitive Shapes (Pre-Made)
-
-
-
 template<>
 void Primitive::attrib<GLfloat>(int index, int size){
   glEnableVertexAttribArray(index);

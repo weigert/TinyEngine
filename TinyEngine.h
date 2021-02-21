@@ -1,11 +1,9 @@
+#include <iostream>
 #include <functional>
 #include <initializer_list>
+#include <string>
 using Handle = std::function<void()>;
 using slist = std::initializer_list<std::string>;
-
-#include "include/imgui/imgui.h"                    //Interface Dependencies
-#include "include/imgui/imgui_impl_sdl.h"
-#include "include/imgui/imgui_impl_opengl3.h"
 
 #include <GL/glew.h>                                //Rendering Dependencies
 #include <SDL2/SDL.h>
@@ -21,27 +19,35 @@ using slist = std::initializer_list<std::string>;
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include "include/utility/texture.cpp"              //Utility Classes
-#include "include/utility/shader.cpp"
-#include "include/utility/model.cpp"
-#include "include/utility/instance.cpp"
-#include "include/utility/target.cpp"
+#include <deque>
+#include <unordered_map>
 
-#include "include/view.cpp"
-#include "include/event.cpp"
-#include "include/audio.cpp"
+#ifndef TINYENGINE_UTILITIES
+#define TINYENGINE_UTILITIES
 
-#include <chrono>
+#include <TinyEngine/Texture>
+#include <TinyEngine/Shader>
+#include <TinyEngine/Target>
+#include <TinyEngine/Model>
+#include <TinyEngine/Instance>
 
-/* TINY ENGINE */
+#endif
 
-namespace Tiny {
+#ifndef TINYENGINE_NAMESPACE
+#define TINYENGINE_NAMESPACE
+
+#include <TinyEngine/Audio>
+#include <TinyEngine/View>
+#include <TinyEngine/Event>
+
+namespace Tiny{
 
 static View view;           //Window and Interface  (Requires Initialization)
 static Event event;         //Event Handler
 static Audio audio;         //Audio Processor       (Requires Initialization)
 
 bool window(std::string windowName, int width, int height){ //Open a window
+
   if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){
     printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
     return false;
@@ -95,9 +101,11 @@ void loop(F function, Args&&... args){
 
     function(args...);      //User-defined Game Loop
 
-    if(Tiny::view.enabled)  view.render();        //Render View
+    if(Tiny::view.enabled) view.render();         //Render View
 
   }
 }
 
 }
+
+#endif

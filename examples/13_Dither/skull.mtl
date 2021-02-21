@@ -1,0 +1,8 @@
+#Skull Material
+newmtl None
+Ns 500
+Ka 0.8 0.8 0.8
+Kd 0.427 0.29 0.02
+Ks 0.8 0.8 0.8
+d 1
+illum 2

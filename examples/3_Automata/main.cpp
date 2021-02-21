@@ -1,6 +1,6 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/image.h"
-#include "../../include/helpers/color.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/image>
+#include <TinyEngine/color>
 
 int main( int argc, char* args[] ) {
 
@@ -20,7 +20,7 @@ int main( int argc, char* args[] ) {
 		if(rand()%2) return glm::vec4(1.0, 1.0, 1.0, 1.0);
 		else return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	}));
-	Billboard targetB(true, false); //color, no depth
+	Billboard targetB(1200, 800, true, false); //color, no depth
 	bool flip = true;
 
 	Square2D flat;	//Flat square primitive for drawing billboard to screen

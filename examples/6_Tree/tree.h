@@ -153,7 +153,7 @@ glm::vec3 Branch::leafdensity(int searchdepth){
 Branch* root;
 
 // Model Constructing Function for Tree
-std::function<void(Model*)> _construct = [&](Model* h){
+std::function<void(Model*)> _construct = [](Model* h){
 
   //Basically Add Lines for the Tree!
   std::function<void(Branch*, glm::vec3)> addBranch = [&](Branch* b, glm::vec3 p){
@@ -215,7 +215,7 @@ std::function<void(Model*)> _construct = [&](Model* h){
 };
 
 //Construct Leaf Particle System from Tree Data
-std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [&](std::vector<glm::mat4>& p, bool face){
+std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [](std::vector<glm::mat4>& p, bool face){
   p.clear();
 
   //Explore the Tree and Add Leaves!

@@ -41,7 +41,7 @@ glm::mat4 lview = glm::lookAt(lightpos, glm::vec3(0), glm::vec3(0,1,0));
 #include "tree.h"
 
 //Interface Function
-Handle interfaceFunc = [&](){
+Handle interfaceFunc = [](){
   //Window Size
   ImGui::SetNextWindowSize(ImVec2(360, 400), ImGuiCond_Once);
   ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_Once);
@@ -121,7 +121,7 @@ Handle interfaceFunc = [&](){
   ImGui::End();
 };
 
-std::function<void(Model* m)> construct_floor = [&](Model* h){
+std::function<void(Model* m)> construct_floor = [](Model* h){
 
   float floor[24] = {
     -1.0, 0.0, -1.0,

@@ -14,7 +14,7 @@ void setup(){
 };
 
 // Event Handler
-std::function<void()> eventHandler = [&](){
+std::function<void()> eventHandler = [](){
 
   // Pause and Unpause
   if(!Tiny::event.press.empty())

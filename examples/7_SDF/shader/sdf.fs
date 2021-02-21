@@ -28,28 +28,20 @@ bool isoline(float a, float b){
 
 float sdf(vec2 p){
   p = (p*2-vec2(1.0))*zoom-offset;
-  //float c = circ(p+vec2(0), 0.5);
+  float c = circ(p+vec2(0), 0.5);
   //return c;
   float b = box(p, vec2(0.5));
-  return b;
+  //return b;
   //if(isoline(b, c)) return 0.0;
-  //return min(b, c);
+  return min(b, c);
 }
 
 vec4 sdfcol(float t){
-  //if(mod(abs(t), density) < thickness && drawlines) return vec4(vec3(0.0), 1.0);
   if(abs(t)<0.01) return diverge;
-
   vec2 p = (ex_Tex*2-vec2(1.0))*zoom-offset;
-
-
-  //return vec4(vec3(length(ex_Tex-0.5)), 1);
-  //return vec4(vec3(length(p)), 1);
   return vec4(vec3(t)-vec3(length(p))+1,1);
-  //if(t > 0) return converge;
-  //else return diverge;
 }
 
 void main(){
-  fragColor = sdfcol(sdf(ex_Tex));//julia(ex_Tex);
+  fragColor = sdfcol(sdf(ex_Tex));
 }

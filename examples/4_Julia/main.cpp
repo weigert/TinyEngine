@@ -1,5 +1,5 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/color.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/color>
 
 #include "model.h"
 

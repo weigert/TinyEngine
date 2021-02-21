@@ -5,6 +5,7 @@ double scale = 30.0;
 double heightmap[64][64] = {0.0};
 glm::vec2 dim = glm::vec2(64);
 noise::module::Perlin perlin;
+std::function<void(Model* m)> _construct;
 
 void setup(){
 
@@ -31,51 +32,52 @@ void setup(){
     }
   }
 
-};
+  _construct = [&](Model* h){
+    //Loop over all positions and add the triangles!
+    for(int i = 0; i < dim.x-1; i++){
+      for(int j = 0; j < dim.y-1; j++){
 
-std::function<void(Model* m)> _construct = [&](Model* h){
-  //Loop over all positions and add the triangles!
-  for(int i = 0; i < dim.x-1; i++){
-    for(int j = 0; j < dim.y-1; j++){
+        //Add to Position Vector
+        glm::vec3 a = glm::vec3(i, scale*heightmap[i][j], j);
+        glm::vec3 b = glm::vec3(i+1, scale*heightmap[i+1][j], j);
+        glm::vec3 c = glm::vec3(i, scale*heightmap[i][j+1], j+1);
+        glm::vec3 d = glm::vec3(i+1, scale*heightmap[i+1][j+1], j+1);
 
-      //Add to Position Vector
-      glm::vec3 a = glm::vec3(i, scale*heightmap[i][j], j);
-      glm::vec3 b = glm::vec3(i+1, scale*heightmap[i+1][j], j);
-      glm::vec3 c = glm::vec3(i, scale*heightmap[i][j+1], j+1);
-      glm::vec3 d = glm::vec3(i+1, scale*heightmap[i+1][j+1], j+1);
+        //UPPER TRIANGLE
 
-      //UPPER TRIANGLE
+        //Add Indices
+        h->indices.push_back(h->positions.size()/3+0);
+        h->indices.push_back(h->positions.size()/3+1);
+        h->indices.push_back(h->positions.size()/3+2);
+        h->indices.push_back(h->positions.size()/3+0);
 
-      //Add Indices
-      h->indices.push_back(h->positions.size()/3+0);
-      h->indices.push_back(h->positions.size()/3+1);
-      h->indices.push_back(h->positions.size()/3+2);
-      h->indices.push_back(h->positions.size()/3+0);
+        h->add(h->positions, a);
+        h->add(h->positions, b);
+        h->add(h->positions, c);
 
-      h->add(h->positions, a);
-      h->add(h->positions, b);
-      h->add(h->positions, c);
+        glm::vec3 n1 = glm::cross(a-b, c-b);
 
-      glm::vec3 n1 = glm::cross(a-b, c-b);
+        for(int i = 0; i < 3; i++)
+          h->add(h->normals, n1);
 
-      for(int i = 0; i < 3; i++)
-        h->add(h->normals, n1);
+        //Lower Triangle
+        h->indices.push_back(h->positions.size()/3+0);
+        h->indices.push_back(h->positions.size()/3+1);
+        h->indices.push_back(h->positions.size()/3+2);
+        h->indices.push_back(h->positions.size()/3+0);
 
-      //Lower Triangle
-      h->indices.push_back(h->positions.size()/3+0);
-      h->indices.push_back(h->positions.size()/3+1);
-      h->indices.push_back(h->positions.size()/3+2);
-      h->indices.push_back(h->positions.size()/3+0);
+        h->add(h->positions, d);
+        h->add(h->positions, c);
+        h->add(h->positions, b);
 
-      h->add(h->positions, d);
-      h->add(h->positions, c);
-      h->add(h->positions, b);
+        glm::vec3 n2 = glm::cross(d-c, b-c);
 
-      glm::vec3 n2 = glm::cross(d-c, b-c);
+        for(int i = 0; i < 3; i++)
+          h->add(h->normals, n2);
 
-      for(int i = 0; i < 3; i++)
-        h->add(h->normals, n2);
-
+      }
     }
-  }
+  };
+
+
 };

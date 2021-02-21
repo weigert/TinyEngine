@@ -1,6 +1,7 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/image.h"
-#include "../../include/helpers/color.h"
+#include <TinyEngine/TinyEngine>
+
+#include <TinyEngine/image>
+#include <TinyEngine/color>
 
 int main( int argc, char* args[] ) {
 
@@ -22,6 +23,8 @@ int main( int argc, char* args[] ) {
 	Texture tex(image::load("canyon.png"));		//Load Texture with Image
 	Square2D flat;														//Create Primitive Model
 	Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
+
+	std::string test = "imageTexture";
 
 	Tiny::view.pipeline = [&](){
 

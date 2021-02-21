@@ -1,6 +1,6 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/color.h"
-#include "../../include/helpers/object.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/color>
+#include <TinyEngine/object>
 
 #include "model.h"
 

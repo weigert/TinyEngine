@@ -1,6 +1,6 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/color.h"
-#include "../../include/helpers/image.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/color>
+#include <TinyEngine/image>
 
 #include "poisson.h"
 #include "model.h"

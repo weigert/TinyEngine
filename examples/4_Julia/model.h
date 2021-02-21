@@ -28,7 +28,7 @@ float rate = 0.01;
 float t = 0.0;
 
 // Event Handler
-std::function<void()> eventHandler = [&](){
+std::function<void()> eventHandler = [](){
 
   if(Tiny::event.scroll.posy)
     zoom *= 0.9;
@@ -50,7 +50,7 @@ std::function<void()> eventHandler = [&](){
 };
 
 //Interface Function
-Handle interfaceFunc = [&](){
+Handle interfaceFunc = [](){
   //Window Size
   ImGui::SetNextWindowSize(ImVec2(480, 260), ImGuiCond_Once);
   ImGui::SetNextWindowPos(ImVec2(50, 470), ImGuiCond_Once);

@@ -1,8 +1,8 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/image.h"
-#include "../../include/helpers/color.h"
-#include "../../include/helpers/helper.h"
-#include "../../include/helpers/camera.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/image>
+#include <TinyEngine/color>
+#include <TinyEngine/helper>
+#include <TinyEngine/camera>
 
 #define PI 3.14159265f
 
@@ -13,7 +13,10 @@ int main( int argc, char* args[] ) {
 	Tiny::view.lineWidth = 1.0f;
 
 	Tiny::window("Procedural Tree", 1200, 800);
-	cam::init(glm::vec3(50,200,50), glm::vec3(0,180,0), 0.5f);
+	cam::look = glm::vec3(0, 100, 0);
+	cam::far = 1200.0f;
+	cam::roty = 25.0f;
+	cam::init(600, cam::PROJ);
 
 	bool paused = false;
 	bool autorotate = true;

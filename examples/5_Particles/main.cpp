@@ -1,13 +1,13 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/image.h"
-#include "../../include/helpers/color.h"
-#include "../../include/helpers/camera.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/image>
+#include <TinyEngine/color>
+#include <TinyEngine/camera>
 
 int main( int argc, char* args[] ) {
 
 	Tiny::window("Particle System", 800, 800);
 	cam::init();
-	
+
 	Tiny::event.handler = cam::handler;
 	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
 

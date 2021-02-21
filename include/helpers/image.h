@@ -15,6 +15,15 @@ using namespace std;
     IMG_SavePNG(surface, path.c_str());
   }
 
+  void save(Target target, string path){
+    SDL_Surface *s = SDL_CreateRGBSurface(0, target.WIDTH, target.HEIGHT, 32, 0, 0, 0, 0);
+    SDL_LockSurface(s);
+    target.sample(s->pixels, vec2(0), vec2(target.WIDTH, target.HEIGHT));
+    SDL_UnlockSurface(s);
+    save(s, path);
+    delete s;
+  }
+
   SDL_Surface* make(function<vec4(int)> handle, vec2 size = vec2(Tiny::view.WIDTH, Tiny::view.HEIGHT)){
     SDL_Surface *s = SDL_CreateRGBSurface(0, size.x, size.y, 32, 0, 0, 0, 0);
     SDL_LockSurface(s);

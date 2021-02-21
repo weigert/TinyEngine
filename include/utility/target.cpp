@@ -1,9 +1,9 @@
 class Target {
 public:
-  Target(){ glGenFramebuffers(1, &fbo); };              //Default constructor
-
-  Target(int W, int H, bool c = false, bool d = true):  //Construct with a size
-    Target(){ WIDTH = W; HEIGHT = H; dAttach = d; cAttach = c; }
+  Target(int W, int H, bool c = false, bool d = true){
+    WIDTH = W; HEIGHT = H; dAttach = d; cAttach = c;
+    glGenFramebuffers(1, &fbo);
+  }
 
   ~Target(){ glDeleteFramebuffers(1, &fbo); }           //Default destructor
 
@@ -43,6 +43,13 @@ public:
   template<typename T> void target(T a){
     glClearColor(a[0], a[1], a[2], 1.0f);
     target();
+  }
+
+  template<typename T>                 //Raw Buffer Sampling
+  void sample(T* m, glm::vec2 p, glm::vec2 d, GLenum ATTACH = GL_COLOR_BUFFER_BIT, GLenum FORMAT = GL_RGBA){
+    if(d.x <= 0 || d.y <= 0 || p.x+d.x > WIDTH || p.y+d.y > HEIGHT) return;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo); glReadBuffer(ATTACH);
+    glReadPixels(p.x, p.y, d.x, d.y, FORMAT, GL_UNSIGNED_BYTE, m);
   }
 };
 

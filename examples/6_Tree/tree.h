@@ -65,7 +65,7 @@ void Branch::grow(double feed){
     pass = (A->area+B->area)/(A->area+B->area+area);
 
   area += pass * feed / length;   //Grow in Girth
-  feed *= ( 1.0 - pass );         //Reduce Feed  
+  feed *= ( 1.0 - pass );         //Reduce Feed
 
   if(feed < 1E-5) return;         //Prevent Over-Branching
 
@@ -153,7 +153,7 @@ glm::vec3 Branch::leafdensity(int searchdepth){
 Branch* root;
 
 // Model Constructing Function for Tree
-std::function<void(Model*)> _construct = [&](Model* h){
+std::function<void(Model*)> _construct = [](Model* h){
 
   //Basically Add Lines for the Tree!
   std::function<void(Branch*, glm::vec3)> addBranch = [&](Branch* b, glm::vec3 p){
@@ -215,7 +215,7 @@ std::function<void(Model*)> _construct = [&](Model* h){
 };
 
 //Construct Leaf Particle System from Tree Data
-std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [&](std::vector<glm::mat4>& p, bool face){
+std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [](std::vector<glm::mat4>& p, bool face){
   p.clear();
 
   //Explore the Tree and Add Leaves!
@@ -233,7 +233,7 @@ std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [&](std::vector<g
         //Rotate Towards Camera (or not) and Scale
         glm::mat4 model = glm::translate(glm::mat4(1.0), pos+d);
 
-        if(face) model = glm::rotate(model, glm::radians(45.0f-rotation), glm::vec3(0.0, 1.0, 0.0));
+        if(face) model = glm::rotate(model, glm::radians(45.0f-cam::rot), glm::vec3(0.0, 1.0, 0.0));
         else model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
 
         p.push_back(glm::scale(model, glm::vec3(leafsize)));

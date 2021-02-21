@@ -1,4 +1,4 @@
-#include "../../TinyEngine.h"
+#include <TinyEngine/TinyEngine>
 
 int main( int argc, char* args[] ) {
 

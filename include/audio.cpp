@@ -1,17 +1,4 @@
-class Audio{
-public:
-  bool enabled = false;
-
-  std::unordered_map<std::string, Mix_Chunk*> sounds;
-  std::deque<Mix_Chunk*> unprocessed;
-
-  bool init();
-  bool quit();
-
-  void load(slist in);
-  void play(std::string sound);
-  void process();
-};
+#include "audio.h"
 
 bool Audio::init(){
   enabled = ( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) != -1 );

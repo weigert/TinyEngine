@@ -65,17 +65,10 @@ struct Primitive{
   }
 };
 
-template<>
-void Primitive::attrib<GLfloat>(int index, int size){
-  glEnableVertexAttribArray(index);
-  glVertexAttribPointer(index, size, GL_FLOAT, GL_FALSE, 0, 0);
-}
-
-//Primitive Shapes (Pre-Made)
 
 struct Square2D: Primitive{
-  GLfloat vert[8] = {-1.0,  1.0, -1.0, -1.0,  1.0,  1.0,  1.0, -1.0};
-  GLfloat tex [8] = { 0.0,  0.0,  0.0,  1.0,  1.0,  0.0,  1.0,  1.0};
+  GLfloat vert[8] = {-1.0, -1.0,  1.0, -1.0, -1.0,  1.0,  1.0,  1.0};
+  GLfloat tex [8] = { 0.0,  1.0,  1.0,  1.0,  0.0,  0.0,  1.0,  0.0};
 
   Square2D():Primitive(){
     bind(0, 8, 2, &vert[0]);
@@ -178,4 +171,29 @@ public:
     }
     else glDrawArrays(mode, 0, positions.size()/3);
   }
+
+  template<typename D>
+  void add(std::vector<GLfloat>& v, D& a);
 };
+
+//Primitive Shapes (Pre-Made)
+template<>
+void Primitive::attrib<GLfloat>(int index, int size){
+  glEnableVertexAttribArray(index);
+  glVertexAttribPointer(index, size, GL_FLOAT, GL_FALSE, 0, 0);
+}
+
+template<>
+void Model::add<glm::vec3>(std::vector<GLfloat>& v, glm::vec3& a){
+  v.push_back(a.x);
+  v.push_back(a.y);
+  v.push_back(a.z);
+}
+
+template<>
+void Model::add<glm::vec4>(std::vector<GLfloat>& v, glm::vec4& a){
+  v.push_back(a.x);
+  v.push_back(a.y);
+  v.push_back(a.z);
+  v.push_back(a.w);
+}

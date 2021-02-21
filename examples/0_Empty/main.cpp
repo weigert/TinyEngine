@@ -1,4 +1,4 @@
-#include "../../TinyEngine.h"
+#include <TinyEngine/TinyEngine>
 
 int main( int argc, char* args[] ) {
 
@@ -14,15 +14,18 @@ int main( int argc, char* args[] ) {
 	};
 
 	//Define the rendering pipeline
-	Tiny::view.pipeline = [&](){
+	Tiny::view.pipeline = [](){
+
+		Tiny::view.target(glm::vec3(1));	//Clear Screen to white
+
 	};
 
 	//Execute the render loop
 	Tiny::loop([&](){
-		//Do any additional stuff in here
 	});
 
 	Tiny::quit();
 
 	return 0;
+
 }

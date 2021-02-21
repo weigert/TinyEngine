@@ -1,25 +1,26 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/image.h"
-#include "../../include/helpers/color.h"
-
-#include "model.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/image>
+#include <TinyEngine/color>
 
 int main( int argc, char* args[] ) {
 
-	Tiny::view.vsync = false;															//Turn off VSYNC before opening window
+	Tiny::view.vsync = false;													//Turn off VSYNC before opening window
+	bool paused = true;
 
-	Tiny::window("GPU Accelerated Cellular Automata Example", WIDTH, HEIGHT);	//Open Window
-	Tiny::event.handler = eventHandler;										//Define Event Handler
+	Tiny::window("GPU Accelerated Cellular Automata Example", 1200, 800);	//Open Window
+	Tiny::event.handler = [&](){
+	  if(!Tiny::event.press.empty())
+	    if(Tiny::event.press.back() == SDLK_p)
+	      paused = !paused;
+	};
 	Tiny::view.interface = [](){ /* ... */ }; 						//No Interface
 
-	setup();	//Setup Model Data
-
 	//Construct a billboard, using a texture generated from the raw data
-	Billboard targetA(image::make<bool>(glm::vec2(WIDTH, HEIGHT), data, [](bool t){
-		if(t) return glm::vec4(1.0, 1.0, 1.0, 1.0);
+	Billboard targetA(image::make([&](int i){
+		if(rand()%2) return glm::vec4(1.0, 1.0, 1.0, 1.0);
 		else return glm::vec4(0.0, 0.0, 0.0, 1.0);
 	}));
-	Billboard targetB(WIDTH, HEIGHT, true, false); //color, no depth
+	Billboard targetB(1200, 800, true, false); //color, no depth
 	bool flip = true;
 
 	Square2D flat;	//Flat square primitive for drawing billboard to screen

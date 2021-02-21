@@ -1,8 +1,7 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/image.h"
-#include "../../include/helpers/color.h"
+#include <TinyEngine/TinyEngine>
 
-#include "effects.h"
+#include <TinyEngine/image>
+#include <TinyEngine/color>
 
 int main( int argc, char* args[] ) {
 
@@ -10,11 +9,22 @@ int main( int argc, char* args[] ) {
 
 	Tiny::event.handler = [](){ /* ... */ };
 
-	Tiny::view.interface = interfaceFunc;
+	int ind = 0;    //Effect Index
+	int res = 100;  //Pixelate Effect
+	int bits = 4;   //Bitreduce Effect
+
+	Tiny::view.interface = [&](){
+	  ImGui::Text("Shader Effects");
+	  ImGui::DragInt("Effect", &ind, 1, 0, 2);
+	  ImGui::DragInt("Resolution", &res, 1, 1, 400);
+	  ImGui::DragInt("Bits", &bits, 1, 1, 16);
+	};
 
 	Texture tex(image::load("canyon.png"));		//Load Texture with Image
 	Square2D flat;														//Create Primitive Model
 	Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
+
+	std::string test = "imageTexture";
 
 	Tiny::view.pipeline = [&](){
 

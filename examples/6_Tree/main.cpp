@@ -1,7 +1,10 @@
-#include "../../TinyEngine.h"
-#include "../../include/helpers/image.h"
-#include "../../include/helpers/color.h"
-#include "../../include/helpers/helper.h"
+#include <TinyEngine/TinyEngine>
+#include <TinyEngine/image>
+#include <TinyEngine/color>
+#include <TinyEngine/helper>
+#include <TinyEngine/camera>
+
+#define PI 3.14159265f
 
 #include "model.h"
 
@@ -9,11 +12,33 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.lineWidth = 1.0f;
 
-	Tiny::window("Procedural Tree", WIDTH, HEIGHT);
-	Tiny::event.handler = eventHandler;
+	Tiny::window("Procedural Tree", 1200, 800);
+	cam::look = glm::vec3(0, 100, 0);
+	cam::far = 1200.0f;
+	cam::roty = 25.0f;
+	cam::init(600, cam::PROJ);
+
+	bool paused = false;
+	bool autorotate = true;
+
+	Tiny::event.handler = [&](){
+	  (cam::handler)();
+	  if(!Tiny::event.press.empty()){
+	    if(Tiny::event.press.back() == SDLK_p)
+	      paused = !paused;
+	    else if(Tiny::event.press.back() == SDLK_a)
+	      autorotate = !autorotate;
+	    else if(Tiny::event.press.back() == SDLK_r){
+	      Branch* newroot = new Branch(root, true);
+	      delete(root);
+	      root = newroot;
+	    }
+	  }
+	};
+
 	Tiny::view.interface = interfaceFunc;
 
-	setup();																				//Prepare Model Stuff
+	root = new Branch({0.6, 0.45, 2.5}); //Create Root
 
 	Model treemesh(_construct);											//Construct a Mesh
 
@@ -61,9 +86,9 @@ int main( int argc, char* args[] ) {
 		if(drawwire || drawtree){
 			defaultShader.use();
 			defaultShader.uniform("model", treemesh.model);
-			defaultShader.uniform("projectionCamera", projection*camera);
+			defaultShader.uniform("projectionCamera", cam::vp);
 			defaultShader.uniform("lightcolor", lightcolor);
-			defaultShader.uniform("lookDir", lookPos - cameraPos);
+			defaultShader.uniform("lookDir", cam::look - cam::pos);
 			defaultShader.uniform("lightDir", lightpos);
 
 			defaultShader.uniform("drawshadow", drawshadow);
@@ -97,7 +122,7 @@ int main( int argc, char* args[] ) {
 		if(drawleaf){
 			particleShader.use();
 			particleShader.texture("spriteTexture", tex);
-			particleShader.uniform("projectionCamera", projection*camera);
+			particleShader.uniform("projectionCamera", cam::vp);
 			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 			particleShader.uniform("lightcolor", lightcolor);
 
@@ -108,7 +133,7 @@ int main( int argc, char* args[] ) {
 				particleShader.uniform("light", lightpos);
 			}
 
-			particleShader.uniform("lookDir", lookPos - cameraPos);
+			particleShader.uniform("lookDir", cam::look - cam::pos);
 			addLeaves(leaves, true);
 			particle.updateBuffer(leaves, 0);
 			particle.render(GL_TRIANGLE_STRIP); //Render Particle System
@@ -118,10 +143,8 @@ int main( int argc, char* args[] ) {
 	//Loop over Stuff
 	Tiny::loop([&](){ /* ... */
 
-		if(autorotate){
-			camera = glm::rotate(camera, glm::radians(0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
-			rotation += 0.5f;
-		}
+		if(autorotate)
+			cam::pan(0.5f);
 
 		if(!paused)
 			root->grow(growthrate);

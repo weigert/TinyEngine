@@ -1,19 +1,3 @@
-//Parameters
-#define PI 3.14159265f
-
-const int WIDTH = 1200;
-const int HEIGHT = 800;
-
-float zoom = 0.5;
-float zoomInc = 0.99;
-float rotation = 0.0f;
-glm::vec3 cameraPos = glm::vec3(50, 200, 50);
-glm::vec3 lookPos = glm::vec3(0, 180, 0);
-glm::mat4 camera = glm::lookAt(cameraPos, lookPos, glm::vec3(0,1,0));
-glm::mat4 projection;
-
-bool paused = false;
-bool autorotate = true;
 bool drawwire = false;
 bool drawtree = true;
 bool drawleaf = true;
@@ -56,55 +40,8 @@ glm::mat4 lview = glm::lookAt(lightpos, glm::vec3(0), glm::vec3(0,1,0));
 
 #include "tree.h"
 
-void setup(){
-  projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -500.0f, 800.0f);
-  srand(time(NULL));
-  root = new Branch({0.6, 0.45, 2.5}); //Create Root
-}
-
-// Event Handler
-std::function<void()> eventHandler = [&](){
-
-  if(Tiny::event.scroll.posy){
-    zoom /= zoomInc;
-    projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -500.0f, 800.0f);
-  }
-  if(Tiny::event.scroll.negy){
-    zoom *= zoomInc;
-    projection = glm::ortho(-(float)Tiny::view.WIDTH*zoom, (float)Tiny::view.WIDTH*zoom, -(float)Tiny::view.HEIGHT*zoom, (float)Tiny::view.HEIGHT*zoom, -500.0f, 800.0f);
-  }
-  if(Tiny::event.scroll.posx){
-    rotation += 1.5f;
-    if(rotation < 0.0) rotation = 360.0 + rotation;
-    else if(rotation > 360.0) rotation = rotation - 360.0;
-    camera = glm::rotate(camera, glm::radians(1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
-  }
-  if(Tiny::event.scroll.negx){
-    rotation -= 1.5f;
-    if(rotation < 0.0) rotation = 360.0 + rotation;
-    else if(rotation > 360.0) rotation = rotation - 360.0;
-    camera = glm::rotate(camera, glm::radians(-1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
-  }
-
-  //Pause Toggle
-  if(!Tiny::event.press.empty()){
-    if(Tiny::event.press.back() == SDLK_p)
-      paused = !paused;
-    else if(Tiny::event.press.back() == SDLK_a)
-      autorotate = !autorotate;
-
-    //Regrow
-    else if(Tiny::event.press.back() == SDLK_r){
-      Branch* newroot = new Branch(root, true);
-      delete(root);
-      root = newroot;
-    }
-  }
-
-};
-
 //Interface Function
-Handle interfaceFunc = [&](){
+Handle interfaceFunc = [](){
   //Window Size
   ImGui::SetNextWindowSize(ImVec2(360, 400), ImGuiCond_Once);
   ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_Once);
@@ -114,11 +51,8 @@ Handle interfaceFunc = [&](){
     if(ImGui::BeginTabBar("Tab Bar", ImGuiTabBarFlags_None)){
       if(ImGui::BeginTabItem("Info")){
 
-        ImGui::Checkbox("Pause [P]", &paused);
-        ImGui::Checkbox("Auto-Rotate [A]", &autorotate);
-
         ImGui::ColorEdit3("Background", backcolor);
-//        ImGui::ColorEdit3("Light Color", lightcolor);
+        ImGui::ColorEdit3("Light Color", lightcolor);
 
         ImGui::Text("Made by Nicholas McDonald");
         ImGui::EndTabItem();
@@ -187,7 +121,7 @@ Handle interfaceFunc = [&](){
   ImGui::End();
 };
 
-std::function<void(Model* m)> construct_floor = [&](Model* h){
+std::function<void(Model* m)> construct_floor = [](Model* h){
 
   float floor[24] = {
     -1.0, 0.0, -1.0,

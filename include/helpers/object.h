@@ -1,8 +1,4 @@
-/*
-  Model Loading Namespace from Object Files
-*/
-
-namespace obj{
+namespace obj {
 
   //Get Colors from material list
   std::unordered_map<std::string, glm::vec3> materials(std::string file){
@@ -58,10 +54,8 @@ namespace obj{
       //Ignore Comments
       if(line[0] == '#') continue;
 
-      //These Three Always Come First!
-
       //Extract Vertex Information
-      if(line.substr(0,2) == "v "){
+      else if(line.substr(0,2) == "v "){
         std::istringstream s(line.substr(2));
         glm::vec3 v;
         s >> v.x; s >> v.y; s >> v.z;
@@ -69,13 +63,8 @@ namespace obj{
       }
 
       else if(line.substr(0,3) == "vt"){
+        //Currently Not Handled
         vt = true;
-        /*
-        std::istringstream s(line.substr(3));
-        glm::vec3 v;
-        s >> v.x; s >> v.y; s >> v.z;
-        ex_tex.push_back(v); //???
-        */
       }
 
       //Extract Normal Information
@@ -86,8 +75,10 @@ namespace obj{
         normals.push_back(n);
       }
 
-      else if(line.substr(0, 6) == "usemtl")
+      else if(line.substr(0, 6) == "usemtl"){
         color = mat[line.substr(7)];
+        continue;
+      }
 
       //Map Index Information
       else if(line.substr(0,2) == "f "){
@@ -101,9 +92,12 @@ namespace obj{
         }
         else { //Parse Face Data Normally
           int m = std::sscanf(line.substr(2).c_str(), "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vI[0], &uI[0], &nI[0], &vI[1], &uI[1], &nI[1], &vI[2], &uI[2], &nI[2]);
-          if(m != 9){
-            std::cout<<"Face data could not be read correctly."<<std::endl;
-            return;
+          if(m != 9) {
+            m = std::sscanf(line.substr(2).c_str(), "-%d//-%d -%d//-%d -%d//-%d\n", &vI[0], &nI[0], &vI[1], &nI[1], &vI[2], &nI[2]);
+            if(m != 6){
+                std::cout<<"Face data could not be read correctly."<<std::endl;
+                return;
+            }
           }
         }
 

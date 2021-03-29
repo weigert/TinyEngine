@@ -58,6 +58,10 @@ void randomize(){
   }
 }
 
+~Chunk(){
+//  delete data;
+}
+
 BlockType* data = NULL;
 ivec3 pos = ivec3(0);
 int quadsize, quadstart;
@@ -75,8 +79,6 @@ int getIndex(vec3 _p){
 BlockType getPosition(vec3 _p){
   return (BlockType)data[getIndex(_p)];
 }
-
-int faces[6] = {0};
 
 };
 
@@ -286,7 +288,7 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
 
 
 
-function<void(Chunk*, Renderpool<Vertex>*, int)> greedypool = [](Chunk* c, Renderpool<Vertex>* vertpool, int ind){
+function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool<Vertex>* vertpool){
 
   int LOD = Chunk::LOD;
   int CHLOD = CHUNKSIZE/LOD;
@@ -470,14 +472,19 @@ function<void(Chunk*, Renderpool<Vertex>*, int)> greedypool = [](Chunk* c, Rende
     }
 
     //Add the Quads to the
-    c->faces[d] = vertpool->section(quadsize*6, d*5*10*10+ind);
+    int section;
+
+    section = vertpool->section(quadsize*6);
 
     for(int i = 0; i < quadsize*6; i++){
-      vertpool->fill(c->faces[d], i,
+      vertpool->fill(section, i,
         vec3(positions[i*3+0], positions[i*3+1], positions[i*3+2]),
+        vec3(normals[i*3+0], normals[i*3+1], normals[i*3+2]),
         vec3(colors[i*3+0], colors[i*3+1], colors[i*3+2]));
-        //vec3(colors[i*3+0], colors[i*3+1], colors[i*3+2]));
     }
+
+
+
 
     delete[] mask;
 
@@ -487,6 +494,7 @@ function<void(Chunk*, Renderpool<Vertex>*, int)> greedypool = [](Chunk* c, Rende
     normals.clear();
     colors.clear();
     //Next Surface Orientation
+
   }
 
 };

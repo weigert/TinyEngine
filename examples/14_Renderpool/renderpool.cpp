@@ -29,48 +29,6 @@ Potential Improvements:
 
 //Vertex Format
 
-/*
-struct Vertex{
-
-	Vertex(glm::vec3 p, glm::vec3 n, glm::vec4 c){
-		position[0] = p.x;
-		position[1] = p.y;
-		position[2] = p.z;
-		normal[0] = n.x;
-		normal[1] = n.y;
-		normal[2] = n.z;
-		color[0] = c.x;
-		color[1] = c.y;
-		color[2] = c.z;
-		color[3] = c.w;
-	}
-
-	float position[3];
-	float normal[3];
-	float color[4];
-
-  static void format(int vbo){
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexAttribFormat(2, 4, GL_FLOAT, GL_FALSE, 0);
-
-    glVertexAttribBinding(0, 0);
-    glVertexAttribBinding(1, 1);
-    glVertexAttribBinding(2, 2);
-
-    glBindVertexBuffer(0, vbo, offsetof(Vertex, position), sizeof(Vertex));		//Internal Offset vs. Full Offset
-    glBindVertexBuffer(1, vbo, offsetof(Vertex, normal), sizeof(Vertex));
-    glBindVertexBuffer(2, vbo, offsetof(Vertex, color), sizeof(Vertex));
-  }
-
-};
-*/
-
-/*
 struct Vertex{
 
 	Vertex(glm::vec3 p, glm::vec3 n, glm::vec3 c){
@@ -108,37 +66,6 @@ struct Vertex{
   }
 
 };
-*/
-
-struct Vertex{
-
-	Vertex(glm::vec3 p, glm::vec3 c){
-		position[0] = p.x;
-		position[1] = p.y;
-		position[2] = p.z;
-		color[0] = c.x;
-		color[1] = c.y;
-		color[2] = c.z;
-	}
-
-	float position[3];
-	float color[3];
-
-  static void format(int vbo){
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, 0);
-
-    glVertexAttribBinding(0, 0);
-    glVertexAttribBinding(1, 1);
-
-    glBindVertexBuffer(0, vbo, offsetof(Vertex, position), sizeof(Vertex));		//Internal Offset vs. Full Offset
-    glBindVertexBuffer(1, vbo, offsetof(Vertex, color), sizeof(Vertex));
-  }
-
-};
 
 /*
 ================================================================================
@@ -153,12 +80,15 @@ using namespace std;
 struct DAIC {
   DAIC(){}
   DAIC(uint c, uint iC, uint s, uint bI){
-    cnt = c; instCnt = iC; start = s; baseInst = bI;
+    cnt = c; instCnt = iC; start = s; baseInst = bI; baseCnt = c;
   }
   uint cnt;
   uint instCnt;
   uint start;
   uint baseInst;
+
+	//Extra Properties
+	uint baseCnt;					//Max Count
 };
 
 template<typename T>
@@ -171,35 +101,25 @@ private:
 
   size_t K = 0;   //Number of Reserved Vertices
   size_t N = 0;   //Number of Indirect Draw Calls
-  bool fixedN = false;
 
   T* start;       //Immutable Storage Location Start
-  list<T*> free;  //List of Free Data Addresses
 
-public:
+	vector<DAIC> indirect;  //Indirect Drawing Commands
 
-  vector<DAIC> indirect;  //Indirect Drawing Commands
-  vector<int> indsize;    //Indirect Drawing Commands
-
-  Renderpool(){
+	Renderpool(){
     glGenVertexArrays(1, &vao); //Buffer Generation
     glBindVertexArray(vao);
     glGenBuffers(1, &indbo);
     glGenBuffers(1, &vbo);
     T::format(vbo);
-    N = 0;
     lock();
   }
 
+public:
+
+	vector<T*> free;  	//List of Free Data Addresses
   Renderpool(int k):Renderpool(){
     reserve(k);
-  }
-
-  Renderpool(int k, int n):Renderpool(k){
-    N = n;
-    fixedN = true;
-    indirect.resize(N);
-    indsize.resize(N);
   }
 
 /*
@@ -229,6 +149,7 @@ public:
 
   void render(const int first = 0, int length = 0, const GLenum mode = GL_TRIANGLES){
 
+		if(length > N) length = N;
     if(length == 0)
       if(indirect.size() == 0) return;
       else length = indirect.size();
@@ -237,91 +158,164 @@ public:
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
 
     wait();
-    glMultiDrawArraysIndirect(mode, (void*)(first*sizeof(DAIC)), length, 0);
+    glMultiDrawArraysIndirect(mode, (void*)(first*(sizeof(DAIC))), length, sizeof(DAIC));
     lock();
 
   }
 
 /*
 ================================================================================
-                        VBO / Vertex Pool Sectioning
+            VBO / Vertex Pool Sectioning / Activation / Updating
 ================================================================================
 */
 
 // Generate an indirect draw command of length k, return the index
 
-int section(int k, int ind = 0, bool active = true){
+int section(int k, bool active = true){
+
   if(k == 0) return 0;
 
   int n = 0;
-
-  T* freestart = free.front();
+	int l = 0;
+	int dist = 0;
+  T* freestart = free[0];
   T* prev = freestart;
+
   for(T* next: free){
+		l++;
 
-    if(next - prev == 0)
-      continue;
+    if(next - prev == dist) continue;
+
+
     if(next - prev == 1){
-      prev = next;
-      n++;
-    }
-    else n = 0;
-    if(n == k-1) break;
+			n++;
+			prev = next;
+		}
+    else{
+			dist = next-prev;
+			freestart = next;
+			prev = next;
+			n = 0;
+			continue;
+		}
+
+    if(n == k) break;
   }
 
-  if(n < k -1){
+  if(n < k){
+		std::cout<<free.size()<<std::endl;
     std::cout<<"Failed to Find Region"<<std::endl;
+		std::cout<<"N: "<<n<<" K: "<<k<<std::endl;
+
+		std::sort(free.begin(), free.end());
+
+		n = 0;
+		l = 0;
+		dist = 0;
+	  freestart = free[0];
+	  prev = freestart;
+
+	  for(T* next: free){
+			l++;
+
+	    if(next - prev == dist) continue;
+
+
+	    if(next - prev == 1){
+				n++;
+				prev = next;
+			}
+	    else{
+				dist = next-prev;
+				freestart = next;
+				prev = next;
+				n = 0;
+				continue;
+			}
+
+	    if(n == k) break;
+	  }
+
+		computefracture();
+
   }
 
-  //Remove these specific guys from the list!
-  typename list<T*>::iterator it1, it2;  //List of Free Data Addresses
-  it1 = it2 = free.begin();
-  advance(it1, prev-freestart-k+1);
-  advance(it2, prev-freestart+1);
-  free.erase(it1, it2);
+	std::cout<<"Sectioning ";
+	timer::benchmark<std::chrono::microseconds>([&](){
 
-  if(!fixedN){
-    indirect.emplace_back(0, 1, prev-start-k+1, 0);
-    indsize.push_back(k);
-    ind = indirect.size()-1;
-  }
-  else{
-    indirect[ind] = DAIC(0, 1, prev-start-k+1, 0);
-    indsize[ind] = k;
-  }
+	free.erase(free.begin()+l-k-1, free.begin()+l-1);			//Remove Positions from Free
 
-  if(active) activate(ind);
-  else deactivate(ind);
+	});
+
+  indirect.emplace_back(k, 1, freestart-start, 0);
+
+  int ind = indirect.size()-1;
+  if(!active) deactivate(ind);
+	update();
+	N++;
 
   return ind;
 
 }
 
+void computefracture(){
+	int n = 0;
+	int l = 0;
+	T* freestart = free.front();
+	T* prev = freestart;
+	int dist = 0;
+	for(T* next: free){
+
+		if(next - prev == dist) continue;
+		if(next - prev == 0x1){
+			prev = next;
+			n++;
+		}
+		else{
+			n++;
+	//		std::cout<<"SEGSIZE: "<<n<<std::endl;
+			dist = next-prev;
+			prev = next;
+			n = 0;
+			l++;
+		}
+	}
+
+	std::cout<<"SEGS: "<<l<<std::endl;
+}
+
 // Remove the Indirect Draw Command, Free the Memory
 
-void unsection(int& ind){
-  N--;
+void unsection(int first, int count = 1, int stride = 1){
 
-  for(int k = indirect[ind].start; k < indirect[ind].start + indsize[ind]; k++)
-    deallocate(start+k);
-  free.sort();
+	for(size_t i = first; i < first+count*stride; i++){
+	  for(int k = indirect[i].start; k < indirect[i].start + indirect[i].baseCnt; k++)
+	    deallocate(start+k);
+	}
 
-  indirect.erase(indirect.begin()+ind);
-  indsize.erase(indsize.begin()+ind);
-  ind = 0;
-  update();
+for(size_t i = 0; i < count; i++)
+	indirect.erase(indirect.begin()+first+stride-1); //Erasing makes the other indices no longer work...
+update();
+
+//free.sort();
+
+N--;
 
 }
 
-// Activate / Deactivate Sections
+// Activate / Deactivate Sections (Strided)
 
-void activate(int ind){
-  indirect[ind].cnt = indsize[ind];
+void activate(int first, int stride = 0, int count = 0){
+	if(count == 0) count = indirect.size();
+	for(size_t i = 0; first+i*stride < indirect.size() && i < count; i++)
+		indirect[first+i*stride].cnt = indirect[first+i*stride].baseCnt;
   update();
 }
 
-void deactivate(int ind){
-  indirect[ind].cnt = 0;
+void deactivate(int start, int stride = 0, int count = 0){
+	if(count == 0) count = indirect.size();
+	for(size_t i = 0; start+i*stride < indirect.size() && i < count; i++)
+		indirect[start+i*stride].cnt = 0;
   update();
 }
 
@@ -332,6 +326,7 @@ void update(){
   glBufferData(GL_DRAW_INDIRECT_BUFFER, indirect.size()*sizeof(DAIC), &indirect[0], GL_DYNAMIC_DRAW);
 }
 
+/*
 void simplify(){
 
   for(int i = 0; i < indirect.size()-1;){
@@ -345,10 +340,11 @@ void simplify(){
     else i++;
   }
 
-  //N = indirect.size();
+  N = indirect.size();
   update();
 
 }
+*/
 
 /*
 ================================================================================
@@ -370,7 +366,7 @@ void reserve(int k){
 
 template<typename... Args>
 bool fill(int ind, int k, Args && ...args){
-  assert(k < indsize[ind]);                           //In-Bound Check
+  assert(k < indirect[ind].baseCnt);                           //In-Bound Check
   T* place = start + indirect[ind].start + k;         //Exact Location
   try{ new (place) T(std::forward<Args>(args)...); }  //Construct In-Place
   catch(...) { throw; return false; }

@@ -26,6 +26,7 @@ Potential Improvements:
 */
 
 #include <list>
+#include <set>
 
 //Vertex Format
 
@@ -99,10 +100,11 @@ private:
   GLuint vbo;     //Vertex Buffer Object
   GLuint indbo;   //Indirect Draw Command Buffer Object
 
-  size_t K = 0;   //Number of Reserved Vertices
-  size_t N = 0;   //Number of Indirect Draw Calls
+  size_t K;   		//Number of Reserved Vertices
+  size_t N;   		//Number of Maximum Buckets
 
   T* start;       //Immutable Storage Location Start
+	stack<T*> free;
 
 	vector<DAIC> indirect;  //Indirect Drawing Commands
 
@@ -113,13 +115,14 @@ private:
     glGenBuffers(1, &vbo);
     T::format(vbo);
     lock();
+		K = 0; N = 0;
   }
 
 public:
 
-	vector<T*> free;  	//List of Free Data Addresses
-  Renderpool(int k):Renderpool(){
-    reserve(k);
+  Renderpool(int k, int n):Renderpool(){
+		K = k; N = n;
+    reserve(k, n);
   }
 
 /*
@@ -171,117 +174,27 @@ public:
 
 // Generate an indirect draw command of length k, return the index
 
-int section(int k, bool active = true){
+int section(const int k, const bool active = true){
 
   if(k == 0) return 0;
-
-  int n = 0;
-	int l = 0;
-	int dist = 0;
-  T* freestart = free[0];
-  T* prev = freestart;
-
-  for(T* next: free){
-		l++;
-
-    if(next - prev == dist) continue;
-
-
-    if(next - prev == 1){
-			n++;
-			prev = next;
-		}
-    else{
-			dist = next-prev;
-			freestart = next;
-			prev = next;
-			n = 0;
-			continue;
-		}
-
-    if(n == k) break;
-  }
-
-  if(n < k){
-		std::cout<<free.size()<<std::endl;
-    std::cout<<"Failed to Find Region"<<std::endl;
-		std::cout<<"N: "<<n<<" K: "<<k<<std::endl;
-
-		std::sort(free.begin(), free.end());
-
-		n = 0;
-		l = 0;
-		dist = 0;
-	  freestart = free[0];
-	  prev = freestart;
-
-	  for(T* next: free){
-			l++;
-
-	    if(next - prev == dist) continue;
-
-
-	    if(next - prev == 1){
-				n++;
-				prev = next;
-			}
-	    else{
-				dist = next-prev;
-				freestart = next;
-				prev = next;
-				n = 0;
-				continue;
-			}
-
-	    if(n == k) break;
-	  }
-
-		computefracture();
-
-  }
-
-	std::cout<<"Sectioning ";
-	timer::benchmark<std::chrono::microseconds>([&](){
-
-	free.erase(free.begin()+l-k-1, free.begin()+l-1);			//Remove Positions from Free
-
-	});
-
-  indirect.emplace_back(k, 1, freestart-start, 0);
-
-  int ind = indirect.size()-1;
-  if(!active) deactivate(ind);
-	update();
-	N++;
-
-  return ind;
-
-}
-
-void computefracture(){
-	int n = 0;
-	int l = 0;
-	T* freestart = free.front();
-	T* prev = freestart;
-	int dist = 0;
-	for(T* next: free){
-
-		if(next - prev == dist) continue;
-		if(next - prev == 0x1){
-			prev = next;
-			n++;
-		}
-		else{
-			n++;
-	//		std::cout<<"SEGSIZE: "<<n<<std::endl;
-			dist = next-prev;
-			prev = next;
-			n = 0;
-			l++;
-		}
+	if(k > K){
+		std::cout<<"Requested "<<k<<" vertices for a bucket of size "<<K<<std::endl;
+		return 0;
+	}
+	if(free.empty()){
+		std::cout<<"No Buckets Available"<<std::endl;
+		return 0;
 	}
 
-	std::cout<<"SEGS: "<<l<<std::endl;
+  indirect.emplace_back(k, 1, free.top()-start, 0);
+	free.pop();
+
+  const int ind = indirect.size()-1;
+  if(!active) deactivate(ind);
+	update();
+
+	return ind;
+
 }
 
 // Remove the Indirect Draw Command, Free the Memory
@@ -289,62 +202,51 @@ void computefracture(){
 void unsection(int first, int count = 1, int stride = 1){
 
 	for(size_t i = first; i < first+count*stride; i++){
-	  for(int k = indirect[i].start; k < indirect[i].start + indirect[i].baseCnt; k++)
-	    deallocate(start+k);
+		free.push(start+indirect[i].start);
+		for(int k = indirect[i].start; k < indirect[i].start + indirect[i].baseCnt; k++)
+			deallocate(start+k);
 	}
 
-for(size_t i = 0; i < count; i++)
-	indirect.erase(indirect.begin()+first+stride-1); //Erasing makes the other indices no longer work...
-update();
+	for(size_t i = 0; i < count; i++)
+		indirect.erase(indirect.begin()+first+stride-1); //Erasing makes the other indices no longer work...
+	update();
 
-//free.sort();
+}
 
-N--;
-
+void shrink(int first, int newsize){
+	assert(newsize < K);
+	indirect[first].baseCnt = newsize;
+	indirect[first].cnt = newsize;
 }
 
 // Activate / Deactivate Sections (Strided)
 
-void activate(int first, int stride = 0, int count = 0){
+void activate(int first, int count = 1, int stride = 1){
+
 	if(count == 0) count = indirect.size();
-	for(size_t i = 0; first+i*stride < indirect.size() && i < count; i++)
+	for(size_t i = first; first+i*stride < indirect.size() && i < count; i++)
 		indirect[first+i*stride].cnt = indirect[first+i*stride].baseCnt;
   update();
+
 }
 
-void deactivate(int start, int stride = 0, int count = 0){
+void deactivate(int first, int count = 1, int stride = 1){
+
 	if(count == 0) count = indirect.size();
-	for(size_t i = 0; start+i*stride < indirect.size() && i < count; i++)
-		indirect[start+i*stride].cnt = 0;
+	for(size_t i = 0; first+i*stride < indirect.size() && i < count; i++)
+		indirect[first+i*stride].cnt = 0;
   update();
+
 }
 
 // Upload Indirect Buffer to GPU
 
 void update(){
+
   glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
   glBufferData(GL_DRAW_INDIRECT_BUFFER, indirect.size()*sizeof(DAIC), &indirect[0], GL_DYNAMIC_DRAW);
-}
-
-/*
-void simplify(){
-
-  for(int i = 0; i < indirect.size()-1;){
-    DAIC* cur = &indirect[i];
-    DAIC* next = &indirect[i+1];
-
-    if(cur->start + cur->cnt == next->start){
-      cur->cnt += next->cnt;
-      indirect.erase(indirect.begin()+i+1);
-    }
-    else i++;
-  }
-
-  N = indirect.size();
-  update();
 
 }
-*/
 
 /*
 ================================================================================
@@ -354,19 +256,18 @@ void simplify(){
 
 // Create Persistently Mapped Buffer for Memory Pooling
 
-void reserve(int k){
-  K = k;
+void reserve(int k, int n){
   const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferStorage(GL_ARRAY_BUFFER, K*sizeof(T), NULL, flags);
-  start = (T*)glMapBufferRange( GL_ARRAY_BUFFER, 0, K*sizeof(T), flags | GL_MAP_UNSYNCHRONIZED_BIT );
-  for(size_t i = 0; i < K; i++)
-    free.push_back(start+i);
+  glBufferStorage(GL_ARRAY_BUFFER, N*K*sizeof(T), NULL, flags);
+  start = (T*)glMapBufferRange( GL_ARRAY_BUFFER, 0, N*K*sizeof(T), flags | GL_MAP_UNSYNCHRONIZED_BIT );
+  for(size_t i = 0; i < N; i++)
+		free.push(start+i*K);
 }
 
 template<typename... Args>
-bool fill(int ind, int k, Args && ...args){
-  assert(k < indirect[ind].baseCnt);                           //In-Bound Check
+bool fill(const int ind, const int k, Args && ...args){
+  assert(k < K); assert(ind < indirect.size());       //In-Bound Check
   T* place = start + indirect[ind].start + k;         //Exact Location
   try{ new (place) T(std::forward<Args>(args)...); }  //Construct In-Place
   catch(...) { throw; return false; }
@@ -375,7 +276,6 @@ bool fill(int ind, int k, Args && ...args){
 
 void deallocate(T* o){      //Per-Address Deconstruction
   o->~T();
-  free.push_back(o);
 }
 
 };

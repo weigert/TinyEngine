@@ -17,27 +17,32 @@ int main( int argc, char* args[] ) {
   cam::near = -500.0f;
   cam::far = 500.0f;
   cam::rad = 1.0f;
-  cam::look = vec3(32,0,32);
+  cam::look = vec3(32, 0, 32);
   cam::init(5, cam::ORTHO);
 
 	const int N = 5*5*5*6;	//6 Face Orientations per Chunk
 
-	Renderpool<Vertex> vertpool(3000*2*N);
+	Renderpool<Vertex> vertpool(3500, N);
 
 	vector<Chunk> chunks;
 	Chunk chunk;
+
+	std::cout<<"Meshing ";
+	timer::benchmark<std::chrono::microseconds>([&](){
 
 	for(int i = 0; i < 5; i++)
 	for(int j = 0; j < 5; j++)
 	for(int k = 0; k < 5; k++){
 
 		chunk.randomize();
-		chunk.pos = 2*ivec3(i,j,k);
+		chunk.pos = ivec3(i,j,k);
 		chunks.push_back(chunk);
 
 		chunkmesh::greedypool(&chunks.back(), &vertpool);
 
 	}
+
+	});
 
 	//Render Pass
 
@@ -45,10 +50,19 @@ int main( int argc, char* args[] ) {
 
 	Tiny::event.handler = [&](){ cam::handler();
 
+
+		if(cam::moved){
+
+		//	vertpool.deactivate(0, 0, 6);
+		//	vertpool.deactivate(2, 0, 6);
+		//	vertpool.deactivate(4, 0, 6);
+
+
+
+		}
+
 		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_SPACE){
-			std::sort(vertpool.free.begin(), vertpool.free.end());
-	//		vertpool.free.sort();
-			vertpool.computefracture();
+
 		}
 
 	};
@@ -57,9 +71,6 @@ int main( int argc, char* args[] ) {
 
 /*
 	//Betteer Activation / Deactivation
-	vertpool.deactivate(0, 6);
-	vertpool.deactivate(2, 6);
-	vertpool.deactivate(4, 6);
 */
 
 	Tiny::view.pipeline = [&](){
@@ -76,8 +87,14 @@ int main( int argc, char* args[] ) {
 
 		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
+
+	//	if(rand()%2) vertpool.deactivate(r*6, 6);
+	//	else vertpool.activate(r*6, 6);
+
 		int r = rand()%chunks.size();
+
 		vertpool.unsection(r*6, 6);
+
 
 		chunk.randomize();
 		chunk.pos = chunks[r].pos;
@@ -85,9 +102,20 @@ int main( int argc, char* args[] ) {
 		chunks.erase(chunks.begin()+r);
 		chunks.push_back(chunk);
 
-		chunkmesh::greedypool(&chunks.back(), &vertpool);
+
+		std::cout<<"Chunk Edit ";
+		timer::benchmark<std::chrono::microseconds>([&](){
+
+			chunkmesh::greedypool(&chunks.back(), &vertpool);
+
+		});
+
 
 		if(chunks.size() == 0) Tiny::event.quit = true;
+
+		vertpool.deactivate(0, 0, 6);
+		vertpool.deactivate(2, 0, 6);
+		vertpool.deactivate(4, 0, 6);
 
 	});
 

@@ -12,7 +12,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.vsync = false;
 	Tiny::benchmark = true;
-	Tiny::window("Example Window", 600, 400);
+	Tiny::window("Example Window", 1200, 800);
 
   cam::near = -500.0f;
   cam::far = 500.0f;
@@ -25,19 +25,23 @@ int main( int argc, char* args[] ) {
   vector<Model*> models;
 	Chunk chunk;
 
-  for(int i = 0; i < 10; i++)
+	std::cout<<"Meshing ";
+	timer::benchmark<std::chrono::microseconds>([&](){
+
+  for(int i = 0; i < 5; i++)
   for(int j = 0; j < 5; j++)
-  for(int k = 0; k < 10; k++){
+  for(int k = 0; k < 5; k++){
 
 		chunk.randomize();
     chunk.pos = ivec3(i, j, k);
 
     Model* model = new Model(chunkmesh::greedy, &chunk);
     models.push_back(model);
+		models.back()->indexed = false;
 
   }
 
-	//fullmodel.update();
+	});
 
 	Shader shader({"shader/naive.vs", "shader/naive.fs"}, {"in_Position", "in_Normal", "in_Color"});
 
@@ -56,6 +60,21 @@ int main( int argc, char* args[] ) {
 
 	Tiny::loop([&](){ /* ... */
 		std::cout<<Tiny::average<<std::endl;
+
+		int r = rand()%models.size();
+
+		chunk.randomize();
+		chunk.pos = models[r]->pos; 
+
+		std::cout<<"Chunk Edit ";
+		timer::benchmark<std::chrono::microseconds>([&](){
+
+		models[r]->construct(chunkmesh::greedy, &chunk);
+
+		});
+
+		if(models.size() == 0) Tiny::event.quit = true;
+
 	});
 	Tiny::quit();
 

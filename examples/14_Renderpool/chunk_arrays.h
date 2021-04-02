@@ -232,7 +232,7 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.y+x[1]+dv[1]-0.5)*(float)LOD);
             m->positions.push_back((p.z+x[2]+dv[2]-0.5)*(float)LOD);
 
-            /*
+/*
             m->positions.push_back((p.x+x[0]-0.5)*(float)LOD);
             m->positions.push_back((p.y+x[1]-0.5)*(float)LOD);
             m->positions.push_back((p.z+x[2]-0.5)*(float)LOD);
@@ -256,7 +256,7 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.x+x[0]-0.5)*(float)LOD);
             m->positions.push_back((p.y+x[1]-0.5)*(float)LOD);
             m->positions.push_back((p.z+x[2]-0.5)*(float)LOD);
-            */
+*/
           }
           else{
 
@@ -283,6 +283,7 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD);
             m->positions.push_back((p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD);
 
+
 /*
             m->positions.push_back((p.x+x[0]-0.5+y[0])*(float)LOD);
             m->positions.push_back((p.y+x[1]-0.5+y[1])*(float)LOD);
@@ -307,7 +308,7 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.x+x[0]-0.5+y[0])*(float)LOD);
             m->positions.push_back((p.y+x[1]-0.5+y[1])*(float)LOD);
             m->positions.push_back((p.z+x[2]-0.5+y[2])*(float)LOD);
-            */
+          */
           }
 
           color = block::getColor(current);
@@ -370,7 +371,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
 
     quadsize = 0;
 
-    int section = vertpool->section(3500, true, n);
+    int section = vertpool->section(3500, true);
 
     BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
     BlockType current, facing;
@@ -463,62 +464,90 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
 
           if(n < 0){
 
-            vertpool->fill(section, quadsize*4+0,
+            vertpool->fill(section, quadsize*6+0,
               vec3( (p.x+x[0]-0.5)*(float)LOD,
                     (p.y+x[1]-0.5)*(float)LOD,
                     (p.z+x[2]-0.5)*(float)LOD),
               vec3(q[0], q[1], q[3]),
               color);
 
-            vertpool->fill(section, quadsize*4+1,
+            vertpool->fill(section, quadsize*6+1,
               vec3( (p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD),
               vec3(q[0], q[1], q[3]),
               color);
 
-            vertpool->fill(section, quadsize*4+2,
+            vertpool->fill(section, quadsize*6+2,
               vec3( (p.x+x[0]+du[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]-0.5)*(float)LOD),
               vec3(q[0], q[1], q[3]),
               color);
 
-            vertpool->fill(section, quadsize*4+3,
+            vertpool->fill(section, quadsize*6+3,
               vec3( (p.x+x[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5)*(float)LOD),
               vec3(q[0], q[1], q[3]),
               color);
 
+            vertpool->fill(section, quadsize*6+4,
+              vec3( (p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD,
+                    (p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD,
+                    (p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD),
+              vec3(q[0], q[1], q[3]),
+              color);
+
+            vertpool->fill(section, quadsize*6+5,
+              vec3( (p.x+x[0]-0.5)*(float)LOD,
+                    (p.y+x[1]-0.5)*(float)LOD,
+                    (p.z+x[2]-0.5)*(float)LOD),
+              vec3(q[0], q[1], q[3]),
+              color);
+
           }
           else{
 
-            vertpool->fill(section, quadsize*4+0,
+            vertpool->fill(section, quadsize*6+0,
               vec3( (p.x+x[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]-0.5+y[2])*(float)LOD),
               vec3(q[0], q[1], q[3]),
               color);
 
-            vertpool->fill(section, quadsize*4+1,
-              vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
-                    (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
-                    (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
-
-            vertpool->fill(section, quadsize*4+2,
+            vertpool->fill(section, quadsize*6+1,
               vec3( (p.x+x[0]+du[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+du[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+du[2]-0.5+y[2])*(float)LOD),
               vec3(q[0], q[1], q[3]),
               color);
 
-            vertpool->fill(section, quadsize*4+3,
+            vertpool->fill(section, quadsize*6+2,
+              vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
+                    (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
+                    (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
+              vec3(q[0], q[1], q[3]),
+              color);
+
+            vertpool->fill(section, quadsize*6+3,
+              vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
+                    (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
+                    (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
+              vec3(q[0], q[1], q[3]),
+              color);
+
+            vertpool->fill(section, quadsize*6+4,
               vec3( (p.x+x[0]+dv[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD),
+              vec3(q[0], q[1], q[3]),
+              color);
+
+            vertpool->fill(section, quadsize*6+5,
+              vec3( (p.x+x[0]-0.5+y[0])*(float)LOD,
+                    (p.y+x[1]-0.5+y[1])*(float)LOD,
+                    (p.z+x[2]-0.5+y[2])*(float)LOD),
               vec3(q[0], q[1], q[3]),
               color);
 

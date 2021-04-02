@@ -49,22 +49,6 @@ struct Vertex{
 	float color[3];
 
   static void format(int vbo){
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-		glBindVertexBuffer(0, vbo, 0, sizeof(Vertex));		//Internal Offset vs. Full Offset
-
-		glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position));
-    glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal));
-    glVertexAttribFormat(2, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, color));
-
-		glVertexAttribBinding(0, 0);
-    glVertexAttribBinding(1, 0);
-    glVertexAttribBinding(2, 0);
-
-		/*
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
@@ -73,10 +57,6 @@ struct Vertex{
     glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexAttribFormat(2, 3, GL_FLOAT, GL_FALSE, 0);
 
-		glVertexBindingDivisor(0, 0);
-		glVertexBindingDivisor(1, 0);
-		glVertexBindingDivisor(2, 0);
-
     glVertexAttribBinding(0, 0);
     glVertexAttribBinding(1, 1);
     glVertexAttribBinding(2, 2);
@@ -84,7 +64,6 @@ struct Vertex{
     glBindVertexBuffer(0, vbo, offsetof(Vertex, position), sizeof(Vertex));		//Internal Offset vs. Full Offset
     glBindVertexBuffer(1, vbo, offsetof(Vertex, normal), sizeof(Vertex));
     glBindVertexBuffer(2, vbo, offsetof(Vertex, color), sizeof(Vertex));
-		*/
   }
 
 };
@@ -101,13 +80,12 @@ using namespace std;
 
 struct DAIC {
   DAIC(){}
-  DAIC(uint c, uint iC, uint s, uint bV, uint bI){
-    cnt = c; instCnt = iC; start = s; baseVert = bV; baseInst = bI; // baseCnt = c;
+  DAIC(uint c, uint iC, uint s, uint bI){
+    cnt = c; instCnt = iC; start = s; baseInst = bI; baseCnt = c;
   }
   uint cnt;
   uint instCnt;
   uint start;
-	uint baseVert;
   uint baseInst;
 
 	//Extra Properties
@@ -120,7 +98,6 @@ private:
 
   GLuint vao;     //Vertex Array Object
   GLuint vbo;     //Vertex Buffer Object
-	GLuint ebo;			//Element Array Buffer Object
   GLuint indbo;   //Indirect Draw Command Buffer Object
 
   size_t K;   		//Number of Reserved Vertices
@@ -130,14 +107,12 @@ private:
 	stack<T*> free;
 
 	vector<DAIC> indirect;  //Indirect Drawing Commands
-	vector<GLuint> indices;
 
 	Renderpool(){
     glGenVertexArrays(1, &vao); //Buffer Generation
     glBindVertexArray(vao);
     glGenBuffers(1, &indbo);
     glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ebo);//GL_ELEMENT_ARRAY_BUFFER
     T::format(vbo);
     lock();
 		K = 0; N = 0;
@@ -149,15 +124,6 @@ public:
 		K = k; N = n;
     reserve(k, n);
   }
-
-	~Renderpool(){
-		glBindVertexArray(vao);
-		glDeleteBuffers(1, &ebo);
-		glDeleteBuffers(1, &indbo);
-		glDeleteBuffers(1, &vbo);
-		glDeleteBuffers(1, &ebo);
-		glDeleteVertexArrays(1, &vao);
-	}
 
 /*
 ================================================================================
@@ -192,12 +158,11 @@ public:
       else length = indirect.size();
 
     glBindVertexArray(vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
 
     wait();
-		glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, (void*)(first*(sizeof(DAIC))), length, sizeof(DAIC));
-		lock();
+    glMultiDrawArraysIndirect(mode, (void*)(first*(sizeof(DAIC))), length, sizeof(DAIC));
+    lock();
 
   }
 
@@ -209,9 +174,7 @@ public:
 
 // Generate an indirect draw command of length k, return the index
 
-#define BUFFER_OFFSET(offset) (static_cast<char*>(0) + (offset))
-
-int section(const int k, const bool active = true, int orientation = 1){
+int section(const int k, const bool active = true){
 
   if(k == 0) return 0;
 	if(k > K){
@@ -223,18 +186,7 @@ int section(const int k, const bool active = true, int orientation = 1){
 		return 0;
 	}
 
-	GLint first = 6*K;
-	GLint base = (free.top()-start);
-
-	if(orientation != 1) first = 0;
-//	else first = 6*K;
-
-  indirect.emplace_back(k, 1, first, base, 0);
-
-	std::cout<<"TOP: "<<first<<std::endl;
-	std::cout<<"INDEX: "<<indices[first]<<std::endl;
-	std::cout<<"ALT: "<<indices[0]+first<<std::endl;
-
+  indirect.emplace_back(k, 1, free.top()-start, 0);
 	free.pop();
 
   const int ind = indirect.size()-1;
@@ -251,8 +203,7 @@ void unsection(int first, int count = 1, int stride = 1){
 
 	for(size_t i = first; i < first+count*stride; i++){
 		free.push(start+indirect[i].start);
-	//	for(int k = indirect[i].start; k < indirect[i].start + indirect[i].baseCnt; k++)
-		for(int k = indirect[i].start; k < indirect[i].start + indirect[i].cnt; k++)
+		for(int k = indirect[i].start; k < indirect[i].start + indirect[i].baseCnt; k++)
 			deallocate(start+k);
 	}
 
@@ -306,55 +257,19 @@ void update(){
 // Create Persistently Mapped Buffer for Memory Pooling
 
 void reserve(int k, int n){
-	glBindVertexArray(vao);
-
   const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferStorage(GL_ARRAY_BUFFER, N*K*sizeof(T), NULL, flags);
   start = (T*)glMapBufferRange( GL_ARRAY_BUFFER, 0, N*K*sizeof(T), flags | GL_MAP_UNSYNCHRONIZED_BIT );
-  for(int i = N-1; i >= 0; i--)
-			free.push(start+i*K);
-
-	/*
-
-		This is where we choose our indexing structures.
-		Basically here I can say that there are 2 possible structures,
-		and I have to pick the appropriate one based on the
-
-	*/
-
-	for(size_t j = 0; j < K; j++){
-		indices.push_back(j*4+0);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+2);
-		indices.push_back(j*4+3);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+0);
-	}
-	for(size_t j = 0; j < K; j++){
-		indices.push_back(j*4+0);
-		indices.push_back(j*4+2);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+3);
-		indices.push_back(j*4+0);
-	}
-
-/*
-	for(size_t j = 0; j < K; j++)
-		indices.push_back(j);
-*/
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
+  for(size_t i = 0; i < N; i++)
+		free.push(start+i*K);
 }
 
 template<typename... Args>
 bool fill(const int ind, const int k, Args && ...args){
 	if(k < k) std::cout<<k<<"/"<<K<<std::endl<<std::flush;
   assert(k < K); assert(ind < indirect.size());       //In-Bound Check
-  T* place = start + indirect[ind].baseVert + k;         //Exact Location
+  T* place = start + indirect[ind].start + k;         //Exact Location
   try{ new (place) T(std::forward<Args>(args)...); }  //Construct In-Place
   catch(...) { throw; return false; }
   return true;

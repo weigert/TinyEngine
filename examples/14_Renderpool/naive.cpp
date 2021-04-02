@@ -28,16 +28,16 @@ int main( int argc, char* args[] ) {
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-  for(int i = 0; i < 5; i++)
-  for(int j = 0; j < 5; j++)
-  for(int k = 0; k < 5; k++){
+  for(int i = 0; i < 1; i++)
+  for(int j = 0; j < 1; j++)
+  for(int k = 0; k < 1; k++){
 
 		chunk.randomize();
     chunk.pos = ivec3(i, j, k);
 
     Model* model = new Model(chunkmesh::greedy, &chunk);
     models.push_back(model);
-		models.back()->indexed = false;
+	//	models.back()->indexed = false;
 
   }
 
@@ -61,10 +61,11 @@ int main( int argc, char* args[] ) {
 	Tiny::loop([&](){ /* ... */
 		std::cout<<Tiny::average<<std::endl;
 
+/*
 		int r = rand()%models.size();
 
 		chunk.randomize();
-		chunk.pos = models[r]->pos; 
+		chunk.pos = models[r]->pos;
 
 		std::cout<<"Chunk Edit ";
 		timer::benchmark<std::chrono::microseconds>([&](){
@@ -74,6 +75,7 @@ int main( int argc, char* args[] ) {
 		});
 
 		if(models.size() == 0) Tiny::event.quit = true;
+*/
 
 	});
 	Tiny::quit();

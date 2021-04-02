@@ -1,3 +1,28 @@
+## NEW TODO
+
+- Render Chunks Near to Far???
+- This would potentially remove occluded pixels
+- How would this be possible?
+- Order the indirect draw calls by their distance to the camera somehow using a sort,
+then update somehow. Only do this when necessary? What would be the execution time?
+
+- Don't render
+
+- Multithread where appropriate?
+    Where can I elegantly introduce multithreading?
+    In the vertexpool meshing?
+    Is the vertexpool somehow intrinsically threadable?
+
+- Do most calculations in the vertex shader,
+do all other "shading" or "fragment" shader stuff on a per-pixel basis
+from an FBO, because otherwise we are doing it for every fragment
+which might well be occluded.
+So render first, then reshade with the FBO later.
+
+- Make chunk loading, saving and accessing a member of the chunk,
+  then give it derived classes which reimplement the method so that
+  we can save chunks in different compression formats and see how it behaves
+
 # vertexpool
 
 System for reducing OpenGL driver overhead without losing generality of drawables.

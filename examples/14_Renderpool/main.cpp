@@ -21,8 +21,12 @@ int main( int argc, char* args[] ) {
   cam::init(5, cam::ORTHO);
 
 	const int N = 5*5*5*6;	//6 Face Orientations per Chunk
+	int K;
+	if(Chunk::LOD == 4) K = 100;
+	else K = 3500;
+	std::cout<<"SIZE: "<<sizeof(Vertex)<<std::endl;
 
-	Renderpool<Vertex> vertpool(3500, N);
+	Renderpool<Vertex> vertpool(K, N);
 
 	vector<Chunk> chunks;
 	Chunk chunk;
@@ -50,20 +54,34 @@ int main( int argc, char* args[] ) {
 
 	Tiny::event.handler = [&](){ cam::handler();
 
-
+/*
 		if(cam::moved){
-
-		//	vertpool.deactivate(0, 0, 6);
-		//	vertpool.deactivate(2, 0, 6);
-		//	vertpool.deactivate(4, 0, 6);
-
-
-
+			if(cam::pos.x > 0){
+				vertpool.deactivate(0, 0, 6);
+				vertpool.activate(1, 0, 6);
+			}
+			else if(cam::pos.x < 0){
+				vertpool.activate(0, 0, 6);
+				vertpool.deactivate(1, 0, 6);
+			}
+			if(cam::pos.y > 0){
+				vertpool.deactivate(2, 0, 6);
+				vertpool.activate(3, 0, 6);
+			}
+			else if(cam::pos.y < 0){
+				vertpool.activate(2, 0, 6);
+				vertpool.deactivate(3, 0, 6);
+			}
+			if(cam::pos.z > 0){
+				vertpool.deactivate(4, 0, 6);
+				vertpool.activate(5, 0, 6);
+			}
+			else if(cam::pos.z < 0){
+				vertpool.activate(4, 0, 6);
+				vertpool.deactivate(5, 0, 6);
+			}
 		}
-
-		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_SPACE){
-
-		}
+		*/
 
 	};
 
@@ -91,6 +109,7 @@ int main( int argc, char* args[] ) {
 	//	if(rand()%2) vertpool.deactivate(r*6, 6);
 	//	else vertpool.activate(r*6, 6);
 
+/*
 		int r = rand()%chunks.size();
 
 		vertpool.unsection(r*6, 6);
@@ -109,13 +128,36 @@ int main( int argc, char* args[] ) {
 			chunkmesh::greedypool(&chunks.back(), &vertpool);
 
 		});
+*/
 
+/*
+		if(cam::pos.x > 0){
+			vertpool.deactivate((chunks.size()-1)*6+0);
+			vertpool.activate((chunks.size()-1)*6+1);
+		}
+		else if(cam::pos.x < 0){
+			vertpool.activate((chunks.size()-1)*6+0);
+			vertpool.deactivate((chunks.size()-1)*6+1);
+		}
+		if(cam::pos.y > 0){
+			vertpool.deactivate((chunks.size()-1)*6+2);
+			vertpool.activate((chunks.size()-1)*6+3);
+		}
+		else if(cam::pos.y < 0){
+			vertpool.activate((chunks.size()-1)*6+2);
+			vertpool.deactivate((chunks.size()-1)*6+3);
+		}
+		if(cam::pos.z > 0){
+			vertpool.deactivate((chunks.size()-1)*6+4);
+			vertpool.activate((chunks.size()-1)*6+5);
+		}
+		else if(cam::pos.z < 0){
+			vertpool.activate((chunks.size()-1)*6+4);
+			vertpool.deactivate((chunks.size()-1)*6+5);
+		}
+*/
 
 		if(chunks.size() == 0) Tiny::event.quit = true;
-
-		vertpool.deactivate(0, 0, 6);
-		vertpool.deactivate(2, 0, 6);
-		vertpool.deactivate(4, 0, 6);
 
 	});
 

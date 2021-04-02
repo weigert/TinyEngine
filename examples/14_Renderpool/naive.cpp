@@ -20,6 +20,9 @@ int main( int argc, char* args[] ) {
   cam::look = vec3(32,0,32);
   cam::init(5, cam::ORTHO);
 
+	Chunk::LOD = 4;
+	Chunk::QUAD = 200;
+
   //Naive Approach
 
   vector<Model*> models;
@@ -28,9 +31,9 @@ int main( int argc, char* args[] ) {
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-  for(int i = 0; i < 1; i++)
-  for(int j = 0; j < 1; j++)
-  for(int k = 0; k < 1; k++){
+  for(int i = 0; i < 15; i++)
+  for(int j = 0; j < 15; j++)
+  for(int k = 0; k < 15; k++){
 
 		chunk.randomize();
     chunk.pos = ivec3(i, j, k);
@@ -61,7 +64,6 @@ int main( int argc, char* args[] ) {
 	Tiny::loop([&](){ /* ... */
 		std::cout<<Tiny::average<<std::endl;
 
-/*
 		int r = rand()%models.size();
 
 		chunk.randomize();
@@ -75,7 +77,6 @@ int main( int argc, char* args[] ) {
 		});
 
 		if(models.size() == 0) Tiny::event.quit = true;
-*/
 
 	});
 	Tiny::quit();

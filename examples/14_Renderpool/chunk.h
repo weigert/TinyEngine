@@ -67,6 +67,9 @@ ivec3 pos = ivec3(0);
 int quadsize, quadstart;
 
 static int LOD;
+static int QUAD;
+
+int faces[6];
 
 int getIndex(vec3 _p){
   //Return the Correct Index
@@ -83,6 +86,7 @@ BlockType getPosition(vec3 _p){
 };
 
 int Chunk::LOD = 1;
+int Chunk::QUAD = 3500;
 
 /*
 ================================================================================
@@ -353,6 +357,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
   vec3 p = c->pos*ivec3(CHUNKSIZE/LOD);
 
   int quadsize;
+  int section;
 
   for(int d = 0; d < 6; d++){
 
@@ -369,8 +374,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
     y[u] = 1;           //Simple Vector
 
     quadsize = 0;
-
-    int section = vertpool->section(3500, true, n);
+    section = vertpool->section(Chunk::QUAD, false, d);
 
     BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
     BlockType current, facing;
@@ -456,9 +460,6 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           int du[3] = {0}; du[v] = height;
           int dv[3] = {0}; dv[w] = width;
 
-          //Add Quad to Model
-//          int N = m->positions.size()/3;
-
           color = block::getColor(current);
 
           if(n < 0){
@@ -467,28 +468,28 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
               vec3( (p.x+x[0]-0.5)*(float)LOD,
                     (p.y+x[1]-0.5)*(float)LOD,
                     (p.z+x[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
             vertpool->fill(section, quadsize*4+1,
               vec3( (p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
             vertpool->fill(section, quadsize*4+2,
               vec3( (p.x+x[0]+du[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
             vertpool->fill(section, quadsize*4+3,
               vec3( (p.x+x[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
           }
@@ -498,28 +499,28 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
               vec3( (p.x+x[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
             vertpool->fill(section, quadsize*4+1,
               vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
             vertpool->fill(section, quadsize*4+2,
               vec3( (p.x+x[0]+du[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+du[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+du[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
             vertpool->fill(section, quadsize*4+3,
               vec3( (p.x+x[0]+dv[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
+              vec3(q[0], q[1], q[2]),
               color);
 
           }
@@ -532,12 +533,12 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
     }
 
     vertpool->shrink(section, quadsize*6);
+    c->faces[d] = section;
     delete[] mask;
 
     //Next Surface Orientation
   }
 
-  //vertpool->update();
 });
 
 };

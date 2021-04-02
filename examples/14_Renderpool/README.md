@@ -6,7 +6,7 @@
 - Order the indirect draw calls by their distance to the camera somehow using a sort,
 then update somehow. Only do this when necessary? What would be the execution time?
 
-- Don't render
+- Don't render at all, instead of setting values to zero!
 
 - Multithread where appropriate?
     Where can I elegantly introduce multithreading?

@@ -32,11 +32,11 @@ namespace block{
       case BLOCK_NONE:
         return vec3(1,1,1);
       case BLOCK_RED:
-        return vec3(1,0,0);
+        return vec3(1,1,0);
       case BLOCK_GREEN:
-        return vec3(0,1,0);
+        return vec3(1,0,1);
       case BLOCK_BLUE:
-        return vec3(0,0,1);
+        return vec3(0,1,1);
       default:
         return vec3(1,1,1);
     }
@@ -62,7 +62,7 @@ void randomize(){
 //  delete data;
 }
 
-BlockType* data = NULL;
+BlockType* data;
 ivec3 pos = ivec3(0);
 int quadsize, quadstart;
 
@@ -98,13 +98,11 @@ namespace chunkmesh {
 using namespace std;
 
 function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
-  m->pos = c->pos;
 
-  timer::benchmark<std::chrono::microseconds>([&](){
+  m->pos = c->pos;
 
   c->quadsize = 0;
 
-//  Blueprint temp;
   int LOD = Chunk::LOD;
   int CHLOD = CHUNKSIZE/LOD;
   vec3 p = c->pos*ivec3(CHUNKSIZE/LOD);
@@ -236,31 +234,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.y+x[1]+dv[1]-0.5)*(float)LOD);
             m->positions.push_back((p.z+x[2]+dv[2]-0.5)*(float)LOD);
 
-            /*
-            m->positions.push_back((p.x+x[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+dv[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+dv[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+dv[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5)*(float)LOD);
-            */
           }
           else{
 
@@ -287,31 +260,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD);
             m->positions.push_back((p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD);
 
-/*
-            m->positions.push_back((p.x+x[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+dv[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5+y[2])*(float)LOD);
-            */
           }
 
           color = block::getColor(current);
@@ -332,8 +280,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
     delete[] mask;
   }
 
-  });
-
 };
 
 
@@ -348,9 +294,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
 
 
 function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool<Vertex>* vertpool){
-
-  std::cout<<"Section and Fill ";
-  timer::benchmark<std::chrono::microseconds>([&](){
 
   int LOD = Chunk::LOD;
   int CHLOD = CHUNKSIZE/LOD;
@@ -374,7 +317,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
     y[u] = 1;           //Simple Vector
 
     quadsize = 0;
-    section = vertpool->section(Chunk::QUAD, false, d);
+    section = vertpool->section(Chunk::QUAD, d, c->pos);
 
     BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
     BlockType current, facing;
@@ -538,8 +481,6 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
 
     //Next Surface Orientation
   }
-
-});
 
 };
 

@@ -23,25 +23,7 @@ Potential Improvements:
 - Full Instancing Support
 - Full Indexing Support
 
-
-
-If I want to be able to FULLY remove certain draw calls based on occlusion queries,
-it would make the most sense to sort the indirect set into two categories,
-one which is visible and one which is not visible.
-
-Basically do a sort operation on the indices array and just draw until the cutoff.
-
-This requires that I can still reference the sorted elements by some kind of index.
-
-So basically I have an unsorted array
-
-
 */
-
-#include <list>
-#include <set>
-
-#include <unordered_set>
 
 //Vertex Format
 
@@ -101,9 +83,11 @@ using namespace std;
 
 struct DAIC {
   DAIC(){}
-  DAIC(uint c, uint iC, uint s, uint bV, uint bI){
-    cnt = c; instCnt = iC; start = s; baseVert = bV; baseInst = bI; // baseCnt = c;
+  DAIC(uint c, uint iC, uint s, uint bV, uint bI, uint g){
+    cnt = c; instCnt = iC; start = s; baseVert = bV; baseInst = bI;
+		baseCnt = c; group = g;
   }
+
   uint cnt;
   uint instCnt;
   uint start;
@@ -113,9 +97,11 @@ struct DAIC {
 	//Extra Properties
 	uint baseCnt;					//Max Count
 	uint group;						//Group Membership
-	uint added;
+	glm::vec3 pos = glm::vec3(0);
 
 };
+
+#include <unordered_set>
 
 template<typename T>
 class Renderpool {
@@ -134,7 +120,7 @@ private:
 	stack<T*> free;
 
 	vector<DAIC> indirect;  //Indirect Drawing Commands
-	vector<DAIC> indirectcopy;  //Indirect Drawing Commands
+	vector<DAIC> transfer;  //Indirect Drawing (Sorted)
 
 	Renderpool(){
     glGenVertexArrays(1, &vao); //Buffer Generation
@@ -151,6 +137,7 @@ public:
 
   Renderpool(int k, int n):Renderpool(){
 		K = k; N = n; M = n;
+		transfer.resize(n);
     reserve(k, n);
   }
 
@@ -211,67 +198,51 @@ public:
 ================================================================================
 */
 
-void select(std::unordered_set<int> groups){
-
-	indirectcopy = indirect;
+template<typename F, typename... Args>
+void mask(F function, Args&&... args){
 
 	M = 0;
-	for(auto& cmd: indirectcopy){
-		if(groups.contains(cmd.group)) M++;
-	}
+	for(size_t i = 0; i < indirect.size(); i++)
+		if(function(indirect[i], args...))
+			transfer[M++] = indirect[i];
 
-	std::sort(indirectcopy.begin(), indirectcopy.end(), [&](const DAIC& a, const DAIC& b){
-
-		if(!groups.contains(a.group)) return false;	//Non-Present Groups always Lose
-		if(!groups.contains(b.group)) return true;	//Non-Present Comparison Groups Mean Moving Down (a exists is implied)
-		if(a.baseVert < b.baseVert) return true;		//Sort by Memory Order
-
-		return false;
-
+	sort(transfer.begin(), transfer.begin() + M, [](const DAIC& a, const DAIC& b){
+		return (a.baseVert < b.baseVert);
+		//return (length(cam::look + cam::pos - a.pos) < length(cam::look + cam::pos - b.pos));
 	});
 
-/*
-	for(size_t i = 0; i < indirect.size(); i++){
-		index[indirect[i].added] = i;
-	}
-	*/
+	update(false);
 
-	update();
 }
 
 // Generate an indirect draw command of length k, return the index
 
-int section(const int k, const bool active = true, int group = 0){
+int section(const int k, const int group = 0, const glm::vec3 pos = glm::vec3(0)){
 
-  if(k == 0) return 0;
-	if(k > K){
-		std::cout<<"Requested "<<k<<" vertices for a bucket of size "<<K<<std::endl;
-		return N;
-	}
-	if(free.empty()){
-		std::cout<<"No Buckets Available"<<std::endl;
-		return N;
-	}
+  if(k == 0) return N;
+	if(k > K) return N;
+	if(free.empty()) return N;
+
+
 
 
 	GLint first = 6*K;
 	GLint base = (free.top()-start);
+	free.pop();
 
 	if(group%2 == 0) first = 0;
 
-  indirect.emplace_back(k, 1, first, base, 0);
+
+
+
+
+
+  indirect.emplace_back(k, 1, first, base, 0, group);
+	indirect.back().pos = pos;
+
+	transfer.push_back(indirect.back());
+
 	const int ind = indirect.size()-1;
-
-	indirect.back().group = group;
-	indirect.back().added = ind;
-
-	free.pop();
-
-  if(!active) indirect.back().cnt = 0;
-
-	indirectcopy = indirect;
-
-	update();
 
 	return ind;
 
@@ -289,10 +260,6 @@ void unsection(int first, int count = 1, int stride = 1){
 
 	for(size_t i = 0; i < count; i++)
 		indirect.erase(indirect.begin()+first+stride-1); //Erasing makes the other indices no longer work...
-
-	indirectcopy = indirect;
-
-	update();
 
 }
 
@@ -312,8 +279,6 @@ void activate(int first, int count = 1, int stride = 1){
 	for(size_t i = 0; first+i*stride < indirect.size() && i < count; i++)
 		indirect[first+i*stride].cnt = indirect[first+i*stride].baseCnt;
 
-	indirectcopy = indirect;
-
   update();
 
 }
@@ -324,18 +289,17 @@ void deactivate(int first, int count = 1, int stride = 1){
 	for(size_t i = 0; first+i*stride < indirect.size() && i < count; i++)
 		indirect[first+i*stride].cnt = 0;
 
-	indirectcopy = indirect;
-
   update();
 
 }
 
 // Upload Indirect Buffer to GPU
 
-void update(){
+void update(bool copy = true){
 
+	if(copy) transfer = indirect;
   glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
-  glBufferData(GL_DRAW_INDIRECT_BUFFER, indirectcopy.size()*sizeof(DAIC), &indirectcopy[0], GL_DYNAMIC_DRAW);
+  glBufferData(GL_DRAW_INDIRECT_BUFFER, transfer.size()*sizeof(DAIC), &transfer[0], GL_DYNAMIC_DRAW);
 
 }
 
@@ -348,7 +312,6 @@ void update(){
 // Create Persistently Mapped Buffer for Memory Pooling
 
 void reserve(int k, int n){
-	glBindVertexArray(vao);
 
   const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -383,6 +346,10 @@ void reserve(int k, int n){
 		indices.push_back(j*4+3);
 		indices.push_back(j*4+0);
 	}
+
+
+
+
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);

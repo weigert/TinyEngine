@@ -36,7 +36,7 @@ int main( int argc, char* args[] ) {
   for(int k = 0; k < 15; k++){
 
 		chunk.randomize();
-    chunk.pos = ivec3(i, j, k);
+    chunk.pos = 2*ivec3(i, j, k);
 
     Model* model = new Model(chunkmesh::greedy, &chunk);
     models.push_back(model);
@@ -64,15 +64,21 @@ int main( int argc, char* args[] ) {
 	Tiny::loop([&](){ /* ... */
 		std::cout<<Tiny::average<<std::endl;
 
-		int r = rand()%models.size();
-
-		chunk.randomize();
-		chunk.pos = models[r]->pos;
+		int r;
 
 		std::cout<<"Chunk Edit ";
 		timer::benchmark<std::chrono::microseconds>([&](){
 
-		models[r]->construct(chunkmesh::greedy, &chunk);
+		for(int i = 0 ; i < 50; i++){
+
+			r = rand()%models.size();
+
+			chunk.randomize();
+			chunk.pos = models[r]->pos;
+
+			models[r]->construct(chunkmesh::greedy, &chunk);
+
+		}
 
 		});
 

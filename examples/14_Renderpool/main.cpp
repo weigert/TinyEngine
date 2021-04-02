@@ -22,7 +22,7 @@ int main( int argc, char* args[] ) {
   cam::look = vec3(32, 0, 32);
   cam::init(5, cam::ORTHO);
 
-	const int N = 15*15*15*6;	//6 Face Orientations per Chunk
+	const int N = 10*10*10*6;	//6 Face Orientations per Chunk
 
 	//Chunk::LOD = 1;
 	//Chunk::QUAD = 3600;
@@ -33,6 +33,8 @@ int main( int argc, char* args[] ) {
 	Chunk::QUAD = 200;
 	//Chunk::LOD = 8;
 	//Chunk::QUAD = 50;
+
+	std::unordered_set<int> groups;
 
 	int K = Chunk::QUAD;
 
@@ -46,37 +48,36 @@ int main( int argc, char* args[] ) {
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-	for(int i = 0; i < 15; i++)
-	for(int j = 0; j < 15; j++)
-	for(int k = 0; k < 15; k++){
+	for(int i = 0; i < 10; i++)
+	for(int j = 0; j < 10; j++)
+	for(int k = 0; k < 10; k++){
 
 		chunk.randomize();
-		chunk.pos = ivec3(i,j,k);
+		chunk.pos = 2*ivec3(i,j,k);
 		chunks.push_back(chunk);
 
 		chunkmesh::greedypool(&chunks.back(), &vertpool);
 
 	}
 
-	std::unordered_set<int> groups;
+	groups.clear();
 	if(cam::pos.x < 0) groups.insert(0);
 	if(cam::pos.x > 0) groups.insert(1);
 	if(cam::pos.y < 0) groups.insert(2);
 	if(cam::pos.y > 0) groups.insert(3);
 	if(cam::pos.z < 0) groups.insert(4);
 	if(cam::pos.z > 0) groups.insert(5);
-	vertpool.select(groups);
+	vertpool.mask([&](DAIC& cmd){
+		return groups.contains(cmd.group);
+	});
 
 /*
-	vertpool.deactivate(0, 0, 1);
-	if(cam::pos.x < 0) vertpool.activate(0, 0, 6);
-	if(cam::pos.x > 0) vertpool.activate(1, 0, 6);
-	if(cam::pos.y < 0) vertpool.activate(2, 0, 6);
-	if(cam::pos.y > 0) vertpool.activate(3, 0, 6);
-	if(cam::pos.z < 0) vertpool.activate(4, 0, 6);
-	if(cam::pos.z > 0) vertpool.activate(5, 0, 6);
-*/
+	vertpool.mask(groups);
+	*/
+
 });
+
+
 
 
 	//Render Pass
@@ -106,25 +107,16 @@ int main( int argc, char* args[] ) {
 
 			if(!all(equal(oldpos, newpos))){
 
-				std::unordered_set<int> groups;
+				groups.clear();
 				if(cam::pos.x < 0) groups.insert(0);
 				if(cam::pos.x > 0) groups.insert(1);
 				if(cam::pos.y < 0) groups.insert(2);
 				if(cam::pos.y > 0) groups.insert(3);
 				if(cam::pos.z < 0) groups.insert(4);
 				if(cam::pos.z > 0) groups.insert(5);
-				vertpool.select(groups);
-
-/*
-				vertpool.deactivate(0, 0, 1);
-				if(cam::pos.x < 0) vertpool.activate(0, 0, 6);
-				if(cam::pos.x > 0) vertpool.activate(1, 0, 6);
-				if(cam::pos.y < 0) vertpool.activate(2, 0, 6);
-				if(cam::pos.y > 0) vertpool.activate(3, 0, 6);
-				if(cam::pos.z < 0) vertpool.activate(4, 0, 6);
-				if(cam::pos.z > 0) vertpool.activate(5, 0, 6);
-*/
-
+				vertpool.mask([&](DAIC& cmd){
+					return groups.contains(cmd.group);
+				});
 			}
 
 			oldpos = newpos;
@@ -137,7 +129,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){
 
-		Tiny::view.target(glm::vec3(1));	//Clear Screen to white
+		Tiny::view.target(glm::vec3(0));	//Clear Screen to white
 		shader.use();
 		shader.uniform("vp", cam::vp);
 
@@ -149,41 +141,33 @@ int main( int argc, char* args[] ) {
 
 		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
-		int r = rand()%chunks.size();
 
-		vertpool.unsection(r*6, 6);
-
-		chunk.randomize();
-		chunk.pos = chunks[r].pos;
-
-		chunks.erase(chunks.begin()+r);
-		chunks.push_back(chunk);
+		int r;
 
 		std::cout<<"Chunk Edit ";
 		timer::benchmark<std::chrono::microseconds>([&](){
 
+		for(int i = 0 ; i < 50; i++){
+
+			r = rand()%chunks.size();
+
+			vertpool.unsection(r*6, 6);
+
+			chunk.randomize();
+			chunk.pos = chunks[r].pos;
+
+			chunks.erase(chunks.begin()+r);
+			chunks.push_back(chunk);
+
 			chunkmesh::greedypool(&chunks.back(), &vertpool);
+
+		}
 
 		});
 
-		std::unordered_set<int> groups;
-		if(cam::pos.x < 0) groups.insert(0);
-		if(cam::pos.x > 0) groups.insert(1);
-		if(cam::pos.y < 0) groups.insert(2);
-		if(cam::pos.y > 0) groups.insert(3);
-		if(cam::pos.z < 0) groups.insert(4);
-		if(cam::pos.z > 0) groups.insert(5);
-		vertpool.select(groups);
-
-/*
-		vertpool.deactivate((chunks.size()-1)*6+0, 6, 1);
-		if(cam::pos.x < 0) vertpool.activate((chunks.size()-1)*6+0, 1, 1);
-		if(cam::pos.x > 0) vertpool.activate((chunks.size()-1)*6+1, 1, 1);
-		if(cam::pos.y < 0) vertpool.activate((chunks.size()-1)*6+2, 1, 1);
-		if(cam::pos.y > 0) vertpool.activate((chunks.size()-1)*6+3, 1, 1);
-		if(cam::pos.z < 0) vertpool.activate((chunks.size()-1)*6+4, 1, 1);
-		if(cam::pos.z > 0) vertpool.activate((chunks.size()-1)*6+5, 1, 1);
-*/
+		vertpool.mask([&](DAIC& cmd){
+			return groups.contains(cmd.group);
+		});
 
 		if(chunks.size() == 0) Tiny::event.quit = true;
 

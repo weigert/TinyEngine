@@ -35,12 +35,10 @@ int main( int argc, char* args[] ) {
 	//Chunk::LOD = 8;
 	//Chunk::QUAD = 50;
 
-	std::unordered_set<int> groups;
-
 	Renderpool<Vertex> vertpool(Chunk::QUAD, N);
-
-	Chunk chunk;
 	vector<Chunk> chunks;
+
+	std::unordered_set<int> groups;
 
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
@@ -49,10 +47,7 @@ int main( int argc, char* args[] ) {
 	for(int j = 0; j < 5; j++)
 	for(int k = 0; k < 5; k++){
 
-		chunk.randomize();
-		chunk.pos = ivec3(i,j,k);
-		chunks.push_back(chunk);
-
+		chunks.emplace_back(ivec3(i,j,k));
 		chunkmesh::greedypool(&chunks.back(), &vertpool);
 
 	}
@@ -69,8 +64,8 @@ int main( int argc, char* args[] ) {
 	});
 
 	vertpool.order([&](const DAIC& a, const DAIC& b){
-		if(dot(b.pos - a.pos, cam::pos) < 0) return true;
-		if(dot(b.pos - a.pos, cam::pos) > 0) return false;
+		if(dot(b.pos - a.pos, cam::pos) > 0) return true;
+		if(dot(b.pos - a.pos, cam::pos) < 0) return false;
 		return (a.baseVert < b.baseVert);
 	});
 
@@ -141,13 +136,13 @@ int main( int argc, char* args[] ) {
 		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
 		int r;
-
 	//	int t = 0;
 
 		for(int i = 0 ; i < 50; i++){
 
 			r = rand()%chunks.size();
-			chunks[r].randomize();
+			//for(int d = 0; d < 16; d++)
+				chunks[r].update();
 
 			for(int d = 0; d < 6; d++)
 				vertpool.unsection(chunks[r].faces[d]);
@@ -166,18 +161,19 @@ int main( int argc, char* args[] ) {
 		});
 
 		vertpool.order([&](const DAIC& a, const DAIC& b){
-			if(dot(b.pos - a.pos, cam::pos) < 0) return true;
-			if(dot(b.pos - a.pos, cam::pos) > 0) return false;
-			return (a.baseVert < b.baseVert);
+			if(dot(b.pos - a.pos, cam::pos) > 0) return true;
+			if(dot(b.pos - a.pos, cam::pos) < 0) return false;
+	//		return (length(a.pos - cam::look+cam::rad*cam::pos) > length(b.pos - cam::look+cam::rad*cam::pos));
+			return all(greaterThan(a.pos, b.pos));
+		//	return (a.baseVert < b.baseVert);
 		});
 
 	//	});
 
-	if(chunks.size() == 0) Tiny::event.quit = true;
-
 	});
 
-	delete[] chunk.data;
+	for(auto& chunk: chunks)
+		delete[] chunk.data;
 
 	Tiny::quit();
 	return 0;

@@ -14,7 +14,7 @@ Ideally we also use a memory pool for the chunks themselves.
 #include <functional>
 
 #define CHUNKSIZE 16
-#define CHUNKVOL CHUNKSIZE*CHUNKSIZE*CHUNKSIZE
+#define CHUNKVOL (CHUNKSIZE*CHUNKSIZE*CHUNKSIZE)
 
 using namespace glm;
 
@@ -48,14 +48,24 @@ public:
 
 Chunk(){
   data = new BlockType[CHUNKVOL];
-  randomize();
+  for(int i = 0; i < CHUNKVOL; i++)
+    data[i] = BLOCK_NONE;
 }
 
-void randomize(){
-  for(size_t i = 0; i < CHUNKVOL; i++){
-    if(rand()%5 < 4) data[i] = BLOCK_NONE;
-    else data[i] = BlockType(rand()%4);
-  }
+Chunk(ivec3 p):Chunk(){
+  pos = p;
+}
+
+void update(){
+
+  size_t i = rand()%CHUNKVOL;
+  for(int k = 0; data[i] == BLOCK_NONE && k < 2; k++)
+    i = rand()%CHUNKVOL;
+
+  if(rand()%10 == 0)
+    data[i] = BlockType(rand()%4);
+  else data[i] = BLOCK_NONE;
+
 }
 
 BlockType* data;
@@ -318,7 +328,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
 
     quadsize = 0;
 
-    section = vertpool->section(Chunk::QUAD, d, c->pos);
+    section = vertpool->section(Chunk::QUAD, d, (vec3)c->pos + vec3(0.25, 0.5, 0.75)*vec3(q[0], q[1], q[2]));
 
     for(x[u] = 0; x[u] < CHLOD; x[u]++){       //Loop Over Depth
 

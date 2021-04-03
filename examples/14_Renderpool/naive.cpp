@@ -8,7 +8,7 @@ using namespace glm;
 
 int main( int argc, char* args[] ) {
 
-	srand(0);
+	srand(time(NULL));
 
 	Tiny::view.vsync = false;
 	Tiny::benchmark = true;
@@ -35,7 +35,6 @@ int main( int argc, char* args[] ) {
 
 	vector<Model*> models;
 	vector<Chunk> chunks;
-	Chunk chunk;
 
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
@@ -44,12 +43,9 @@ int main( int argc, char* args[] ) {
   for(int j = 0; j < 5; j++)
   for(int k = 0; k < 5; k++){
 
-		chunk.randomize();
-    chunk.pos = ivec3(i, j, k);
-
-    Model* model = new Model(chunkmesh::greedy, &chunk);
+		chunks.emplace_back(ivec3(i, j, k));
+    Model* model = new Model(chunkmesh::greedy, &chunks.back());
     models.push_back(model);
-		chunks.push_back(chunk);
 
   }
 
@@ -62,7 +58,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){
 
-		Tiny::view.target(glm::vec3(1));	//Clear Screen to white
+		Tiny::view.target(glm::vec3(0));	//Clear Screen to white
 		shader.use();
     shader.uniform("vp",  cam::vp);
     for(int i = 0; i < models.size(); i++)
@@ -80,7 +76,8 @@ int main( int argc, char* args[] ) {
 		for(int i = 0 ; i < 50; i++){
 
 			r = rand()%chunks.size();
-			chunks[r].randomize();
+		//	for(int d = 0; d < 16; d++)
+				chunks[r].update();
 
 		//	std::cout<<"Chunk Edit ";
 		//	t += timer::benchmark<std::chrono::microseconds>([&](){
@@ -93,11 +90,11 @@ int main( int argc, char* args[] ) {
 
 		// std::cout<<t<<std::endl;
 
-		if(models.size() == 0) Tiny::event.quit = true;
-
 	});
 
-	delete[] chunk.data;
+	for(auto& chunk: chunks)
+		delete[] chunk.data;
+
 	Tiny::quit();
 	return 0;
 

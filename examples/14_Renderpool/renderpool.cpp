@@ -19,13 +19,13 @@ consecutive but can theoretically be split based on the primitive type.
 Removing objects requires removing the indirect drawing entry and returning
 the vertices to the memory pool managing the VBO.
 
-Potential Improvements:
-- Full Instancing Support
-- Full Indexing Support
-
 */
 
-//Vertex Format
+/*
+================================================================================
+                    Vertex Struct and Formatting Function
+================================================================================
+*/
 
 struct Vertex{
 
@@ -73,82 +73,256 @@ struct Vertex{
 
 /*
 ================================================================================
-                              Render Pool Class
+                        Drawing Command Struct (Extended)
 ================================================================================
 */
-
-//Drawing Command Struct
 
 using namespace std;
 
 struct DAIC {
   DAIC(){}
-  DAIC(uint c, uint iC, uint s, uint bV, uint bI, uint g){
-    cnt = c; instCnt = iC; start = s; baseVert = bV; baseInst = bI;
-		baseCnt = c; group = g;
+  DAIC(uint c, uint iC, uint s, uint bV, uint* i, uint g){
+    cnt = c; instCnt = iC; start = s; baseVert = bV; baseInst = 0;
+		index = i; group = g;
   }
 
-  uint cnt;
+  uint cnt;							//Base Properties
   uint instCnt;
   uint start;
 	uint baseVert;
   uint baseInst;
 
-	//Extra Properties
-	uint baseCnt;					//Max Count
-	uint group;						//Group Membership
-	glm::vec3 pos = glm::vec3(0);
+	uint* index = NULL;		//Index Pointer
+	uint group;						//Group Assignment
+	glm::vec3 pos;
 
 };
 
-#include <unordered_set>
+/*
+================================================================================
+	                        Renderpool Master Class
+================================================================================
+*/
 
 template<typename T>
 class Renderpool {
 private:
 
-  GLuint vao;     //Vertex Array Object
-  GLuint vbo;     //Vertex Buffer Object
-	GLuint ebo;			//Element Array Buffer Object
-  GLuint indbo;   //Indirect Draw Command Buffer Object
+GLuint vao;     //Vertex Array Object
+GLuint vbo;     //Vertex Buffer Object
+GLuint ebo;			//Element Array Buffer Object
+GLuint indbo;   //Indirect Draw Command Buffer Object
 
-  size_t K;   		//Number of Reserved Vertices
-  size_t N;   		//Number of Maximum Buckets
-	size_t M;				//Number of Active Buckets
+size_t K = 0;   //Number of Vertices per Bucket
+size_t N = 0;   //Number of Maximum Buckets
+size_t M = 0;		//Number of Active Buckets
 
-  T* start;       //Immutable Storage Location Start
-	stack<T*> free;
+vector<DAIC> indirect;  //Indirect Drawing Commands
 
-	vector<DAIC> indirect;  //Indirect Drawing Commands
-	vector<DAIC> transfer;  //Indirect Drawing (Sorted)
+vector<GLuint> indices;
+vector<int> groupind;
 
-	Renderpool(){
-    glGenVertexArrays(1, &vao); //Buffer Generation
-    glBindVertexArray(vao);
-    glGenBuffers(1, &indbo);
-    glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ebo);//GL_ELEMENT_ARRAY_BUFFER
-    T::format(vbo);
-    lock();
-		K = 0; N = 0; M = 0;
-  }
+Renderpool(){
+  glGenVertexArrays(1, &vao); //VAO Generation
+  glBindVertexArray(vao);
+	glGenBuffers(1, &vbo);			//Buffer Generation
+	glGenBuffers(1, &ebo);
+  glGenBuffers(1, &indbo);
+  T::format(vbo);							//Buffer Formatting
+}
 
 public:
 
-  Renderpool(int k, int n):Renderpool(){
-		K = k; N = n; M = n;
-		transfer.resize(n);
-    reserve(k, n);
-  }
+Renderpool(int k, int n):Renderpool(){
+  reserve(k, n);
+	index();
+}
 
-	~Renderpool(){
-		glBindVertexArray(vao);
-		glDeleteBuffers(1, &ebo);
-		glDeleteBuffers(1, &indbo);
-		glDeleteBuffers(1, &vbo);
-		glDeleteBuffers(1, &ebo);
-		glDeleteVertexArrays(1, &vao);
+~Renderpool(){
+
+	for(size_t i = 0; i < indirect.size();)
+		unsection(indirect[i].index);
+
+	glBindVertexArray(vao);
+	glUnmapBuffer(vbo);
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
+	glDeleteBuffers(1, &indbo);
+	glDeleteVertexArrays(1, &vao);
+
+}
+
+/*
+================================================================================
+                    Raw Vertex Memory Pool Management
+================================================================================
+*/
+
+private:
+
+T* start;
+stack<T*> free;
+
+public:
+
+// Allocate the Persistently Mapped Buffer, Create Buckets for Pool
+
+void reserve(const int k, const int n){
+
+	K = k; N = n; M = n;
+  const GLbitfield flag = GL_MAP_WRITE_BIT |
+													GL_MAP_PERSISTENT_BIT |
+													GL_MAP_COHERENT_BIT;
+
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferStorage(GL_ARRAY_BUFFER, N*K*sizeof(T), NULL, flag);
+  start = (T*)glMapBufferRange( GL_ARRAY_BUFFER, 0, N*K*sizeof(T), flag );
+
+	for(int i = 0; i < N; i++)
+		free.push(start+i*K);
+
+}
+
+// Extract a section with a size and a group assignment
+
+uint* section(const int size, const int group = 0, glm::vec3 pos = glm::vec3(0)){
+
+  if(size == 0 || size > K)
+		return NULL;
+	if(free.empty())
+		return NULL;
+
+	const int first = groupind[group];
+	const int base = (free.top()-start);
+  indirect.emplace_back(size, 1, first, base, new uint(indirect.size()), group);
+	free.pop();
+
+	indirect.back().pos = pos;
+
+	return indirect.back().index;
+
+}
+
+// Remove a section based on a pointer to its index
+
+void unsection(uint* index){
+
+	if(index == NULL) return;
+
+	for(int k = indirect[*index].baseVert; k < K; k++)
+		(start+k)->~T();
+	free.push(start+indirect[*index].baseVert);
+
+	swap(indirect[*index], indirect.back());
+	indirect.pop_back();
+
+	*indirect[*index].index = *index; //Value Copy!
+	delete index;
+
+}
+
+// Construct a vertex in a bucket at location k on the buffer
+
+template<typename... Args>
+void fill(uint* ind, int k, Args && ...args){
+
+  T* place = start + indirect[*ind].baseVert + k;
+  try{ new (place) T(forward<Args>(args)...); }
+  catch(...) { throw; }
+
+}
+
+/*
+================================================================================
+            Indirect Draw Call Masking / Ordering / Manipulation
+================================================================================
+*/
+
+template<typename F, typename... Args>
+void mask(F function, Args&&... args){
+
+	M = 0;											//Frontside Approach
+	int J = indirect.size()-1;	//Backside Approach
+
+	while(M < J){
+
+		while(function(indirect[M], args...) && M < J) M++;
+		while(!function(indirect[J], args...) && M < J) J--;
+
+		*indirect[M].index = J;
+		*indirect[J].index = M;
+		swap(indirect[M++], indirect[J--]);
+
 	}
+
+	update();
+
+}
+
+template<typename F, typename... Args>
+void order(F function, Args&&... args){
+
+	sort(indirect.begin(), indirect.begin() + M, [&](const DAIC& a, const DAIC& b){
+		return function(a, b, args...);
+	});
+	for(size_t i = 0; i < indirect.size(); i++)
+		*indirect[i].index = i;
+
+	update();
+
+}
+
+void resize(const uint* index, const int newsize){
+
+	if(index != NULL && *index < N)
+		indirect[*index].cnt = newsize;
+
+}
+
+/*
+================================================================================
+          OpenGL Buffer Updating for Indexing and Indirect Calls
+================================================================================
+*/
+
+void index(){
+
+	for(size_t j = 0; j < K; j++){
+		indices.push_back(j*4+0);
+		indices.push_back(j*4+1);
+		indices.push_back(j*4+2);
+		indices.push_back(j*4+3);
+		indices.push_back(j*4+1);
+		indices.push_back(j*4+0);
+	}
+
+	for(size_t j = 0; j < K; j++){
+		indices.push_back(j*4+0);
+		indices.push_back(j*4+2);
+		indices.push_back(j*4+1);
+		indices.push_back(j*4+1);
+		indices.push_back(j*4+3);
+		indices.push_back(j*4+0);
+	}
+
+	groupind.push_back(0);
+	groupind.push_back(6*K);
+	groupind.push_back(0);
+	groupind.push_back(6*K);
+	groupind.push_back(0);
+	groupind.push_back(6*K);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+
+}
+
+void update(){
+
+  glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
+  glBufferData(GL_DRAW_INDIRECT_BUFFER, indirect.size()*sizeof(DAIC), &indirect[0], GL_DYNAMIC_DRAW);
+
+}
 
 /*
 ================================================================================
@@ -158,216 +332,45 @@ public:
 
 private:
 
-  GLsync gSync;
+GLsync gSync = NULL;
 
 public:
 
-  void lock(){
-    if(gSync) glDeleteSync(gSync);
-    gSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-  }
+void lock(){
 
-  void wait(){
-  	if(gSync) while(true){
-  			GLenum waitReturn = glClientWaitSync(gSync, GL_SYNC_FLUSH_COMMANDS_BIT, 1 );
-  			if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED)
-  				return;
-  	}
-  }
-
-  void render(const int first = 0, int length = 0, const GLenum mode = GL_TRIANGLES){
-
-		if(length > N) length = N;
-    if(length == 0)
-      if(indirect.size() == 0) return;
-      else length = M;
-
-    glBindVertexArray(vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
-
-    wait();
-		glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, (void*)(first*(sizeof(DAIC))), length, sizeof(DAIC));
-		lock();
-
-  }
-
-/*
-================================================================================
-            VBO / Vertex Pool Sectioning / Activation / Updating
-================================================================================
-*/
-
-template<typename F, typename... Args>
-void mask(F function, Args&&... args){
-
-	M = 0;
-	for(size_t i = 0; i < indirect.size(); i++)
-		if(function(indirect[i], args...))
-			transfer[M++] = indirect[i];
-
-	sort(transfer.begin(), transfer.begin() + M, [](const DAIC& a, const DAIC& b){
-		return (a.baseVert < b.baseVert);
-		//return (length(cam::look + cam::pos - a.pos) < length(cam::look + cam::pos - b.pos));
-	});
-
-	update(false);
+  if(gSync != NULL) glDeleteSync(gSync);
+  gSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
 }
 
-// Generate an indirect draw command of length k, return the index
+void wait(){
 
-int section(const int k, const int group = 0, const glm::vec3 pos = glm::vec3(0)){
-
-  if(k == 0) return N;
-	if(k > K) return N;
-	if(free.empty()) return N;
-
-
-
-
-	GLint first = 6*K;
-	GLint base = (free.top()-start);
-	free.pop();
-
-	if(group%2 == 0) first = 0;
-
-
-
-
-
-
-  indirect.emplace_back(k, 1, first, base, 0, group);
-	indirect.back().pos = pos;
-
-	transfer.push_back(indirect.back());
-
-	const int ind = indirect.size()-1;
-
-	return ind;
-
-}
-
-// Remove the Indirect Draw Command, Free the Memory
-
-void unsection(int first, int count = 1, int stride = 1){
-
-	for(size_t i = first; i < first+count*stride; i++){
-		free.push(start+indirect[i].baseVert);
-		for(int k = indirect[i].baseVert; k < K; k++)
-			deallocate(start+k);
+	if(!gSync) return;
+	while(true){
+			GLenum waitReturn = glClientWaitSync(gSync, GL_SYNC_FLUSH_COMMANDS_BIT, 1 );
+			if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED)
+				return;
 	}
 
-	for(size_t i = 0; i < count; i++)
-		indirect.erase(indirect.begin()+first+stride-1); //Erasing makes the other indices no longer work...
-
 }
 
-void shrink(int first, int newsize){
+void render(const GLenum mode = GL_TRIANGLES, size_t first = 0, size_t length = 0){
 
-	assert(newsize < K);
-	indirect[first].baseCnt = newsize;
-	indirect[first].cnt = newsize;
+	if(indirect.size() == 0)
+		return;
+	if(length > indirect.size())
+		length = indirect.size();
+	else if(length == 0)
+		length = M;
 
-}
-
-// Activate / Deactivate Sections (Strided)
-
-void activate(int first, int count = 1, int stride = 1){
-
-	if(count == 0) count = indirect.size();
-	for(size_t i = 0; first+i*stride < indirect.size() && i < count; i++)
-		indirect[first+i*stride].cnt = indirect[first+i*stride].baseCnt;
-
-  update();
-
-}
-
-void deactivate(int first, int count = 1, int stride = 1){
-
-	if(count == 0) count = indirect.size();
-	for(size_t i = 0; first+i*stride < indirect.size() && i < count; i++)
-		indirect[first+i*stride].cnt = 0;
-
-  update();
-
-}
-
-// Upload Indirect Buffer to GPU
-
-void update(bool copy = true){
-
-	if(copy) transfer = indirect;
-  glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
-  glBufferData(GL_DRAW_INDIRECT_BUFFER, transfer.size()*sizeof(DAIC), &transfer[0], GL_DYNAMIC_DRAW);
-
-}
-
-/*
-================================================================================
-                            Raw Memory Pooling
-================================================================================
-*/
-
-// Create Persistently Mapped Buffer for Memory Pooling
-
-void reserve(int k, int n){
-
-  const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferStorage(GL_ARRAY_BUFFER, N*K*sizeof(T), NULL, flags);
-  start = (T*)glMapBufferRange( GL_ARRAY_BUFFER, 0, N*K*sizeof(T), flags | GL_MAP_UNSYNCHRONIZED_BIT );
-	for(int i = 0; i < N; i++)
-		free.push(start+i*K);
-
-	/*
-
-		This is where we choose our indexing structures.
-		Basically here I can say that there are 2 possible structures,
-		and I have to pick the appropriate one based on the
-
-	*/
-
-	vector<GLuint> indices;
-
-	for(size_t j = 0; j < K; j++){
-		indices.push_back(j*4+0);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+2);
-		indices.push_back(j*4+3);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+0);
-	}
-	for(size_t j = 0; j < K; j++){
-		indices.push_back(j*4+0);
-		indices.push_back(j*4+2);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+1);
-		indices.push_back(j*4+3);
-		indices.push_back(j*4+0);
-	}
-
-
-
-
-
+  glBindVertexArray(vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+  glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
 
-}
+  wait();
+	glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, (void*)(first*(sizeof(DAIC))), length, sizeof(DAIC));
+	lock();
 
-template<typename... Args>
-bool fill(const int ind, const int k, Args && ...args){
-	if(k < k) std::cout<<k<<"/"<<K<<std::endl<<std::flush;
-  assert(k < K); assert(ind < indirect.size());       //In-Bound Check
-  T* place = start + indirect[ind].baseVert + k;         //Exact Location
-  try{ new (place) T(std::forward<Args>(args)...); }  //Construct In-Place
-  catch(...) { throw; return false; }
-  return true;
-}
-
-void deallocate(T* o){      //Per-Address Deconstruction
-  o->~T();
 }
 
 };

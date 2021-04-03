@@ -14,33 +14,42 @@ int main( int argc, char* args[] ) {
 	Tiny::benchmark = true;
 	Tiny::window("Example Window", 1200, 800);
 
-  cam::near = -500.0f;
+	cam::near = -500.0f;
   cam::far = 500.0f;
-  cam::rad = 1.0f;
-  cam::look = vec3(32,0,32);
-  cam::init(5, cam::ORTHO);
+	cam::rot = 45.0f;
+	cam::roty = 45.0f;
+  cam::look = vec3(32, 0, 32);
+  cam::init(3.5, cam::ORTHO);
+	cam::update();
 
-	Chunk::LOD = 4;
-	Chunk::QUAD = 200;
+	Chunk::LOD = 1;
+	Chunk::QUAD = 3500;
+	//Chunk::LOD = 2;
+	//Chunk::QUAD = 1800;
+	//Chunk::LOD = 4;
+	//Chunk::QUAD = 200;
+	//Chunk::LOD = 8;
+	//Chunk::QUAD = 100;
 
   //Naive Approach
 
-  vector<Model*> models;
+	vector<Model*> models;
+	vector<Chunk> chunks;
 	Chunk chunk;
 
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-  for(int i = 0; i < 15; i++)
-  for(int j = 0; j < 15; j++)
-  for(int k = 0; k < 15; k++){
+  for(int i = 0; i < 5; i++)
+  for(int j = 0; j < 5; j++)
+  for(int k = 0; k < 5; k++){
 
 		chunk.randomize();
-    chunk.pos = 2*ivec3(i, j, k);
+    chunk.pos = ivec3(i, j, k);
 
     Model* model = new Model(chunkmesh::greedy, &chunk);
     models.push_back(model);
-	//	models.back()->indexed = false;
+		chunks.push_back(chunk);
 
   }
 
@@ -62,31 +71,34 @@ int main( int argc, char* args[] ) {
 	};
 
 	Tiny::loop([&](){ /* ... */
-		std::cout<<Tiny::average<<std::endl;
+
+		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
 		int r;
-
-		std::cout<<"Chunk Edit ";
-		timer::benchmark<std::chrono::microseconds>([&](){
+	//	int t = 0;
 
 		for(int i = 0 ; i < 50; i++){
 
-			r = rand()%models.size();
+			r = rand()%chunks.size();
+			chunks[r].randomize();
 
-			chunk.randomize();
-			chunk.pos = models[r]->pos;
+		//	std::cout<<"Chunk Edit ";
+		//	t += timer::benchmark<std::chrono::microseconds>([&](){
 
-			models[r]->construct(chunkmesh::greedy, &chunk);
+			models[r]->construct(chunkmesh::greedy, &chunks[r]);
+
+		//	});
 
 		}
 
-		});
+		// std::cout<<t<<std::endl;
 
 		if(models.size() == 0) Tiny::event.quit = true;
 
 	});
-	Tiny::quit();
 
+	delete[] chunk.data;
+	Tiny::quit();
 	return 0;
 
 }

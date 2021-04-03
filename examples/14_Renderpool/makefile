@@ -1,4 +1,4 @@
-CC = g++-10 -std=c++20
+CC = g++-10 -std=c++20 -ggdb3
 CF = -Wfatal-errors -O3
 LF = -I/usr/local/include -L/usr/local/lib
 

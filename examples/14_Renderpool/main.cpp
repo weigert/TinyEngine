@@ -1,6 +1,8 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/camera>
 
+#include <unordered_set>
+
 #include "renderpool.cpp"
 #include "chunk.h"
 
@@ -14,46 +16,41 @@ int main( int argc, char* args[] ) {
 	Tiny::benchmark = true;
 	Tiny::window("Example Window", 1200, 800);
 
-//	glEnable(GL_DEPTH_TEST);
-
   cam::near = -500.0f;
   cam::far = 500.0f;
-  cam::rad = 1.0f;
+	cam::rot = 45.0f;
+	cam::roty = 45.0f;
   cam::look = vec3(32, 0, 32);
-  cam::init(5, cam::ORTHO);
+  cam::init(3.5, cam::ORTHO);
+	cam::update();
 
-	const int N = 10*10*10*6;	//6 Face Orientations per Chunk
+	const int N = 5*5*5*6;	//6 Face Orientations per Chunk
 
-	//Chunk::LOD = 1;
-	//Chunk::QUAD = 3600;
-
-	//	Chunk::LOD = 2;
-	//	Chunk::QUAD = 800;
-	Chunk::LOD = 4;
-	Chunk::QUAD = 200;
+	Chunk::LOD = 1;
+	Chunk::QUAD = 3600;
+	//Chunk::LOD = 2;
+	//Chunk::QUAD = 800;
+	//Chunk::LOD = 4;
+	//Chunk::QUAD = 200;
 	//Chunk::LOD = 8;
 	//Chunk::QUAD = 50;
 
 	std::unordered_set<int> groups;
 
-	int K = Chunk::QUAD;
+	Renderpool<Vertex> vertpool(Chunk::QUAD, N);
 
-	std::cout<<"SIZE: "<<sizeof(Vertex)<<std::endl;
-
-	Renderpool<Vertex> vertpool(K, N);
-
-	vector<Chunk> chunks;
 	Chunk chunk;
+	vector<Chunk> chunks;
 
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-	for(int i = 0; i < 10; i++)
-	for(int j = 0; j < 10; j++)
-	for(int k = 0; k < 10; k++){
+	for(int i = 0; i < 5; i++)
+	for(int j = 0; j < 5; j++)
+	for(int k = 0; k < 5; k++){
 
 		chunk.randomize();
-		chunk.pos = 2*ivec3(i,j,k);
+		chunk.pos = ivec3(i,j,k);
 		chunks.push_back(chunk);
 
 		chunkmesh::greedypool(&chunks.back(), &vertpool);
@@ -71,14 +68,15 @@ int main( int argc, char* args[] ) {
 		return groups.contains(cmd.group);
 	});
 
-/*
-	vertpool.mask(groups);
-	*/
+	vertpool.order([&](const DAIC& a, const DAIC& b){
+		if(dot(b.pos - a.pos, cam::pos) < 0) return true;
+		if(dot(b.pos - a.pos, cam::pos) > 0) return false;
+		return (a.baseVert < b.baseVert);
+	});
+
+	vertpool.update();
 
 });
-
-
-
 
 	//Render Pass
 
@@ -117,6 +115,7 @@ int main( int argc, char* args[] ) {
 				vertpool.mask([&](DAIC& cmd){
 					return groups.contains(cmd.group);
 				});
+
 			}
 
 			oldpos = newpos;
@@ -141,40 +140,46 @@ int main( int argc, char* args[] ) {
 
 		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
-
 		int r;
 
-		std::cout<<"Chunk Edit ";
-		timer::benchmark<std::chrono::microseconds>([&](){
+	//	int t = 0;
 
 		for(int i = 0 ; i < 50; i++){
 
 			r = rand()%chunks.size();
+			chunks[r].randomize();
 
-			vertpool.unsection(r*6, 6);
+			for(int d = 0; d < 6; d++)
+				vertpool.unsection(chunks[r].faces[d]);
 
-			chunk.randomize();
-			chunk.pos = chunks[r].pos;
-
-			chunks.erase(chunks.begin()+r);
-			chunks.push_back(chunk);
-
-			chunkmesh::greedypool(&chunks.back(), &vertpool);
+			chunkmesh::greedypool(&chunks[r], &vertpool);
 
 		}
 
-		});
+//		std::cout<<t<<std::endl;
+
+	//	std::cout<<"Sort Pass ";
+	//	timer::benchmark<std::chrono::microseconds>([&](){
 
 		vertpool.mask([&](DAIC& cmd){
 			return groups.contains(cmd.group);
 		});
 
-		if(chunks.size() == 0) Tiny::event.quit = true;
+		vertpool.order([&](const DAIC& a, const DAIC& b){
+			if(dot(b.pos - a.pos, cam::pos) < 0) return true;
+			if(dot(b.pos - a.pos, cam::pos) > 0) return false;
+			return (a.baseVert < b.baseVert);
+		});
+
+	//	});
+
+	if(chunks.size() == 0) Tiny::event.quit = true;
 
 	});
 
-	Tiny::quit();
+	delete[] chunk.data;
 
+	Tiny::quit();
 	return 0;
 
 }

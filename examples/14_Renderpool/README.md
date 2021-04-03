@@ -1,28 +1,3 @@
-## NEW TODO
-
-- Render Chunks Near to Far???
-- This would potentially remove occluded pixels
-- How would this be possible?
-- Order the indirect draw calls by their distance to the camera somehow using a sort,
-then update somehow. Only do this when necessary? What would be the execution time?
-
-- Don't render at all, instead of setting values to zero!
-
-- Multithread where appropriate?
-    Where can I elegantly introduce multithreading?
-    In the vertexpool meshing?
-    Is the vertexpool somehow intrinsically threadable?
-
-- Do most calculations in the vertex shader,
-do all other "shading" or "fragment" shader stuff on a per-pixel basis
-from an FBO, because otherwise we are doing it for every fragment
-which might well be occluded.
-So render first, then reshade with the FBO later.
-
-- Make chunk loading, saving and accessing a member of the chunk,
-  then give it derived classes which reimplement the method so that
-  we can save chunks in different compression formats and see how it behaves
-
 # vertexpool
 
 System for reducing OpenGL driver overhead without losing generality of drawables.
@@ -44,43 +19,11 @@ Finally, when adding a model we create a multidraw indirect model which lets us 
 to the currently bound regions of memory.
 
 ## To Do
+- Multiple Bucket Sizes using Binary Tree?
+- Make Demo Showing Chunk Ordering for Blending (Advantage)
+  - Far to Near / Near to Far
+- Full Chunk Visibility Culling
 
-- Memory Pool Data Structure
-- Persistent Mapped Buffer Test, write quads somehow in batches
-- Multidraw Indirect Test, Make sure we can write quads and package them into draw calls
+## Performance:
 
-
-
-# Interleaved Data Structure is Complete
-
-
-The basic memory pool is working.
-Now I need to get its pointer to correspond to the persistently mapped pointer.
-AND I need to get it to render using indirect so I can specify the locations of subregions
-in the pool.
-
-
-
-
-
-Instead we can construct a single model with interlaced properties in the VBO.
-
-When drawing many
-
-- Order quads for a single chunk by their facing orientation,
-  so we can cull quads which face away from the camera.
-
-To do backface culling, basically you need to know which faces are backwards.
-
-We need to be able to selectively deactivate different subcomponents of our vbo.
-
-Then, we also need full chunk draw culling.
-
-This is most efficiently done using a quad pool with a multidrawelementsindirect.
-
-
-
-1. Persistent Mapped Buffer on VBO
-2. It has an interlaced format that lets me write quids directly in when needed
-3. I use multidraw indirect to select which quads are being rendered and which are not
-4. That's it!
+Performs at about 2/3 time of the naive implementation for just chunk rendering - no updates!

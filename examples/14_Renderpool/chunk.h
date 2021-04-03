@@ -58,10 +58,6 @@ void randomize(){
   }
 }
 
-~Chunk(){
-//  delete data;
-}
-
 BlockType* data;
 ivec3 pos = ivec3(0);
 int quadsize, quadstart;
@@ -69,7 +65,7 @@ int quadsize, quadstart;
 static int LOD;
 static int QUAD;
 
-int faces[6];
+array<uint*, 6> faces;
 
 int getIndex(vec3 _p){
   //Return the Correct Index
@@ -286,13 +282,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
 
 
 
-
-
-
-
-
-
-
 function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool<Vertex>* vertpool){
 
   int LOD = Chunk::LOD;
@@ -300,13 +289,24 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
   vec3 p = c->pos*ivec3(CHUNKSIZE/LOD);
 
   int quadsize;
-  int section;
+  uint* section;
+
+  int u, v, w;
+  int n;
+
+  BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
+  BlockType current, facing;
+
+  int s;
 
   for(int d = 0; d < 6; d++){
 
-    int u = (d/2+0)%3;  //u = 0, 0, 1, 1, 2, 2      //Dimension m->indices
-    int v = (d/2+1)%3;  //v = 1, 1, 2, 2, 0, 0
-    int w = (d/2+2)%3;  //w = 2, 2, 0, 0, 1, 1
+  //  std::cout<<"Chunk D-Loop ";
+  //  timer::benchmark<std::chrono::microseconds>([&](){
+
+    u = (d/2+0)%3;  //u = 0, 0, 1, 1, 2, 2      //Dimension m->indices
+    v = (d/2+1)%3;  //v = 1, 1, 2, 2, 0, 0
+    w = (d/2+2)%3;  //w = 2, 2, 0, 0, 1, 1
 
     int x[3] = {0};
     int q[3] = {0};
@@ -317,11 +317,8 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
     y[u] = 1;           //Simple Vector
 
     quadsize = 0;
-    section = vertpool->section(Chunk::QUAD, d, c->pos);
 
-    BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
-    BlockType current, facing;
-    int s;
+    section = vertpool->section(Chunk::QUAD, d, c->pos);
 
     for(x[u] = 0; x[u] < CHLOD; x[u]++){       //Loop Over Depth
 
@@ -371,7 +368,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
       vec3 color;
 
       for(x[v] = 0; x[v] < CHLOD; x[v]++){            //Evaluate Mask
-        for(x[w] = 0; x[w] < CHLOD; x[w]+=width){   //Permissible Skip
+        for(x[w] = 0; x[w] < CHLOD; x[w] += width){   //Permissible Skip
 
           width = height = 1;       //Current Quad Dimensions
 
@@ -381,7 +378,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           if(current == BLOCK_NONE)  //We don't mesh air
             continue;
 
-          while(mask[s+width] == current && x[w] + width < CHLOD)
+          while(x[w] + width < CHLOD && mask[s+width] == current)
             width++;
 
           quaddone = false;
@@ -400,10 +397,14 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           for(int k = x[w]; k < x[w] + width; k++)
             mask[k+l*CHLOD] = BLOCK_NONE;
 
+          vec3 px = p+vec3(x[0], x[1], x[2]);
+          vec3 qq = vec3(q[0], q[1], q[2]);
+
           int du[3] = {0}; du[v] = height;
           int dv[3] = {0}; dv[w] = width;
 
           color = block::getColor(current);
+
 
           if(n < 0){
 
@@ -411,29 +412,25 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
               vec3( (p.x+x[0]-0.5)*(float)LOD,
                     (p.y+x[1]-0.5)*(float)LOD,
                     (p.z+x[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
             vertpool->fill(section, quadsize*4+1,
               vec3( (p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
             vertpool->fill(section, quadsize*4+2,
               vec3( (p.x+x[0]+du[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
             vertpool->fill(section, quadsize*4+3,
               vec3( (p.x+x[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
           }
           else{
@@ -442,29 +439,25 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
               vec3( (p.x+x[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
             vertpool->fill(section, quadsize*4+1,
               vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
             vertpool->fill(section, quadsize*4+2,
               vec3( (p.x+x[0]+du[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+du[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+du[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
             vertpool->fill(section, quadsize*4+3,
               vec3( (p.x+x[0]+dv[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[2]),
-              color);
+              qq, color);
 
           }
 
@@ -475,11 +468,14 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
       //Next Slice
     }
 
-    vertpool->shrink(section, quadsize*6);
+    vertpool->resize(section, quadsize*6);
     c->faces[d] = section;
-    delete[] mask;
+    //delete[] mask;
 
     //Next Surface Orientation
+
+  //  });
+
   }
 
 };

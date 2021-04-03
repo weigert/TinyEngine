@@ -20,9 +20,7 @@ to the currently bound regions of memory.
 
 ## To Do
 - Multiple Bucket Sizes using Binary Tree?
-- Make Demo Showing Chunk Ordering for Blending (Advantage)
-  - Far to Near / Near to Far
-- Full Chunk Visibility Culling
+- Full Chunk Visibility Culling?
 
 ## Performance:
 

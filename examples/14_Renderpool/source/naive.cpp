@@ -51,7 +51,7 @@ int main( int argc, char* args[] ) {
 
 	});
 
-	Shader shader({"shader/naive.vs", "shader/naive.fs"}, {"in_Position", "in_Normal", "in_Color"});
+	Shader shader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color"});
 
 	Tiny::event.handler = [&](){ cam::handler(); };
 	Tiny::view.interface = [&](){ /* ... */ };
@@ -76,7 +76,7 @@ int main( int argc, char* args[] ) {
 		for(int i = 0 ; i < 50; i++){
 
 			r = rand()%chunks.size();
-		//	for(int d = 0; d < 16; d++)
+			for(int d = 0; d < 16; d++)
 				chunks[r].update();
 
 		//	std::cout<<"Chunk Edit ";

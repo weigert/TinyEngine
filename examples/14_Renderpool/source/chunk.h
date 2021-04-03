@@ -14,9 +14,24 @@ Ideally we also use a memory pool for the chunks themselves.
 #include <functional>
 
 #define CHUNKSIZE 16
-#define CHUNKVOL CHUNKSIZE*CHUNKSIZE*CHUNKSIZE
+#define CHUNKVOL (CHUNKSIZE*CHUNKSIZE*CHUNKSIZE)
 
 using namespace glm;
+
+vec3 getPos(int index, vec3 s = vec3(CHUNKSIZE)){
+  int z = index % (int)s.x;
+  int y = (int)(index / s.x) % (int)s.y;
+  int x = index / ( s.x * s.y );
+  return glm::vec3(x, y, z);
+}
+
+int getInd(vec3 p, vec3 s = vec3(CHUNKSIZE)){
+  if(glm::all(lessThan(p, s)) && all(glm::greaterThanEqual(p, vec3(0)))){
+    //return p.x*s.y*s.z+p.y*s.z+p.z;
+    return p.z*s.y*s.z+p.y*s.z+p.x;
+  }
+  return -1;
+}
 
 enum BlockType: unsigned char {
   BLOCK_NONE,
@@ -32,11 +47,11 @@ namespace block{
       case BLOCK_NONE:
         return vec3(1,1,1);
       case BLOCK_RED:
-        return vec3(1,0,0);
+        return vec3(1,1,0);
       case BLOCK_GREEN:
-        return vec3(0,1,0);
+        return vec3(1,0,1);
       case BLOCK_BLUE:
-        return vec3(0,0,1);
+        return vec3(0,1,1);
       default:
         return vec3(1,1,1);
     }
@@ -48,25 +63,34 @@ public:
 
 Chunk(){
   data = new BlockType[CHUNKVOL];
-  randomize();
+  for(int i = 0; i < CHUNKVOL; i++)
+    data[i] = BLOCK_NONE;
 }
 
-void randomize(){
-  for(size_t i = 0; i < CHUNKVOL; i++){
-    if(rand()%5 < 4) data[i] = BLOCK_NONE;
-    else data[i] = BlockType(rand()%4);
-  }
+Chunk(ivec3 p):Chunk(){
+  pos = p;
 }
 
-~Chunk(){
-//  delete data;
+void update(){
+
+  size_t i = rand()%CHUNKVOL;
+  for(int k = 0; data[i] == BLOCK_NONE && k < 2; k++)
+    i = rand()%CHUNKVOL;
+
+  if(rand()%10 == 0)
+    data[i] = BlockType(rand()%4);
+  else data[i] = BLOCK_NONE;
+
 }
 
-BlockType* data = NULL;
+BlockType* data;
 ivec3 pos = ivec3(0);
 int quadsize, quadstart;
 
 static int LOD;
+static int QUAD;
+
+array<uint*, 6> faces;
 
 int getIndex(vec3 _p){
   //Return the Correct Index
@@ -83,6 +107,7 @@ BlockType getPosition(vec3 _p){
 };
 
 int Chunk::LOD = 1;
+int Chunk::QUAD = 3500;
 
 /*
 ================================================================================
@@ -94,38 +119,37 @@ namespace chunkmesh {
 using namespace std;
 
 function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
-  m->pos = c->pos;
 
-  timer::benchmark<std::chrono::microseconds>([&](){
-
-  c->quadsize = 0;
-
-//  Blueprint temp;
   int LOD = Chunk::LOD;
   int CHLOD = CHUNKSIZE/LOD;
   vec3 p = c->pos*ivec3(CHUNKSIZE/LOD);
 
+  int u, v, w;
+  int n;
+
+  BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
+  BlockType current, facing;
+  int s;
+
+  vec3 color;
+
   for(int d = 0; d < 6; d++){
 
-    int u = (d/2+0)%3;  //u = 0, 0, 1, 1, 2, 2      //Dimension m->indices
-    int v = (d/2+1)%3;  //v = 1, 1, 2, 2, 0, 0
-    int w = (d/2+2)%3;  //w = 2, 2, 0, 0, 1, 1
+    u = (d/2+0)%3;      //u = 0, 0, 1, 1, 2, 2      //Dimension m->indices
+    v = (d/2+1)%3;      //v = 1, 1, 2, 2, 0, 0
+    w = (d/2+2)%3;      //w = 2, 2, 0, 0, 1, 1
 
     int x[3] = {0};
     int q[3] = {0};
     int y[3] = {0};
 
-    int n = 2*(d%2)-1;  //Normal Direction
+    n = 2*(d%2)-1;      //Normal Direction
     q[u] = n;           //Normal Vector
     y[u] = 1;           //Simple Vector
 
-    BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
-    BlockType current, facing;
-    int s;
+    c->quadsize = 0;
 
     for(x[u] = 0; x[u] < CHLOD; x[u]++){       //Loop Over Depth
-
-    //  bool foundmask = false;
 
       for(x[v] = 0; x[v] < CHLOD; x[v]++){     //Loop Over Slice
         for(x[w] = 0; x[w] < CHLOD; x[w]++){
@@ -137,18 +161,9 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
 
           if(current == BLOCK_NONE) continue;
 
-          //Skip Non-Cubic Elements in the Chunk! (every iteration)
-        //  if(!block::isCubic(atPos)){
-            //If it is our first pass, also add it to the meshing editBuffer.
-            //IGNORE THIS FOR LARGE LOD
-        //    if(d == 0) temp.add(vec3(x[0], x[1], x[2]), atPos, false);
-      //      continue;
-        //  }
-
           //Basically, we are facing out of the chunk, so we do take over the surface.
           if(x[u] + q[u] < 0 || x[u] + q[u] >= CHLOD){
             mask[s] = current;
-  //          foundmask = true;
             continue;
           }
 
@@ -158,17 +173,13 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
           //Make sure that the facing block can be air or non-cubic!
           if(facing == BLOCK_NONE){
             mask[s] = current;
-  //          foundmask = true;
           }
 
         }
       }
 
-  //    if(!foundmask) continue;
-
       int width = 1, height = 1;
       bool quaddone;
-      vec3 color;
 
       for(x[v] = 0; x[v] < CHLOD; x[v]++){            //Evaluate Mask
         for(x[w] = 0; x[w] < CHLOD; x[w]+=width){   //Permissible Skip
@@ -202,9 +213,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
 
           int du[3] = {0}; du[v] = height;
           int dv[3] = {0}; dv[w] = width;
-
-          //Add Quad to Model
-//          int N = m->positions.size()/3;
 
           if(n < 0){
 
@@ -232,31 +240,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.y+x[1]+dv[1]-0.5)*(float)LOD);
             m->positions.push_back((p.z+x[2]+dv[2]-0.5)*(float)LOD);
 
-/*
-            m->positions.push_back((p.x+x[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+dv[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+dv[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+dv[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]-0.5)*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5)*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5)*(float)LOD);
-*/
           }
           else{
 
@@ -283,32 +266,6 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
             m->positions.push_back((p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD);
             m->positions.push_back((p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD);
 
-
-/*
-            m->positions.push_back((p.x+x[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]+dv[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD);
-
-            m->positions.push_back((p.x+x[0]-0.5+y[0])*(float)LOD);
-            m->positions.push_back((p.y+x[1]-0.5+y[1])*(float)LOD);
-            m->positions.push_back((p.z+x[2]-0.5+y[2])*(float)LOD);
-          */
           }
 
           color = block::getColor(current);
@@ -326,10 +283,8 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
       //Next Slice
     }
     //Next Surface Orientation
-    delete[] mask;
   }
-
-  });
+  delete[] mask;
 
 };
 
@@ -337,29 +292,29 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
 
 
 
-
-
-
-
-
-
-
 function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool<Vertex>* vertpool){
-
-  std::cout<<"Section and Fill ";
-  timer::benchmark<std::chrono::microseconds>([&](){
 
   int LOD = Chunk::LOD;
   int CHLOD = CHUNKSIZE/LOD;
   vec3 p = c->pos*ivec3(CHUNKSIZE/LOD);
 
-  int quadsize;
+  int u, v, w;
+  int n;
+
+  BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
+  BlockType current, facing;
+  int s;
+
+  uint* section;
 
   for(int d = 0; d < 6; d++){
 
-    int u = (d/2+0)%3;  //u = 0, 0, 1, 1, 2, 2      //Dimension m->indices
-    int v = (d/2+1)%3;  //v = 1, 1, 2, 2, 0, 0
-    int w = (d/2+2)%3;  //w = 2, 2, 0, 0, 1, 1
+  //  std::cout<<"Chunk D-Loop ";
+  //  timer::benchmark<std::chrono::microseconds>([&](){
+
+    u = (d/2+0)%3;  //u = 0, 0, 1, 1, 2, 2      //Dimension m->indices
+    v = (d/2+1)%3;  //v = 1, 1, 2, 2, 0, 0
+    w = (d/2+2)%3;  //w = 2, 2, 0, 0, 1, 1
 
     int x[3] = {0};
     int q[3] = {0};
@@ -369,17 +324,11 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
     q[u] = n;           //Normal Vector
     y[u] = 1;           //Simple Vector
 
-    quadsize = 0;
+    c->quadsize = 0;
 
-    int section = vertpool->section(3500, true);
-
-    BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
-    BlockType current, facing;
-    int s;
+    section = vertpool->section(Chunk::QUAD, d, (vec3)c->pos + vec3(0.25, 0.5, 0.75)*vec3(q[0], q[1], q[2]));
 
     for(x[u] = 0; x[u] < CHLOD; x[u]++){       //Loop Over Depth
-
-    //  bool foundmask = false;
 
       for(x[v] = 0; x[v] < CHLOD; x[v]++){     //Loop Over Slice
         for(x[w] = 0; x[w] < CHLOD; x[w]++){
@@ -391,18 +340,9 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
 
           if(current == BLOCK_NONE) continue;
 
-          //Skip Non-Cubic Elements in the Chunk! (every iteration)
-        //  if(!block::isCubic(atPos)){
-            //If it is our first pass, also add it to the meshing editBuffer.
-            //IGNORE THIS FOR LARGE LOD
-        //    if(d == 0) temp.add(vec3(x[0], x[1], x[2]), atPos, false);
-      //      continue;
-        //  }
-
           //Basically, we are facing out of the chunk, so we do take over the surface.
           if(x[u] + q[u] < 0 || x[u] + q[u] >= CHLOD){
             mask[s] = current;
-  //          foundmask = true;
             continue;
           }
 
@@ -412,20 +352,17 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           //Make sure that the facing block can be air or non-cubic!
           if(facing == BLOCK_NONE){
             mask[s] = current;
-  //          foundmask = true;
           }
 
         }
       }
-
-  //    if(!foundmask) continue;
 
       int width = 1, height = 1;
       bool quaddone;
       vec3 color;
 
       for(x[v] = 0; x[v] < CHLOD; x[v]++){            //Evaluate Mask
-        for(x[w] = 0; x[w] < CHLOD; x[w]+=width){   //Permissible Skip
+        for(x[w] = 0; x[w] < CHLOD; x[w] += width){   //Permissible Skip
 
           width = height = 1;       //Current Quad Dimensions
 
@@ -435,7 +372,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           if(current == BLOCK_NONE)  //We don't mesh air
             continue;
 
-          while(mask[s+width] == current && x[w] + width < CHLOD)
+          while(x[w] + width < CHLOD && mask[s+width] == current)
             width++;
 
           quaddone = false;
@@ -454,131 +391,87 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           for(int k = x[w]; k < x[w] + width; k++)
             mask[k+l*CHLOD] = BLOCK_NONE;
 
+          vec3 px = p+vec3(x[0], x[1], x[2]);
+          vec3 qq = vec3(q[0], q[1], q[2]);
+
           int du[3] = {0}; du[v] = height;
           int dv[3] = {0}; dv[w] = width;
 
-          //Add Quad to Model
-//          int N = m->positions.size()/3;
-
           color = block::getColor(current);
+
 
           if(n < 0){
 
-            vertpool->fill(section, quadsize*6+0,
+            vertpool->fill(section, c->quadsize*4+0,
               vec3( (p.x+x[0]-0.5)*(float)LOD,
                     (p.y+x[1]-0.5)*(float)LOD,
                     (p.z+x[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
+              qq, color);
 
-            vertpool->fill(section, quadsize*6+1,
+            vertpool->fill(section, c->quadsize*4+1,
               vec3( (p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
+              qq, color);
 
-            vertpool->fill(section, quadsize*6+2,
+            vertpool->fill(section, c->quadsize*4+2,
               vec3( (p.x+x[0]+du[0]-0.5)*(float)LOD,
                     (p.y+x[1]+du[1]-0.5)*(float)LOD,
                     (p.z+x[2]+du[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
+              qq, color);
 
-            vertpool->fill(section, quadsize*6+3,
+            vertpool->fill(section, c->quadsize*4+3,
               vec3( (p.x+x[0]+dv[0]-0.5)*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5)*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
-
-            vertpool->fill(section, quadsize*6+4,
-              vec3( (p.x+x[0]+du[0]+dv[0]-0.5)*(float)LOD,
-                    (p.y+x[1]+du[1]+dv[1]-0.5)*(float)LOD,
-                    (p.z+x[2]+du[2]+dv[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
-
-            vertpool->fill(section, quadsize*6+5,
-              vec3( (p.x+x[0]-0.5)*(float)LOD,
-                    (p.y+x[1]-0.5)*(float)LOD,
-                    (p.z+x[2]-0.5)*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
+              qq, color);
 
           }
           else{
 
-            vertpool->fill(section, quadsize*6+0,
+            vertpool->fill(section, c->quadsize*4+0,
               vec3( (p.x+x[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
+              qq, color);
 
-            vertpool->fill(section, quadsize*6+1,
+            vertpool->fill(section, c->quadsize*4+1,
+              vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
+                    (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
+                    (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
+              qq, color);
+
+            vertpool->fill(section, c->quadsize*4+2,
               vec3( (p.x+x[0]+du[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+du[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+du[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
+              qq, color);
 
-            vertpool->fill(section, quadsize*6+2,
-              vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
-                    (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
-                    (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
-
-            vertpool->fill(section, quadsize*6+3,
-              vec3( (p.x+x[0]+du[0]+dv[0]-0.5+y[0])*(float)LOD,
-                    (p.y+x[1]+du[1]+dv[1]-0.5+y[1])*(float)LOD,
-                    (p.z+x[2]+du[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
-
-            vertpool->fill(section, quadsize*6+4,
+            vertpool->fill(section, c->quadsize*4+3,
               vec3( (p.x+x[0]+dv[0]-0.5+y[0])*(float)LOD,
                     (p.y+x[1]+dv[1]-0.5+y[1])*(float)LOD,
                     (p.z+x[2]+dv[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
-
-            vertpool->fill(section, quadsize*6+5,
-              vec3( (p.x+x[0]-0.5+y[0])*(float)LOD,
-                    (p.y+x[1]-0.5+y[1])*(float)LOD,
-                    (p.z+x[2]-0.5+y[2])*(float)LOD),
-              vec3(q[0], q[1], q[3]),
-              color);
+              qq, color);
 
           }
 
-          quadsize++;
+          c->quadsize++;
           //Next Quad
         }
       }
       //Next Slice
     }
 
-    vertpool->shrink(section, quadsize*6);
-    delete[] mask;
+    vertpool->resize(section, c->quadsize*6);
+    c->faces[d] = section;
 
-    //Next Surface Orientation
+  //  });
+
+  //Next Surface Orientation
   }
 
-  //vertpool->update();
-});
+  delete[] mask;
 
 };
-
-
-
-
-
-
-
-
-
-
 
 }

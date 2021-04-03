@@ -63,11 +63,13 @@ int main( int argc, char* args[] ) {
 		return groups.contains(cmd.group);
 	});
 
+/*
 	vertpool.order([&](const DAIC& a, const DAIC& b){
 		if(dot(b.pos - a.pos, cam::pos) > 0) return true;
 		if(dot(b.pos - a.pos, cam::pos) < 0) return false;
 		return (a.baseVert < b.baseVert);
 	});
+*/
 
 	vertpool.update();
 
@@ -107,6 +109,7 @@ int main( int argc, char* args[] ) {
 				if(cam::pos.y > 0) groups.insert(3);
 				if(cam::pos.z < 0) groups.insert(4);
 				if(cam::pos.z > 0) groups.insert(5);
+
 				vertpool.mask([&](DAIC& cmd){
 					return groups.contains(cmd.group);
 				});
@@ -133,7 +136,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::loop([&](){ /* ... */
 
-		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
+	//	if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
 		int r;
 	//	int t = 0;
@@ -141,7 +144,7 @@ int main( int argc, char* args[] ) {
 		for(int i = 0 ; i < 50; i++){
 
 			r = rand()%chunks.size();
-			//for(int d = 0; d < 16; d++)
+			for(int d = 0; d < 16; d++)
 				chunks[r].update();
 
 			for(int d = 0; d < 6; d++)
@@ -153,9 +156,6 @@ int main( int argc, char* args[] ) {
 
 //		std::cout<<t<<std::endl;
 
-	//	std::cout<<"Sort Pass ";
-	//	timer::benchmark<std::chrono::microseconds>([&](){
-
 		vertpool.mask([&](DAIC& cmd){
 			return groups.contains(cmd.group);
 		});
@@ -163,12 +163,10 @@ int main( int argc, char* args[] ) {
 		vertpool.order([&](const DAIC& a, const DAIC& b){
 			if(dot(b.pos - a.pos, cam::pos) > 0) return true;
 			if(dot(b.pos - a.pos, cam::pos) < 0) return false;
-	//		return (length(a.pos - cam::look+cam::rad*cam::pos) > length(b.pos - cam::look+cam::rad*cam::pos));
-			return all(greaterThan(a.pos, b.pos));
-		//	return (a.baseVert < b.baseVert);
+			return (a.baseVert < b.baseVert);
 		});
 
-	//	});
+		vertpool.update();
 
 	});
 

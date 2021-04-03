@@ -27,9 +27,11 @@ the vertices to the memory pool managing the VBO.
 ================================================================================
 */
 
-struct Vertex{
+using namespace glm;
 
-	Vertex(glm::vec3 p, glm::vec3 n, glm::vec3 c){
+struct Vertex {
+
+	Vertex(vec3 p, vec3 n, vec3 c){
 		position[0] = p.x;
 		position[1] = p.y;
 		position[2] = p.z;
@@ -39,11 +41,12 @@ struct Vertex{
 		color[0] = c.x;
 		color[1] = c.y;
 		color[2] = c.z;
+		color[3] = 1.0;
 	}
 
 	float position[3];
 	float normal[3];
-	float color[3];
+	float color[4];
 
   static void format(int vbo){
 
@@ -53,7 +56,7 @@ struct Vertex{
 
     glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexAttribFormat(2, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexAttribFormat(2, 4, GL_FLOAT, GL_FALSE, 0);
 
 		glVertexBindingDivisor(0, 0);
 		glVertexBindingDivisor(1, 0);
@@ -94,7 +97,7 @@ struct DAIC {
 
 	uint* index = NULL;		//Index Pointer
 	uint group;						//Group Assignment
-	glm::vec3 pos;
+	vec3 pos;
 
 };
 
@@ -185,7 +188,7 @@ void reserve(const int k, const int n){
 
 // Extract a section with a size and a group assignment
 
-uint* section(const int size, const int group = 0, glm::vec3 pos = glm::vec3(0)){
+uint* section(const int size, const int group = 0, vec3 pos = vec3(0)){
 
   if(size == 0 || size > K)
 		return NULL;
@@ -255,8 +258,6 @@ void mask(F function, Args&&... args){
 
 	}
 
-	update();
-
 }
 
 template<typename F, typename... Args>
@@ -267,8 +268,6 @@ void order(F function, Args&&... args){
 	});
 	for(size_t i = 0; i < indirect.size(); i++)
 		*indirect[i].index = i;
-
-	update();
 
 }
 
@@ -336,18 +335,18 @@ GLsync gSync = NULL;
 
 public:
 
-void lock(){
+void lock(GLsync s){
 
-  if(gSync != NULL) glDeleteSync(gSync);
-  gSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  if(s != NULL) glDeleteSync(s);
+  s = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
 }
 
-void wait(){
+void wait(GLsync s){
 
-	if(!gSync) return;
+	if(!s) return;
 	while(true){
-			GLenum waitReturn = glClientWaitSync(gSync, GL_SYNC_FLUSH_COMMANDS_BIT, 1 );
+			GLenum waitReturn = glClientWaitSync(s, GL_SYNC_FLUSH_COMMANDS_BIT, 1 );
 			if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED)
 				return;
 	}
@@ -367,9 +366,9 @@ void render(const GLenum mode = GL_TRIANGLES, size_t first = 0, size_t length = 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
 
-  wait();
+	wait(gSync);
 	glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, (void*)(first*(sizeof(DAIC))), length, sizeof(DAIC));
-	lock();
+	lock(gSync);
 
 }
 

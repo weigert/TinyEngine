@@ -247,7 +247,7 @@ void mask(F function, Args&&... args){
 	M = 0;											//Frontside Approach
 	int J = indirect.size()-1;	//Backside Approach
 
-	while(M < J){
+	while(M <= J){
 
 		while(function(indirect[M], args...) && M < J) M++;
 		while(!function(indirect[J], args...) && M < J) J--;
@@ -313,6 +313,7 @@ void index(){
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+	lock(gSync);
 
 }
 
@@ -320,6 +321,7 @@ void update(){
 
   glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
   glBufferData(GL_DRAW_INDIRECT_BUFFER, indirect.size()*sizeof(DAIC), &indirect[0], GL_DYNAMIC_DRAW);
+	lock(lSync);
 
 }
 
@@ -331,7 +333,8 @@ void update(){
 
 private:
 
-GLsync gSync = NULL;
+	GLsync gSync = NULL;
+	GLsync lSync = NULL;
 
 public:
 
@@ -367,6 +370,7 @@ void render(const GLenum mode = GL_TRIANGLES, size_t first = 0, size_t length = 
   glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indbo);
 
 	wait(gSync);
+	wait(lSync);
 	glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, (void*)(first*(sizeof(DAIC))), length, sizeof(DAIC));
 	lock(gSync);
 

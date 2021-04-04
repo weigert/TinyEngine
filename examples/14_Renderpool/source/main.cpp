@@ -13,7 +13,7 @@ int main( int argc, char* args[] ) {
 	srand(time(NULL));
 
 	Tiny::view.vsync = false;
-	Tiny::benchmark = true;
+	//Tiny::benchmark = true;
 	Tiny::window("Example Window", 1200, 800);
 
   cam::near = -500.0f;
@@ -26,10 +26,10 @@ int main( int argc, char* args[] ) {
 
 	const int N = 5*5*5*6;	//6 Face Orientations per Chunk
 
-	Chunk::LOD = 1;
-	Chunk::QUAD = 3600;
-	//Chunk::LOD = 2;
-	//Chunk::QUAD = 800;
+	//Chunk::LOD = 1;
+	//Chunk::QUAD = 3600;
+	Chunk::LOD = 2;
+	Chunk::QUAD = 800;
 	//Chunk::LOD = 4;
 	//Chunk::QUAD = 200;
 	//Chunk::LOD = 8;

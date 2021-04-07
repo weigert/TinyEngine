@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_TIMER
+#define TINYENGINE_TIMER
+
 #include <chrono>
 #include <thread>
 #include <atomic>
@@ -80,3 +83,5 @@ namespace timer{
     }
   };
 }
+
+#endif

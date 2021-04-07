@@ -33,6 +33,8 @@ using slist = std::initializer_list<std::string>;
 
 #endif
 
+#include <TinyEngine/timer>
+
 #ifndef TINYENGINE_NAMESPACE
 #define TINYENGINE_NAMESPACE
 
@@ -88,8 +90,13 @@ void quit(){
   SDL_Quit();
 }
 
+bool benchmark = false;
+int average = 0;
+
 template<typename F, typename... Args>
 void loop(F function, Args&&... args){
+
+  if(!benchmark)
   while(!event.quit){
 
     if(Tiny::view.enabled){
@@ -101,9 +108,47 @@ void loop(F function, Args&&... args){
 
     function(args...);      //User-defined Game Loop
 
-    if(Tiny::view.enabled) view.render();         //Render View
+    if(Tiny::view.enabled){
+      view.render();         //Render View
+    }
 
   }
+
+  else while(!event.quit){
+
+    if(Tiny::view.enabled){
+      std::cout<<"Event Input ";
+      timer::benchmark<std::chrono::milliseconds>([&](){
+        event.input();        //Get Input
+      });
+      std::cout<<"Event Handling ";
+      timer::benchmark<std::chrono::milliseconds>([&](){
+      event.handle(view);   //Call the event-handling system
+      });
+    }
+
+    if(Tiny::audio.enabled){
+      std::cout<<"Audio Processing ";
+      timer::benchmark<std::chrono::milliseconds>([&](){
+        audio.process();      //Audio Processor
+      });
+    }
+
+    std::cout<<"Loop Function ";
+    timer::benchmark<std::chrono::microseconds>([&](){
+      function(args...);      //User-defined Game Loop
+    });
+
+    if(Tiny::view.enabled){
+      std::cout<<"Render Pipeline ";
+      average = 0.99*average + 0.01*timer::benchmark<std::chrono::microseconds>([&](){
+        view.render();         //Render View
+        glFinish();
+      });
+    }
+
+  }
+
 }
 
 }

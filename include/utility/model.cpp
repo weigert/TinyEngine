@@ -173,7 +173,7 @@ public:
   }
 
   template<typename D>
-  void add(std::vector<GLfloat>& v, D& a);
+  void add(std::vector<GLfloat>& v, D a);
 };
 
 //Primitive Shapes (Pre-Made)
@@ -184,14 +184,14 @@ void Primitive::attrib<GLfloat>(int index, int size){
 }
 
 template<>
-void Model::add<glm::vec3>(std::vector<GLfloat>& v, glm::vec3& a){
+void Model::add<glm::vec3>(std::vector<GLfloat>& v, glm::vec3 a){
   v.push_back(a.x);
   v.push_back(a.y);
   v.push_back(a.z);
 }
 
 template<>
-void Model::add<glm::vec4>(std::vector<GLfloat>& v, glm::vec4& a){
+void Model::add<glm::vec4>(std::vector<GLfloat>& v, glm::vec4 a){
   v.push_back(a.x);
   v.push_back(a.y);
   v.push_back(a.z);

@@ -76,6 +76,10 @@ A simple scene (example program 9) that uses .obj / .mtl files generated in Blen
 
 An example image of a shader-based voronoi texture generator I implemented as a small experiment (example program 11). Lets you do real-time voronoi filters because its very fast. Here seen for N = 2048. See [my blog here here](https://weigert.vsos.ethz.ch/2020/08/01/gpu-accelerated-voronoi-textures-and-filters/).
 
+![Vertex Pooling Voxel Animation](https://github.com/weigert/TinyEngine/blob/master/screenshots/voxels.gif)
+
+A rendering of a dynamic alpha-blended voxel scene which uses a technique called vertex pooling to reduce driver overhead while drawing. See [my blog here](https://weigert.vsos.ethz.ch/2021/04/04/high-performance-voxel-engine/)
+
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.
 

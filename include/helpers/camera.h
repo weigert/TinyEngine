@@ -9,14 +9,24 @@ using namespace glm;
 
   float near = 0.01f;    //Clipping Planes
   float far = 10.0f;
+  float FOV = 1.0f;       //Field of View
 
   vec3 pos = vec3(cos(glm::radians(rot)), sin(glm::radians(roty)), sin(glm::radians(rot)));
   vec3 look = vec3(0);
+
+  float moverate = 1.0f;
+  float turnrate = 1.5f;
+
+  bool moved = true;
 
   camtype type = PROJ;
 
   //Matrices
   mat4 proj, view, vp;
+
+  //Pathing Matrix Setting
+  void move(mat4 v){ view = v; vp = proj*view; }
+  void shift(mat4 rt){ view = rt*view; vp = proj*view; }
 
   void update(){
     pos = vec3(cos(glm::radians(roty))*cos(glm::radians(rot)), sin(glm::radians(roty)), cos(glm::radians(roty))*sin(glm::radians(rot)));
@@ -28,8 +38,9 @@ using namespace glm;
     type = t;
     rad = r;
 
-    if(type == PROJ) proj = glm::perspective(45.0f, (float)Tiny::view.WIDTH/(float)Tiny::view.HEIGHT, near, far);
-    if(type == ORTHO) proj = glm::ortho(-Tiny::view.WIDTH/100.0f, Tiny::view.WIDTH/100.0f, -Tiny::view.HEIGHT/100.0f, Tiny::view.HEIGHT/100.0f, near, far);
+    if(type == PROJ) proj = glm::perspective(FOV, (float)Tiny::view.WIDTH/(float)Tiny::view.HEIGHT, near, far);
+    if(type == ORTHO) proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
+
     view = lookAt(look+rad*pos, look, vec3(0,1,0));
     vp = proj*view;
   }
@@ -38,17 +49,21 @@ using namespace glm;
 
   void zoom(float inc){
     rad += inc;
+    if(type == ORTHO) proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
     update();
+    moved = true;
   }
 
   void pan(float inc){
     rot = (rot+inc+360.0f)-(int)((rot+inc+360.0f)/360.0f)*360.0f;
     update();
+    moved = true;
   }
 
   void tilt(float inc){
     roty = (roty+inc+360.0f)-(int)((roty+inc+360.0f)/360.0f)*360.0f;
     update();
+    moved = true;
   }
 
   /* Translations */
@@ -57,21 +72,27 @@ using namespace glm;
     look.x += inc*cos(glm::radians(rot));
     look.z += inc*sin(glm::radians(rot));
     update();
+    moved = true;
   }
 
   void strafe(float inc){
-    look.x += inc*sin(glm::radians(rot));
+    look.x -= inc*sin(glm::radians(rot));
     look.z += inc*cos(glm::radians(rot));
     update();
+    moved = true;
   }
 
   void rise(float inc){
     look.y += inc;
     update();
+    moved = true;
   }
 
 
   std::function<void()> handler = [](){
+
+    moved = false;
+
     if(Tiny::event.scroll.posy)
       cam::zoom(0.5);
 
@@ -79,28 +100,42 @@ using namespace glm;
       cam::zoom(-0.5);
 
     if(Tiny::event.scroll.posx)
-      cam::pan(1.5f);
+      cam::pan(cam::turnrate);
 
     if(Tiny::event.scroll.negx)
-      cam::pan(-1.5f);
+      cam::pan(-cam::turnrate);
 
     if(Tiny::event.active[SDLK_UP])
-      cam::tilt(1.5f);
+      cam::tilt(cam::turnrate);
 
     if(Tiny::event.active[SDLK_DOWN])
-      cam::tilt(-1.5f);
+      cam::tilt(-cam::turnrate);
 
     if(Tiny::event.active[SDLK_c])
-      cam::rise(-0.1f);
+      cam::rise(-cam::moverate);
 
     if(Tiny::event.active[SDLK_v])
-      cam::rise(0.1f);
+      cam::rise(cam::moverate);
 
     if(Tiny::event.active[SDLK_w])
-      cam::stride(-0.1f);
+      cam::stride(-cam::moverate);
 
     if(Tiny::event.active[SDLK_s])
-      cam::stride(0.1f);
+      cam::stride(cam::moverate);
+
+    if(Tiny::event.active[SDLK_d])
+      cam::strafe(-cam::moverate);
+
+    if(Tiny::event.active[SDLK_a])
+      cam::strafe(cam::moverate);
+
+    if(Tiny::event.windowEventTrigger){
+      if(type == PROJ) cam::proj = glm::perspective(FOV, (float)Tiny::view.WIDTH/(float)Tiny::view.HEIGHT, near, far);
+      if(type == ORTHO) proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
+      cam::vp = cam::view*cam::proj;
+      moved = true;
+      update();
+    }
 
   };
 

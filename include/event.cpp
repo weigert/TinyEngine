@@ -1,7 +1,8 @@
 #include "event.h"
 
 void Event::input(){
-  if(SDL_PollEvent(&in) == 0) return;
+while(SDL_PollEvent(&in)){
+
   ImGui_ImplSDL2_ProcessEvent(&in);
 
   switch(in.type){
@@ -41,6 +42,7 @@ void Event::input(){
     default:
       break;
   }
+}
 }
 
 void Event::handle(View &view){

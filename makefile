@@ -58,7 +58,7 @@ install:
 # TinyEngine Helpers #
 ######################
 
-HELPERS = camera color helper image object
+HELPERS = camera color helper image object timer parse log
 
 helpers:
 			@echo "Copying Helper Header Files ...";

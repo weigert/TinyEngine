@@ -6,7 +6,9 @@
 int main( int argc, char* args[] ) {
 
 	Tiny::window("Particle System", 800, 800);
-	cam::init();
+	cam::near = -10.0f;
+	cam::far = 10.0f;
+	cam::init(5);
 
 	Tiny::event.handler = cam::handler;
 	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
@@ -30,7 +32,7 @@ int main( int argc, char* args[] ) {
 
 		particleShader.use();
 		particleShader.texture("spriteTexture", tex);
-		particleShader.uniform("projectionCamera", cam::vp);
+		particleShader.uniform("vp", cam::vp);
 		particle.render();
 
 	};

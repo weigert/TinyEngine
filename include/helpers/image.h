@@ -1,6 +1,12 @@
+#include <glm/glm.hpp>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <functional>
+
 namespace image {
 using namespace glm;
 using namespace std;
+using Handle = function<void()>;
 
   SDL_Surface* load(string path){
     SDL_Surface* loaded = IMG_Load(path.c_str());
@@ -15,7 +21,10 @@ using namespace std;
     IMG_SavePNG(surface, path.c_str());
   }
 
+  #ifdef TINYENGINE_UTILITIES
+
   void save(Target target, string path){
+
     SDL_Surface *s = SDL_CreateRGBSurface(0, target.WIDTH, target.HEIGHT, 32, 0, 0, 0, 0);
     SDL_LockSurface(s);
     target.sample(s->pixels, vec2(0), vec2(target.WIDTH, target.HEIGHT));
@@ -41,5 +50,35 @@ using namespace std;
     SDL_UnlockSurface(s);
     return s;
   }
+
+  #endif
+
+  vec4 color(SDL_Surface* s, int x, int y){
+
+    //Boundary Handling
+    if(x >= s->w) return vec4(0,0,0,1);
+    if(y >= s->h) return vec4(0,0,0,1);
+    if(x < 0) return vec4(0,0,0,1);
+    if(y < 0) return vec4(0,0,0,1);
+
+  	SDL_PixelFormat *fmt = s->format;
+  	Uint8 r,g,b,a;
+
+  	SDL_LockSurface(s);
+  	Uint32 p = (((Uint32*)s->pixels)[y*s->w+x]);
+  	SDL_UnlockSurface(s);
+
+    r = (Uint8)(((p & fmt->Rmask) >> fmt->Rshift) << fmt->Rloss);
+    g = (Uint8)(((p & fmt->Gmask) >> fmt->Gshift) << fmt->Gloss);
+    b = (Uint8)(((p & fmt->Bmask) >> fmt->Bshift) << fmt->Bloss);
+    a = (Uint8)(((p & fmt->Amask) >> fmt->Ashift) << fmt->Aloss);
+
+    return vec4(r,g,b,a);
+  }
+
+  vec4 color(SDL_Surface* s, float x, float y){
+    return color(s, x*s->w, y*s->h);
+  }
+
 
 }

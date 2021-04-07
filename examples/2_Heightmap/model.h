@@ -2,8 +2,8 @@
 
 int SEED = 10;
 double scale = 30.0;
-double heightmap[64][64] = {0.0};
-glm::vec2 dim = glm::vec2(64);
+double heightmap[GRIDSIZE][GRIDSIZE] = {0.0};
+glm::vec2 dim = glm::vec2(GRIDSIZE);
 noise::module::Perlin perlin;
 std::function<void(Model* m)> _construct;
 

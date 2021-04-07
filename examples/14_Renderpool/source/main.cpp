@@ -3,7 +3,7 @@
 
 #include <unordered_set>
 
-#include "renderpool.cpp"
+#include "vertexpool.cpp"
 #include "chunk.h"
 
 using namespace glm;
@@ -13,7 +13,7 @@ int main( int argc, char* args[] ) {
 	srand(time(NULL));
 
 	Tiny::view.vsync = false;
-	//Tiny::benchmark = true;
+	Tiny::benchmark = true;
 	Tiny::window("Example Window", 1200, 800);
 
   cam::near = -500.0f;
@@ -26,16 +26,16 @@ int main( int argc, char* args[] ) {
 
 	const int N = 5*5*5*6;	//6 Face Orientations per Chunk
 
-	//Chunk::LOD = 1;
+	Chunk::LOD = 1;
+	Chunk::QUAD = 12000;
+	//Chunk::LOD = 2;
 	//Chunk::QUAD = 3600;
-	Chunk::LOD = 2;
-	Chunk::QUAD = 800;
 	//Chunk::LOD = 4;
 	//Chunk::QUAD = 200;
 	//Chunk::LOD = 8;
 	//Chunk::QUAD = 50;
 
-	Renderpool<Vertex> vertpool(Chunk::QUAD, N);
+	Vertexpool<Vertex> vertpool(Chunk::QUAD, N);
 	vector<Chunk> chunks;
 
 	std::unordered_set<int> groups;
@@ -43,37 +43,36 @@ int main( int argc, char* args[] ) {
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-	for(int i = 0; i < 5; i++)
-	for(int j = 0; j < 5; j++)
-	for(int k = 0; k < 5; k++){
+		for(int i = 0; i < 5; i++)
+		for(int j = 0; j < 5; j++)
+		for(int k = 0; k < 5; k++){
 
-		chunks.emplace_back(ivec3(i,j,k));
-		chunkmesh::greedypool(&chunks.back(), &vertpool);
+			chunks.emplace_back(ivec3(i,j,k));
+			chunkmesh::greedypool(&chunks.back(), &vertpool);
 
-	}
+		}
 
-	groups.clear();
-	if(cam::pos.x < 0) groups.insert(0);
-	if(cam::pos.x > 0) groups.insert(1);
-	if(cam::pos.y < 0) groups.insert(2);
-	if(cam::pos.y > 0) groups.insert(3);
-	if(cam::pos.z < 0) groups.insert(4);
-	if(cam::pos.z > 0) groups.insert(5);
-	vertpool.mask([&](DAIC& cmd){
-		return groups.contains(cmd.group);
+		groups.clear();
+		if(cam::pos.x < 0) groups.insert(0);
+		if(cam::pos.x > 0) groups.insert(1);
+		if(cam::pos.y < 0) groups.insert(2);
+		if(cam::pos.y > 0) groups.insert(3);
+		if(cam::pos.z < 0) groups.insert(4);
+		if(cam::pos.z > 0) groups.insert(5);
+		vertpool.mask([&](DAIC& cmd){
+			return groups.contains(cmd.group);
+		});
+
+		vertpool.order([&](const DAIC& a, const DAIC& b){
+			if(dot(b.pos - a.pos, cam::pos) < 0) return true;
+			if(dot(b.pos - a.pos, cam::pos) > 0) return false;
+			return (a.baseVert < b.baseVert);
+		});
+
+
+		vertpool.update();
+
 	});
-
-/*
-	vertpool.order([&](const DAIC& a, const DAIC& b){
-		if(dot(b.pos - a.pos, cam::pos) > 0) return true;
-		if(dot(b.pos - a.pos, cam::pos) < 0) return false;
-		return (a.baseVert < b.baseVert);
-	});
-*/
-
-	vertpool.update();
-
-});
 
 	//Render Pass
 
@@ -114,6 +113,8 @@ int main( int argc, char* args[] ) {
 					return groups.contains(cmd.group);
 				});
 
+				vertpool.update();
+
 			}
 
 			oldpos = newpos;
@@ -134,39 +135,61 @@ int main( int argc, char* args[] ) {
 
 	};
 
+	float at = 0;
+
 	Tiny::loop([&](){ /* ... */
 
 	//	if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
+/*
 		int r;
-	//	int t = 0;
+		int t = 0;
 
-		for(int i = 0 ; i < 50; i++){
+		for(int i = 0 ; i < chunks.size(); i++){
 
-			r = rand()%chunks.size();
-			for(int d = 0; d < 16; d++)
-				chunks[r].update();
+		//	r = rand()%chunks.size();
+		//	for(int d = 0; d < 16; d++)
+			chunks[i].update();
+
+			t += timer::benchmark<std::chrono::microseconds>([&](){
 
 			for(int d = 0; d < 6; d++)
-				vertpool.unsection(chunks[r].faces[d]);
+				vertpool.unsection(chunks[i].faces[d]);
 
-			chunkmesh::greedypool(&chunks[r], &vertpool);
+			chunkmesh::greedypool(&chunks[i], &vertpool);
+
+			}, false);
 
 		}
 
-//		std::cout<<t<<std::endl;
+
+		std::cout<<"AVERAGE TIME: "<<t/chunks.size()<<std::endl;
+		at = 0.99f*at + 0.01f*t;
+		std::cout<<"AVERAGE ROLL: "<<at/chunks.size()<<std::endl;
+
+*/
+
+/*
+		std::cout<<std::endl<<"Mask and Order ";
+		timer::benchmark<std::chrono::microseconds>([&](){
 
 		vertpool.mask([&](DAIC& cmd){
 			return groups.contains(cmd.group);
 		});
 
 		vertpool.order([&](const DAIC& a, const DAIC& b){
-			if(dot(b.pos - a.pos, cam::pos) > 0) return true;
-			if(dot(b.pos - a.pos, cam::pos) < 0) return false;
+			if(dot(b.pos - a.pos, cam::pos) < 0) return true;
+			if(dot(b.pos - a.pos, cam::pos) > 0) return false;
 			return (a.baseVert < b.baseVert);
 		});
 
 		vertpool.update();
+		//	});
+
+
+*/
+
+
 
 	});
 

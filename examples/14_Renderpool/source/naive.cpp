@@ -1,7 +1,7 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/camera>
 
-#include "renderpool.cpp"
+#include "vertexpool.cpp"
 #include "chunk.h"
 
 using namespace glm;
@@ -66,29 +66,38 @@ int main( int argc, char* args[] ) {
 
 	};
 
+
+	float at = 0;
+
 	Tiny::loop([&](){ /* ... */
+
+		/*
 
 		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
 		int r;
-	//	int t = 0;
 
-		for(int i = 0 ; i < 50; i++){
+		int t = 0;
 
-			r = rand()%chunks.size();
-			for(int d = 0; d < 16; d++)
-				chunks[r].update();
+		for(int i = 0 ; i < chunks.size(); i++){
 
-		//	std::cout<<"Chunk Edit ";
-		//	t += timer::benchmark<std::chrono::microseconds>([&](){
+		//	r = rand()%chunks.size();
+			chunks[i].update();
 
-			models[r]->construct(chunkmesh::greedy, &chunks[r]);
+			t += timer::benchmark<std::chrono::microseconds>([&](){
 
-		//	});
+			models[i]->construct(chunkmesh::greedy, &chunks[i]);
+
+			}, false);
 
 		}
 
-		// std::cout<<t<<std::endl;
+		 std::cout<<"AVERAGE TIME: "<<t/chunks.size()<<std::endl;
+		 at = 0.99f*at + 0.01f*float(t);
+
+		 std::cout<<"AVERAGE ROLL: "<<at/chunks.size()<<std::endl;
+
+		 */
 
 	});
 

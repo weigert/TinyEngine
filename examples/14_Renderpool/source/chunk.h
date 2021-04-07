@@ -12,8 +12,9 @@ Ideally we also use a memory pool for the chunks themselves.
 */
 
 #include <functional>
+#include <noise/noise.h>
 
-#define CHUNKSIZE 16
+#define CHUNKSIZE 32
 #define CHUNKVOL (CHUNKSIZE*CHUNKSIZE*CHUNKSIZE)
 
 using namespace glm;
@@ -37,7 +38,8 @@ enum BlockType: unsigned char {
   BLOCK_NONE,
   BLOCK_RED,
   BLOCK_GREEN,
-  BLOCK_BLUE
+  BLOCK_BLUE,
+  BLOCK_ANY
 };
 
 namespace block{
@@ -65,21 +67,44 @@ Chunk(){
   data = new BlockType[CHUNKVOL];
   for(int i = 0; i < CHUNKVOL; i++)
     data[i] = BLOCK_NONE;
+
 }
 
 Chunk(ivec3 p):Chunk(){
   pos = p;
+/*  perlin.SetOctaveCount(8);
+  perlin.SetFrequency(1.0);
+  perlin.SetPersistence(0.6); */
+  update();
 }
+
+
+/*
+noise::module::Perlin perlin;
+float t = 0.0f;
 
 void update(){
 
-  size_t i = rand()%CHUNKVOL;
-  for(int k = 0; data[i] == BLOCK_NONE && k < 2; k++)
-    i = rand()%CHUNKVOL;
+  for(size_t i = 0; i < CHUNKVOL; i++){
+    vec3 p = (getPos(i, vec3(CHUNKSIZE))+(vec3)(CHUNKSIZE*pos))/vec3(CHUNKSIZE*3);
+    if(perlin.GetValue(p.x, p.y+t, p.z) > 0.0)
+      data[i] = BLOCK_RED;
+    else data[i] = BLOCK_NONE;
 
-  if(rand()%10 == 0)
-    data[i] = BlockType(rand()%4);
-  else data[i] = BLOCK_NONE;
+  }
+  t+= 0.1f;
+//  size_t i = rand()%CHUNKVOL;
+}
+*/
+
+void update(){
+
+  for(size_t i = 0; i < CHUNKVOL; i++){
+    if(rand()%10 == 0)
+      data[i] = BlockType(1+rand()%3);
+    else data[i] = BLOCK_NONE;
+  }
+//  size_t i = rand()%CHUNKVOL;
 
 }
 
@@ -130,6 +155,8 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
   BlockType* mask = new BlockType[CHUNKSIZE*CHUNKSIZE/LOD/LOD];
   BlockType current, facing;
   int s;
+
+  int quads = 0;
 
   vec3 color;
 
@@ -283,8 +310,10 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
       //Next Slice
     }
     //Next Surface Orientation
+    quads += c->quadsize;
   }
   delete[] mask;
+//  std::cout<<"QUADS: "<<quads<<std::endl;
 
 };
 
@@ -292,7 +321,7 @@ function<void(Model* , Chunk*)> greedy = [](Model* m, Chunk* c){
 
 
 
-function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool<Vertex>* vertpool){
+function<void(Chunk*, Vertexpool<Vertex>*)> greedypool = [](Chunk* c, Vertexpool<Vertex>* vertpool){
 
   int LOD = Chunk::LOD;
   int CHLOD = CHUNKSIZE/LOD;
@@ -306,6 +335,8 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
   int s;
 
   uint* section;
+
+  int quads = 0;
 
   for(int d = 0; d < 6; d++){
 
@@ -326,7 +357,7 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
 
     c->quadsize = 0;
 
-    section = vertpool->section(Chunk::QUAD, d, (vec3)c->pos + vec3(0.25, 0.5, 0.75)*vec3(q[0], q[1], q[2]));
+    section = vertpool->section(Chunk::QUAD, d, (vec3)c->pos + vec3(0.5, 0.5, 0.5)*vec3(q[0], q[1], q[2]));
 
     for(x[u] = 0; x[u] < CHLOD; x[u]++){       //Loop Over Depth
 
@@ -350,9 +381,9 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           facing = c->getPosition((float)LOD*vec3(x[0]+q[0],x[1]+q[1],x[2]+q[2]));
 
           //Make sure that the facing block can be air or non-cubic!
-          if(facing == BLOCK_NONE){
+          if(facing == BLOCK_NONE)
             mask[s] = current;
-          }
+          // else mask[s] = BLOCK_ANY;
 
         }
       }
@@ -369,17 +400,17 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
           s = x[w] + x[v]*CHLOD;    //Current Slice Index
           current = mask[s];        //Current Block Type
 
-          if(current == BLOCK_NONE)  //We don't mesh air
+          if(current == BLOCK_NONE /* || current == BLOCK_ANY */ )  //We don't mesh air
             continue;
 
-          while(x[w] + width < CHLOD && mask[s+width] == current)
+          while(x[w] + width < CHLOD && (mask[s+width] == current /* || mask[s+width] == BLOCK_ANY */ ))
             width++;
 
           quaddone = false;
           for(height = 1; x[v] + height < CHLOD; height++){   //Find Height
 
             for(int k = 0; k < width; k++){                   //Iterate Over Width
-              if(mask[s+k+height*CHLOD] != current) {
+              if(mask[s+k+height*CHLOD] != current /* && mask[s+k+height*CHLOD] != BLOCK_ANY */ ) {
                 quaddone = true;
                 break;
               }
@@ -464,11 +495,12 @@ function<void(Chunk*, Renderpool<Vertex>*)> greedypool = [](Chunk* c, Renderpool
 
     vertpool->resize(section, c->quadsize*6);
     c->faces[d] = section;
-
+    quads += c->quadsize;
   //  });
 
   //Next Surface Orientation
   }
+  //std::cout<<"QUADS: "<<quads<<std::endl;
 
   delete[] mask;
 

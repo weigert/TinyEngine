@@ -42,6 +42,8 @@ bool View::init(std::string _name, int W, int H){
   glLineWidth(lineWidth);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  std::cout<<glGetString(GL_VERSION)<<std::endl;
+
   return true;
 }
 
@@ -76,9 +78,9 @@ void View::drawInterface(){
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void View::target(glm::vec3 clearcolor){
+void View::target(glm::vec3 clearcolor, bool clear){
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, WIDTH, HEIGHT);
-  glClearColor(clearcolor.x, clearcolor.y, clearcolor.z, 1);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClearColor(clearcolor.x, clearcolor.y, clearcolor.z, 1.0f);
+  if(clear) glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

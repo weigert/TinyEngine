@@ -1,22 +1,25 @@
 # TinyEngine
+
 Small OpenGL based 2D/3D Engine / Wrapper in C++
 
 ![Rendering Example Program](screenshots/banner.png)
 Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)
 
 	LINES OF CODE (without unreasonable compression):
-		Main File: 118
-		Main Classes: 286
-		Utility Classes: 627
-		Helpers Namespaces: 347
-		Total: 1065
+
+		Main File: 103
+		Main Classes: 264
+		Utility Classes: 579
+		Helpers Namespaces: 199
+		Total: 1145
 
 	History:
-		12. April 2020: 885
-		29. April 2020: 1116
+		12. Apr 2020: 885
+		29. Apr 2020: 1116
 		17. May 2020: 1667
 		23. May 2020: 1065
-		21. Feb 2021: 1378
+    01. Aug 2020: 1145
+    21. Feb 2021: 1378
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -34,7 +37,7 @@ As I continue to build projects using this engine, I plan on slowly expanding it
 Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/2020/04/14/animated-multi-julia-sets/).
 
 ## Structure
-The main engine interface is wrapped in a namespace `Tiny`. This namespace has four (global) static members, which are its main component classes:
+The main engine interface is wrapped in a namespace `Tiny`. This namespace has three (global) static members, which are its main component classes:
 
 	- View Class (Tiny::view): 	Window handling, rendering, GUI interface
 	- Event Class (Tiny::event): 	Event handling for keyboard and mouse, window resizing
@@ -43,10 +46,10 @@ The main engine interface is wrapped in a namespace `Tiny`. This namespace has f
 A number of utility classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
 
 	- Texture: 	OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
-	- Shader: 	Load, compile, link and use shader programs (vertex, fragment, geometry) easily.
+	- Shader: 	Load, compile, link and use shader programs (vertex, fragment, geometry) easily, pass SSBO.
 	- Model: 	OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
 	- Target: 	OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
-	- Particle: 	OpenGL instanced rendering wrapper (any Model object). Simply add model matrices and render.
+	- Instance: 	OpenGL instanced rendering wrapper (any Model object, any data). Simply add model buffers and render model instanced.
 
 More information can be found on the wiki: [Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
 
@@ -69,7 +72,9 @@ A procedural 3D tree (example program 6), that has a leaf particle system and or
 ![Simple Lighting Scene](screenshots/scene.png)
 A simple scene (example program 9) that uses .obj / .mtl files generated in Blender, and then uses cubemaps for point-light shading.
 
-Other examples include in-shader raymarching, simple network console chat, simple shader-based image effects and more.
+![Shader Based Voronoi Texture](screenshots/2048.png)
+
+An example image of a shader-based voronoi texture generator I implemented as a small experiment (example program 11). Lets you do real-time voronoi filters because its very fast. Here seen for N = 2048. See [my blog here here](https://weigert.vsos.ethz.ch/2020/08/01/gpu-accelerated-voronoi-textures-and-filters/).
 
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.

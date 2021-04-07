@@ -2,6 +2,8 @@
 
 System for reducing OpenGL driver overhead without losing generality of drawables.
 
+![Voxel Gif](https://github.com/weigert/TinyEngine/blob/master/examples/14_Renderpool/voxels.gif)
+
 ## Idea
 
 When drawing many copies of the same VBO data, we can use instancing. This works well for e.g. particle systems.

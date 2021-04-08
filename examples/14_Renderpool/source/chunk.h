@@ -12,9 +12,9 @@ Ideally we also use a memory pool for the chunks themselves.
 */
 
 #include <functional>
-#include <noise/noise.h>
+#include "FastNoiseLite.h"
 
-#define CHUNKSIZE 32
+#define CHUNKSIZE 16
 #define CHUNKVOL (CHUNKSIZE*CHUNKSIZE*CHUNKSIZE)
 
 using namespace glm;
@@ -72,22 +72,26 @@ Chunk(){
 
 Chunk(ivec3 p):Chunk(){
   pos = p;
-/*  perlin.SetOctaveCount(8);
-  perlin.SetFrequency(1.0);
-  perlin.SetPersistence(0.6); */
+
+  noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+  noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+  noise.SetFractalOctaves(8.0f);
+  noise.SetFractalLacunarity(2.0f);
+  noise.SetFractalGain(0.6f);
+  noise.SetFrequency(1.0);
+
   update();
 }
 
+FastNoiseLite noise;
 
-/*
-noise::module::Perlin perlin;
 float t = 0.0f;
 
 void update(){
 
   for(size_t i = 0; i < CHUNKVOL; i++){
     vec3 p = (getPos(i, vec3(CHUNKSIZE))+(vec3)(CHUNKSIZE*pos))/vec3(CHUNKSIZE*3);
-    if(perlin.GetValue(p.x, p.y+t, p.z) > 0.0)
+    if(noise.GetNoise(p.x, p.y+t, p.z) > 0.0)
       data[i] = BLOCK_RED;
     else data[i] = BLOCK_NONE;
 
@@ -95,8 +99,7 @@ void update(){
   t+= 0.1f;
 //  size_t i = rand()%CHUNKVOL;
 }
-*/
-
+/*
 void update(){
 
   for(size_t i = 0; i < CHUNKVOL; i++){
@@ -107,6 +110,7 @@ void update(){
 //  size_t i = rand()%CHUNKVOL;
 
 }
+*/
 
 BlockType* data;
 ivec3 pos = ivec3(0);

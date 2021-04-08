@@ -39,9 +39,9 @@ int main( int argc, char* args[] ) {
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-  for(int i = 0; i < 5; i++)
-  for(int j = 0; j < 5; j++)
-  for(int k = 0; k < 5; k++){
+  for(int i = 0; i < 15; i++)
+  for(int j = 0; j < 15; j++)
+  for(int k = 0; k < 15; k++){
 
 		chunks.emplace_back(ivec3(i, j, k));
     Model* model = new Model(chunkmesh::greedy, &chunks.back());
@@ -71,7 +71,6 @@ int main( int argc, char* args[] ) {
 
 	Tiny::loop([&](){ /* ... */
 
-		/*
 
 		if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
@@ -96,8 +95,6 @@ int main( int argc, char* args[] ) {
 		 at = 0.99f*at + 0.01f*float(t);
 
 		 std::cout<<"AVERAGE ROLL: "<<at/chunks.size()<<std::endl;
-
-		 */
 
 	});
 

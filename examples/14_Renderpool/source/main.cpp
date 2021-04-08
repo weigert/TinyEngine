@@ -24,10 +24,10 @@ int main( int argc, char* args[] ) {
   cam::init(3.5, cam::ORTHO);
 	cam::update();
 
-	const int N = 5*5*5*6;	//6 Face Orientations per Chunk
+	const int N = 15*15*15*6;	//6 Face Orientations per Chunk
 
 	Chunk::LOD = 1;
-	Chunk::QUAD = 12000;
+	Chunk::QUAD = 3600;
 	//Chunk::LOD = 2;
 	//Chunk::QUAD = 3600;
 	//Chunk::LOD = 4;
@@ -43,9 +43,9 @@ int main( int argc, char* args[] ) {
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-		for(int i = 0; i < 5; i++)
-		for(int j = 0; j < 5; j++)
-		for(int k = 0; k < 5; k++){
+		for(int i = 0; i < 15; i++)
+		for(int j = 0; j < 15; j++)
+		for(int k = 0; k < 15; k++){
 
 			chunks.emplace_back(ivec3(i,j,k));
 			chunkmesh::greedypool(&chunks.back(), &vertpool);
@@ -141,7 +141,6 @@ int main( int argc, char* args[] ) {
 
 	//	if(Tiny::benchmark) std::cout<<Tiny::average<<std::endl;
 
-/*
 		int r;
 		int t = 0;
 
@@ -167,9 +166,6 @@ int main( int argc, char* args[] ) {
 		at = 0.99f*at + 0.01f*t;
 		std::cout<<"AVERAGE ROLL: "<<at/chunks.size()<<std::endl;
 
-*/
-
-/*
 		std::cout<<std::endl<<"Mask and Order ";
 		timer::benchmark<std::chrono::microseconds>([&](){
 
@@ -184,10 +180,7 @@ int main( int argc, char* args[] ) {
 		});
 
 		vertpool.update();
-		//	});
-
-
-*/
+			});
 
 
 

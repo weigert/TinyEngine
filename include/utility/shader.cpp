@@ -51,17 +51,16 @@ public:
 };
 
 void Shader::setup(slist _s){
-  boost::filesystem::path data_dir(boost::filesystem::current_path());
   std::vector<std::string> s = _s;
 
   if(s.size() == 2){
-    vertexShader   = addProgram((data_dir/s[0]).string(), GL_VERTEX_SHADER);
-    fragmentShader = addProgram((data_dir/s[1]).string(), GL_FRAGMENT_SHADER);
+    vertexShader   = addProgram(s[0], GL_VERTEX_SHADER);
+    fragmentShader = addProgram(s[1], GL_FRAGMENT_SHADER);
   }
   else if(s.size() == 3){
-    vertexShader   = addProgram((data_dir/s[0]).string(), GL_VERTEX_SHADER);
-    geometryShader = addProgram((data_dir/s[1]).string(), GL_GEOMETRY_SHADER);
-    fragmentShader = addProgram((data_dir/s[2]).string(), GL_FRAGMENT_SHADER);
+    vertexShader   = addProgram(s[0], GL_VERTEX_SHADER);
+    geometryShader = addProgram(s[1], GL_GEOMETRY_SHADER);
+    fragmentShader = addProgram(s[2], GL_FRAGMENT_SHADER);
   }
   else std::cout<<"Number of shaders not recognized."<<std::endl;
 }
@@ -110,16 +109,30 @@ void Shader::use(){
 }
 
 std::string Shader::readGLSLFile(std::string file, int32_t &size){
+  boost::filesystem::path data_dir(boost::filesystem::current_path());
+  boost::filesystem::path local_dir = boost::filesystem::path(file).parent_path();
+
   std::ifstream t;
   std::string fileContent;
+  std::string line;
 
-  t.open(file);     //Read GLSL File Contents
+  t.open((data_dir/file).string()); //Read GLSL File Contents
   if(t.is_open()){
     std::stringstream buffer;
-    buffer << t.rdbuf();
+    while(!t.eof()){
+      getline(t, line);
+      if(line.substr(0, 9) == "#include "){
+        int includesize = 0;
+        buffer << readGLSLFile((local_dir/line.substr(9)).string(), includesize);
+      }
+      else{
+        buffer << line;
+        buffer << "\n";
+      }
+    }
     fileContent = buffer.str();
   }
-  else std::cout<<"File opening failed"<<std::endl;
+  else std::cout<<"File opening \""<<file<<"\" failed"<<std::endl;
   t.close();
 
   size = fileContent.length();  //Set the Size

@@ -40,6 +40,7 @@ bool View::init(std::string _name, int W, int H){
   if(ccw) glFrontFace(GL_CCW);
   else glFrontFace(GL_CW);
   glLineWidth(lineWidth);
+  glPointSize(pointSize);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   std::cout<<glGetString(GL_VERSION)<<std::endl;

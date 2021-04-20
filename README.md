@@ -159,6 +159,7 @@ Compiled using g++ on Ubuntu 18/20 LTS.
     - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
     - GLEW:    apt-get install libglew-dev
     - Boost:   apt-get install libboost-system-dev libboost-filesystem-dev
+    - GLM:     apt-get install libglm-dev
 
     - DearImGUI (already included!)
     - g++ (compiler)

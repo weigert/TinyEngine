@@ -1,12 +1,31 @@
 #version 130
-in vec2 in_Quad;
-in vec2 in_Tex;
-out vec2 ex_Tex;
+in vec2 ex_Tex;
+out vec4 fragColor;
 
-//Position the Billboard in space!
-uniform mat4 model;
+uniform sampler2D imageTexture;
+uniform sampler2D blurTexture;
+
+//Effect Parameters
+uniform int index;
+uniform int res;
+uniform int bits;
+
+vec4 none(){
+  return texture(imageTexture, ex_Tex);
+}
+
+vec4 pixelate(){
+  return texture(imageTexture, floor(ex_Tex*vec2(res))/vec2(res));
+}
+
+vec4 bitreduce(){
+  vec4 color = texture(imageTexture, ex_Tex);
+  return vec4(round(color.xyz*vec3(bits))/vec3(bits), 1.0);
+}
 
 void main(){
-  ex_Tex = in_Tex;
-  gl_Position = model*vec4(in_Quad, -1.0, 1.0);
+  //Get the fragment color from the effect choice
+  if(index == 1) fragColor = pixelate();
+  else if(index == 2) fragColor = bitreduce();
+  else fragColor = none();
 }

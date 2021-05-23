@@ -4,7 +4,6 @@
 
 #include "poisson.h"
 #include "model.h"
-#include <noise/noise.h>
 #include <chrono>
 
 /*
@@ -80,10 +79,13 @@ int main( int argc, char* args[] ) {
 	Texture tex(image::load("starry_night.png")); //Load Texture with Image
 
 	//Prepare Noise for jiggling the centroids
-	noise::module::Perlin perlin;
-  	perlin.SetOctaveCount(4);
-  	perlin.SetFrequency(1.0);
-  	perlin.SetPersistence(0.5);
+	FastNoiseLite noise;
+  noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+  noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+  noise.SetFractalOctaves(8.0f);
+  noise.SetFractalLacunarity(2.0f);
+  noise.SetFractalGain(0.6f);
+  noise.SetFrequency(1.0);
 
 	int n = 0;
 	float us = 0.0; //Rolling average execution time calculation in microseconds (us)
@@ -151,8 +153,8 @@ int main( int argc, char* args[] ) {
 
 			//Jiggle Centroids using Continuous Noise
 			for(unsigned int i = 0; i < centroids.size(); i++){
-				offset[i].x = centroids[i].x + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, t);
-				offset[i].y = centroids[i].y + 0.5f*R*perlin.GetValue(centroids[i].x, centroids[i].y, -t);
+				offset[i].x = centroids[i].x + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
+				offset[i].y = centroids[i].y + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, -t);
 			}
 
 		//Centroids have moved, so we update the instance buffer

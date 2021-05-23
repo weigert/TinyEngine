@@ -1,10 +1,11 @@
-#include "noise/noise.h"
+#include "FastNoiseLite.h"
 
 int SEED = 10;
 double scale = 30.0;
 double heightmap[GRIDSIZE][GRIDSIZE] = {0.0};
 glm::vec2 dim = glm::vec2(GRIDSIZE);
-noise::module::Perlin perlin;
+
+
 std::function<void(Model* m)> _construct;
 
 void setup(){
@@ -12,14 +13,18 @@ void setup(){
   srand(time(NULL));
   SEED = rand();
 
-  perlin.SetOctaveCount(8);
-  perlin.SetFrequency(1.0);
-  perlin.SetPersistence(0.6);
+  FastNoiseLite noise;
+  noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+  noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+  noise.SetFractalOctaves(8.0f);
+  noise.SetFractalLacunarity(2.0f);
+  noise.SetFractalGain(0.6f);
+  noise.SetFrequency(1.0);
 
   float min, max = 0.0;
   for(int i = 0; i < dim.x; i++){
     for(int j = 0; j < dim.y; j++){
-      heightmap[i][j] = perlin.GetValue(i*(1.0/dim.x), j*(1.0/dim.y), SEED);
+      heightmap[i][j] = noise.GetNoise((float)(i)*(1.0f/dim.x), (float)(j)*(1.0f/dim.y), (float)(SEED%1000));
       if(heightmap[i][j] > max) max = heightmap[i][j];
       if(heightmap[i][j] < min) min = heightmap[i][j];
     }

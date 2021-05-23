@@ -5,6 +5,7 @@ in vec2 ex_Centroid;
 flat in vec3 ex_Color;
 out vec4 fragColor;
 
+flat in int ex_InstanceID;
 uniform float R;
 
 uniform bool drawcenter;

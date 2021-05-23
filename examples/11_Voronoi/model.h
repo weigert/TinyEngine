@@ -1,4 +1,5 @@
 //GPU Accelerated Voronoi Controller Stuff
+#include "FastNoiseLite.h"
 
 bool drawcenter = false;
 

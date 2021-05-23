@@ -5,6 +5,7 @@ layout (location = 2) in vec2 in_Centroid;
 out vec2 ex_Quad;
 flat out vec3 ex_Color;
 out vec2 ex_Centroid;
+flat out int ex_InstanceID;
 
 uniform float R;
 
@@ -20,4 +21,5 @@ void main(){
   ex_Color = color(gl_InstanceID);
   ex_Quad =  R*in_Quad+in_Centroid;
   gl_Position = vec4(ex_Quad, 0.0, 1.0);
+  ex_InstanceID = gl_InstanceID;
 }

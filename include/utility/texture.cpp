@@ -51,6 +51,7 @@ void Texture::raw(SDL_Surface* s, tfunc param){  //Generate a texture from raw s
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glTexImage2D(type, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
   (param)(this); //Call the parameter setting function!
+  SDL_FreeSurface(s);
 }
 
 //Default parameter setting function!

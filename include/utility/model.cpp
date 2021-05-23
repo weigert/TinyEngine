@@ -102,6 +102,24 @@ struct Cube: Primitive{
   }
 };
 
+struct Gizmo: Primitive{
+  GLfloat vert[18] = {
+    0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 1.0
+  };
+  GLfloat tex [18] = {
+    1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 1.0, 0.0, 0.0, 1.0
+  };
+  Gizmo():Primitive(){
+    bind(0, 18, 3, &vert[0]);
+    bind(1, 18, 3, &tex[0]);
+    SIZE = 6;
+  }
+};
+
 class Model: public Primitive {
 public:
   Model():Primitive(){

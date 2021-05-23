@@ -30,6 +30,7 @@ class View {
     bool ccw = true;
     unsigned int antialias = 16;
     float lineWidth = 1.0f;
+    float pointSize = 1.0f;
 };
 
 #endif

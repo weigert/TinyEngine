@@ -1,6 +1,10 @@
+#ifndef TINYENGINE_PARSE
+#define TINYENGINE_PARSE
+
 #include <map>
 #include <unordered_set>
 #include <string>
+#include <vector>
 
 namespace parse{
 using namespace std;
@@ -35,3 +39,5 @@ void get(int n, char* args[]){
 }
 
 }
+
+#endif

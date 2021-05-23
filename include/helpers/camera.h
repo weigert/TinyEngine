@@ -14,6 +14,7 @@ using namespace glm;
   vec3 pos = vec3(cos(glm::radians(rot)), sin(glm::radians(roty)), sin(glm::radians(rot)));
   vec3 look = vec3(0);
 
+  float zoomrate = 0.5f;
   float moverate = 1.0f;
   float turnrate = 1.5f;
 
@@ -94,10 +95,10 @@ using namespace glm;
     moved = false;
 
     if(Tiny::event.scroll.posy)
-      cam::zoom(0.5);
+      cam::zoom(cam::zoomrate);
 
     if(Tiny::event.scroll.negy)
-      cam::zoom(-0.5);
+      cam::zoom(-cam::zoomrate);
 
     if(Tiny::event.scroll.posx)
       cam::pan(cam::turnrate);

@@ -159,6 +159,10 @@ Compiled using g++ on Ubuntu 18/20 LTS.
     - DearImGUI (already included!)
     - g++ (compiler)
 
+In a single command:
+
+		sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev
+
 Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS). It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
 
 ## License

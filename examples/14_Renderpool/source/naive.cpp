@@ -39,9 +39,9 @@ int main( int argc, char* args[] ) {
 	std::cout<<"Meshing ";
 	timer::benchmark<std::chrono::microseconds>([&](){
 
-  for(int i = 0; i < 15; i++)
-  for(int j = 0; j < 15; j++)
-  for(int k = 0; k < 15; k++){
+  for(int i = 0; i < 5; i++)
+  for(int j = 0; j < 5; j++)
+  for(int k = 0; k < 5; k++){
 
 		chunks.emplace_back(ivec3(i, j, k));
     Model* model = new Model(chunkmesh::greedy, &chunks.back());

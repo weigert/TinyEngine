@@ -4,9 +4,6 @@ bool View::init(std::string _name, int W, int H){
   enabled = true;
   WIDTH = W; HEIGHT = H;
 
-  //Core OpenGL Profile!
-//  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
 //  if(antialias)
 //    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, antialias);
 
@@ -27,8 +24,7 @@ bool View::init(std::string _name, int W, int H){
   ImGui::CreateContext();
   io = ImGui::GetIO(); (void)io;
   ImGui_ImplSDL2_InitForOpenGL(gWindow, gContext);
-//  ImGui_ImplOpenGL3_Init("#version 330 core");
-  ImGui_ImplOpenGL3_Init("#version 330 core");
+  ImGui_ImplOpenGL3_Init("#version 130");
   ImGui::StyleColorsCustom();
 
 //  if(antialias)

@@ -1,4 +1,4 @@
-#version 330
+#version 130
 
 in vec2 ex_Tex;
 

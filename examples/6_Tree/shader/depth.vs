@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 in vec3 in_Position;
 uniform mat4 model;
 uniform mat4 dvp;

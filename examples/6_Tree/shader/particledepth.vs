@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 in vec3 in_Quad;
 in vec2 in_Tex;
 in mat4 in_Model;

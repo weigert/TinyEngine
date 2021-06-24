@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 in vec2 in_Quad;
 in vec2 in_Tex;
 out vec2 ex_Tex;

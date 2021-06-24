@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 
 in vec4 ex_Color;
 in vec3 ex_Normal;

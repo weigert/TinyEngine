@@ -1,8 +1,8 @@
-#version 330 core
+#version 130
 
-layout (location = 0) in vec3 in_Position;
-layout (location = 1) in vec3 in_Normal;
-layout (location = 2) in vec4 in_Color;
+in vec3 in_Position;
+in vec3 in_Normal;
+in vec4 in_Color;
 
 out vec3 ex_FragPos;
 out vec4 ex_Color;

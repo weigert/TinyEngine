@@ -148,6 +148,16 @@ but also requires linking of all additional dependencies! See the example progra
 
 Compiled using g++ on Ubuntu 18/20 LTS.
 
+#### Compatibility Profile
+
+In case your computer / graphics card does not support the latest versions of OpenGL, you can compile your program by defining the additional macro `TINYENGINE_COMPATIBILITY`, i.e.:
+
+		gcc main.cpp -D TINYENGINE_COMPATIBILITY -o main
+
+This will reduce the version to a compatibility version, reducing some features (i.e. lower GLSL versions), but allowing for 95% of all features to operate normally.
+
+Note that some examples rely on features introduced in OpenGL4+, meaning that the required version of GLSL will not be available. All example programs are reduced to the **minimum necessary version**.
+
 ### Dependencies
 (+ how to install on debian based systems)
 

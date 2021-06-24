@@ -4,8 +4,10 @@ bool View::init(std::string _name, int W, int H){
   enabled = true;
   WIDTH = W; HEIGHT = H;
 
-//  if(antialias)
-//    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, antialias);
+  #ifndef TINYENGINE_COMPATIBILITY
+  if(antialias)
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, antialias);
+  #endif
 
   //Initialize the Window and Context
   gWindow = SDL_CreateWindow(_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
@@ -24,11 +26,18 @@ bool View::init(std::string _name, int W, int H){
   ImGui::CreateContext();
   io = ImGui::GetIO(); (void)io;
   ImGui_ImplSDL2_InitForOpenGL(gWindow, gContext);
+  #ifndef TINYENGINE_COMPATIBILITY
+  ImGui_ImplOpenGL3_Init("#version 330 core");
+  #else
   ImGui_ImplOpenGL3_Init("#version 130");
+  #endif
   ImGui::StyleColorsCustom();
 
-//  if(antialias)
-//  glEnable(GL_MULTISAMPLE);
+  #ifndef TINYENGINE_COMPATIBILITY
+  if(antialias)
+  glEnable(GL_MULTISAMPLE);
+  #endif
+
   glEnable(GL_DEPTH_TEST);        //Setup Global OpenGL State!
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_BLEND) ;

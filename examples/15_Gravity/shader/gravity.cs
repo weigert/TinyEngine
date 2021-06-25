@@ -10,7 +10,7 @@ layout (std430, binding = 1) buffer velocity {
   vec4 v[];
 };
 
-layout (std430, binding = 2) buffer mass {
+layout (std430, binding = 2) readonly buffer mass {
   float m[];
 };
 

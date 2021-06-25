@@ -39,17 +39,18 @@ Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/
 ## Structure
 The main engine interface is wrapped in a namespace `Tiny`. This namespace has three (global) static members, which are its main component classes:
 
-	- View Class (Tiny::view): 	Window handling, rendering, GUI interface
-	- Event Class (Tiny::event): 	Event handling for keyboard and mouse, window resizing
-	- Audio Class (Tiny::audio): 	Audio interface for playing / looping sounds
+	- View Class (Tiny::view):       Window handling, rendering, GUI interface
+	- Event Class (Tiny::event):     Event handling for keyboard and mouse, window resizing
+	- Audio Class (Tiny::audio):     Audio interface for playing / looping sounds
 
 A number of utility classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
 
-	- Texture: 	OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
-	- Shader: 	Load, compile, link and use shader programs (vertex, fragment, geometry) easily, pass SSBO.
-	- Model: 	OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
-	- Target: 	OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
-	- Instance: 	OpenGL instanced rendering wrapper (any Model object, any data). Simply add model buffers and render model instanced.
+	- Texture:      OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
+	- Shader:       Load, compile, link and use shader programs (vertex, fragment, geometry) easily, pass SSBO.
+	- Compute:      Derived from Shader, allows for compute shader dispatching
+	- Model:        OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
+	- Target:       OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
+	- Instance:     OpenGL instanced rendering wrapper (any Model object, any data). Simply add model buffers and render model instanced.
 
 More information can be found on the wiki: [Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
 

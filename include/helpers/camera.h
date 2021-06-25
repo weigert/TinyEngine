@@ -23,7 +23,7 @@ using namespace glm;
   camtype type = PROJ;
 
   //Matrices
-  mat4 proj, view, vp;
+  mat4 proj, view, vp, invview;
 
   //Pathing Matrix Setting
   void move(mat4 v){ view = v; vp = proj*view; }
@@ -31,7 +31,11 @@ using namespace glm;
 
   void update(){
     pos = vec3(cos(glm::radians(roty))*cos(glm::radians(rot)), sin(glm::radians(roty)), cos(glm::radians(roty))*sin(glm::radians(rot)));
-    view = lookAt(look+rad*pos, look, vec3(0,1,0));
+
+    if(type == PROJ) view = lookAt(look+rad*pos, look, vec3(0,1,0));
+    if(type == ORTHO) view = lookAt(look+pos, look, vec3(0,1,0));
+    invview = inverse(view);
+
     vp = proj*view;
   }
 
@@ -42,7 +46,10 @@ using namespace glm;
     if(type == PROJ) proj = glm::perspective(FOV, (float)Tiny::view.WIDTH/(float)Tiny::view.HEIGHT, near, far);
     if(type == ORTHO) proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
 
-    view = lookAt(look+rad*pos, look, vec3(0,1,0));
+    if(type == PROJ) view = lookAt(look+rad*pos, look, vec3(0,1,0));
+    if(type == ORTHO) view = lookAt(look+pos, look, vec3(0,1,0));
+    invview = inverse(view);
+
     vp = proj*view;
   }
 

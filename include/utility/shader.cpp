@@ -15,8 +15,8 @@ public:
     glDeleteProgram(program);
   }
 
-  int addProgram(std::string fileName, GLenum shaderType);  //General Shader Addition
-  std::string readGLSLFile(std::string fileName, int32_t &size); //Read File
+  int addProgram(std::string fileName, GLenum shaderType);        //General Shader Addition
+  std::string readGLSLFile(std::string fileName, int32_t &size);  //Read File
   void compile(GLuint shader);  //Compile and Add File
   void link();                  //Link the entire program
   void error(GLuint s, bool t); //Get Compile/Link Error
@@ -94,7 +94,6 @@ int ShaderBase::addProgram(std::string fileName, GLenum shaderType){
   return shaderID;
 }
 
-
 void ShaderBase::error(GLuint s, bool t){
   int m;
   if(t) glGetShaderiv(s, GL_INFO_LOG_LENGTH, &m);
@@ -123,14 +122,16 @@ template<typename T>
 void ShaderBase::buffer(std::string name, std::vector<T>& buf, bool update){
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo[name]);
   if(update) glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, buf.size()*sizeof(T), &buf[0]);
-  else glBufferData(GL_SHADER_STORAGE_BUFFER, buf.size()*sizeof(T), &buf[0], GL_STATIC_DRAW);
+  else glBufferData(GL_SHADER_STORAGE_BUFFER, buf.size()*sizeof(T), &buf[0], GL_DYNAMIC_COPY);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], ssbo[name]);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 template<typename T>
 void ShaderBase::retrieve(std::string name, std::vector<T>& buf){
-  glGetNamedBufferSubData(ssbo[name], 0, buf.size(), &buf[0]);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo[name]);
+  glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, buf.size()*sizeof(T), &buf[0]);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 /* Uniform Setters */
@@ -273,7 +274,7 @@ public:
     int m;
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &m);
     std::cout<<"Max. Work Groups: "<<m<<std::endl;
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &m);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &m);
     std::cout<<"Max. Local Size: "<<m<<std::endl;
 
   }

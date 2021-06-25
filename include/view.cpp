@@ -40,7 +40,7 @@ bool View::init(std::string _name, int W, int H){
 
   glEnable(GL_DEPTH_TEST);        //Setup Global OpenGL State!
   glDepthFunc(GL_LEQUAL);
-  glEnable(GL_BLEND) ;
+  glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_CULL_FACE);
   if(ccw) glFrontFace(GL_CCW);

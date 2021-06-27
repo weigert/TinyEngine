@@ -52,8 +52,7 @@ void increment(){
 
 void reduce(){
 
-  const int k = 24;
-  int size = (1 << k);
+  int size = pow(2, 24);
 
   std::vector<float> buffer;								          //Create the Empty Buffer
   for(int i = 0; i < size; i++)
@@ -62,20 +61,6 @@ void reduce(){
   std::vector<double> dbuffer;
   for(auto& b: buffer)
     dbuffer.push_back((double)b);
-
-  //Serial
-
-  float sum = 0.0f;
-
-  std::cout<<"Serial Single ";
-  timer::benchmark<std::chrono::microseconds>([&](){
-
-  for(int j = 0; j < size; j++)
-    sum += buffer.at(j);
-
-  });
-
-  std::cout<<"SINGLE DIRECT: "<<std::setprecision(16)<<sum<<std::endl;
 
   double dsum = 0.0;
 
@@ -92,26 +77,38 @@ void reduce(){
 
   //Parallel
 
-  Compute compute("shader/accumulate_binary.cs", {"buff"});		//Create the Compute Shader
-  compute.buffer("buff", buffer);							  //Upload the Buffer
-  compute.use();																//Use the Shader
+  Compute compute("shader/accumulate.cs", {"buff"});		//Create the Compute Shader
+  compute.buffer("buff", buffer);							          //Upload the Buffer
+  compute.use();																        //Use the Shader
 
   std::cout<<"Parallel ";
   timer::benchmark<std::chrono::microseconds>([&](){
 
-  for(int i = 0; i < k; i++){
-    compute.uniform("stride", size/(2 << i));
-    int N = size/1024/(2 << i);
-    if(N < 1) N = 1;
-    compute.dispatch(N);
+  int K = 4;                                            //K-Ary Merge
+  int rest = size%K;
+  compute.uniform("K", K);
+  compute.uniform("rest", rest);
+
+  for(int stride = size / K; stride >= 1; stride /= K){
+
+    compute.uniform("stride", stride);              //Set the Stride, Which is Now the Remaining Size
+    compute.dispatch(1+stride/1024);
+
+    rest = stride%K;
+    compute.uniform("rest", rest);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
   }
 
   compute.retrieve("buff", buffer);
 
+  //Check if Remainder is non-zero
+  if(rest > 0)
+  for(int i = 1; i < rest; i++)
+    buffer[0] += buffer[i];
+
   });
 
-//  for(int i = 0; i < 50; i++)
   std::cout<<"SINGLE PARALLEL: "<<std::setprecision(16)<<buffer[0]<<std::endl;
 
 }

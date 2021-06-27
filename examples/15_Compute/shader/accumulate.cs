@@ -13,15 +13,23 @@ uniform int rest;
 void main(){
 
   uint index = gl_GlobalInvocationID.x;
-  if(index > stride) return;           //We only operate on the elements within the stride
 
-  float t = 0.0f;
-  for(int i = 0; i < K; i++)
-    t += A[index + i*stride];
-  A[index] = t;
+  if(index > stride)                  //Only Accumulate within Stride
+    return;
 
-  if(index == 0)
+  if(stride > 0)                      //Accumulate with Stride
+  for(int i = 1; i < K; i++)
+    A[index] += A[index + i*stride];
+
+  if(index > 0)                       //Accumulate Remainder at 0
+    return;
+
+  if(stride > 0)                      //Remainder at End
   for(int i = 0; i < rest; i++)
-    A[index] += A[K*stride+i];
+    A[0] += A[K*stride+i];
+
+  else
+  for(int i = 1; i < rest; i++)       //Remainder at Beginning
+    A[0] += A[K*stride+i];
 
 };

@@ -52,7 +52,7 @@ void increment(){
 
 void reduce(){
 
-  int size = pow(2, 24);
+  int size = pow(2, 20);
 
   std::vector<float> buffer;								          //Create the Empty Buffer
   for(int i = 0; i < size; i++)
@@ -84,28 +84,22 @@ void reduce(){
   std::cout<<"Parallel ";
   timer::benchmark<std::chrono::microseconds>([&](){
 
-  int K = 4;                                            //K-Ary Merge
-  int rest = size%K;
-  compute.uniform("K", K);
-  compute.uniform("rest", rest);
+  int K = 64;               //K-Ary Merge
+  compute.uniform("K", K);  //Set Uniform
 
-  for(int stride = size / K; stride >= 1; stride /= K){
+  for(int rest = size%K, stride = size/K;
+      stride >= 1 || rest > 0;
+      rest = stride%K, stride /= K){
 
-    compute.uniform("stride", stride);              //Set the Stride, Which is Now the Remaining Size
-    compute.dispatch(1+stride/1024);
+    compute.uniform("rest", rest);                  //Set Uniforms
+    compute.uniform("stride", stride);              //
+    compute.dispatch(1+stride/1024);                //Round-Up Division
 
-    rest = stride%K;
-    compute.uniform("rest", rest);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   }
 
   compute.retrieve("buff", buffer);
-
-  //Check if Remainder is non-zero
-  if(rest > 0)
-  for(int i = 1; i < rest; i++)
-    buffer[0] += buffer[i];
 
   });
 

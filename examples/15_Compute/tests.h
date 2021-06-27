@@ -5,7 +5,7 @@
 */
 
 #include <iomanip>      // std::setprecision
-
+#include <numeric>
 
 //Increment Test: Take a vector of a certain size, increment all elements!
 
@@ -54,44 +54,52 @@ void reduce(){
 
   const int k = 24;
   int size = (1 << k);
-  std::cout<<"Size: "<<size<<std::endl;
-  if(size > 65535) std::cout<<"Exceeded Max Work-Group Size"<<std::endl;
 
-  std::vector<int> buffer;								  //Create the Empty Buffer
+  std::vector<float> buffer;								          //Create the Empty Buffer
   for(int i = 0; i < size; i++)
-    buffer.push_back(rand()%100);                      //Random Elements
+    buffer.push_back((float)(rand()%100)/100.0f);     //Random Elements
+
+  std::vector<double> dbuffer;
+  for(auto& b: buffer)
+    dbuffer.push_back((double)b);
 
   //Serial
 
-  int sum = 0;
+  float sum = 0.0f;
 
-  std::cout<<"Serial ";
+  std::cout<<"Serial Single ";
   timer::benchmark<std::chrono::microseconds>([&](){
 
   for(int j = 0; j < size; j++)
-    sum += buffer[j];
+    sum += buffer.at(j);
 
   });
 
-  std::cout<<"RESULT: "<<std::setprecision(16)<<sum<<std::endl;
+  std::cout<<"SINGLE DIRECT: "<<std::setprecision(16)<<sum<<std::endl;
+
+  double dsum = 0.0;
+
+  //Serial Reduce Analogon
+  std::cout<<"Serial Double ";
+  timer::benchmark<std::chrono::microseconds>([&](){
+
+    for(int j = 0; j < size; j++)
+      dsum += dbuffer.at(j);
+
+  });
+
+  std::cout<<"DOUBLE DIRECT: "<<std::setprecision(16)<<dsum<<std::endl;
 
   //Parallel
 
-  std::vector<int> result(1, 0);
-
-  Compute compute("shader/sum.cs", {"buffA", "buffB"});		 //Create the Compute Shader
-  compute.use();																	         //Use the Shader
-
-  compute.buffer("buffA", buffer);									       //Upload the Buffer
-  compute.buffer("buffB", buffer);									       //Upload the Buffer
-
-  int val = 0;
+  Compute compute("shader/accumulate_binary.cs", {"buff"});		//Create the Compute Shader
+  compute.buffer("buff", buffer);							  //Upload the Buffer
+  compute.use();																//Use the Shader
 
   std::cout<<"Parallel ";
   timer::benchmark<std::chrono::microseconds>([&](){
 
   for(int i = 0; i < k; i++){
-    compute.uniform("flip", i%2);
     compute.uniform("stride", size/(2 << i));
     int N = size/1024/(2 << i);
     if(N < 1) N = 1;
@@ -99,11 +107,12 @@ void reduce(){
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   }
 
-  compute.retrieve("buffA", val, 0);
+  compute.retrieve("buff", buffer);
 
   });
 
-  std::cout<<"RESULT: "<<std::setprecision(16)<<val<<std::endl;
+//  for(int i = 0; i < 50; i++)
+  std::cout<<"SINGLE PARALLEL: "<<std::setprecision(16)<<buffer[0]<<std::endl;
 
 }
 

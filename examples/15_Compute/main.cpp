@@ -1,23 +1,16 @@
 #include <TinyEngine/TinyEngine>
 
-#define SIZE 8192
-#define ITER 10000
-
-#include "tests.h"
+#include "compute.h"
 
 int main( int argc, char* args[] ){
 
-	Tiny::init(); //Initialize the Headless OpenGL Context
+	Tiny::init(); 					//Initialize the Headless OpenGL Context
 
-	//Increment Test
-	std::cout<<"Increment Test: "<<std::endl;
-	increment();
+	//increment();						//Perform Increment Test
+	//accumulate(); 					//Perform Reduction Test
+	gausstransform();				//Perform Gauss Transform Test
 
-	std::cout<<"Reduction Test: "<<std::endl;
-	reduce();
-
-
-	Tiny::quit();
+	Tiny::quit();						//Elegantly Quit TinyEngine
 
 	return 0;
 

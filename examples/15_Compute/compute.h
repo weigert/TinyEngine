@@ -8,21 +8,41 @@ Examples:
 Implemented:
 1. Parallel Operation on large vector
 2. Accumulation over a large vector
-
-To-Do:
-
-3. 2D Accumulation, along some dimension?
-
-
-
+3. Gauss Transform with Normalization
+4. Matrix-Matrix Multiply
 
 */
+
+#include <Eigen/Dense>
 
 #include <iomanip> // std::setprecision
 
 #define SIZE 65536
 #define BIGSIZE (pow(2,24))
 #define ITER 10000
+
+class CacheFlusher{
+public:
+    using Size = long long int;
+    CacheFlusher(Size size = 1<<26 /* 64 MB */) :
+        size(size),
+        buf(new volatile unsigned char[size])
+    {}
+
+    ~CacheFlusher(){
+        delete[] buf;
+    }
+
+    void flush(){
+      for(Size i = 0; i < size; ++i)
+        buf[i] += i;
+    }
+
+private:
+    const Size size {0};
+    volatile unsigned char *buf;
+};
+
 
 void increment(){
 
@@ -288,11 +308,13 @@ void gausstransform(){
 
 void matrixmatrix(){
 
+  CacheFlusher cacheFlusher;
+
   std::cout<<"Launching Matrix-Matrix Multiply Test..."<<std::endl;
 
-  int N = 1024;
-  int K = 1024;
-  int M = 1024;
+  int N = 1024*8;
+  int K = 1024*8;
+  int M = 4;
 
   //Create the Buffers
   float* A = new float[N*K];  //Matrix A
@@ -307,7 +329,9 @@ void matrixmatrix(){
   for(int i = 0; i < K*M; i++)
     R[i] = 0.0f;
 
-  //Serial
+  /* //Too Damn Slow
+
+  //Serial Naive
 
   std::cout<<"Serial Naive ";
   timer::benchmark<std::chrono::microseconds>([&](){
@@ -326,7 +350,10 @@ void matrixmatrix(){
   std::cout<<"Result: "<<R[1]<<std::endl;
   std::cout<<"Result: "<<R[M]<<std::endl;
 
+  */
+
   //Parallel
+
   Compute::buffer({"matrixA", "matrixB", "result"});
   Compute::buffer("matrixA", A, N*K);
   Compute::buffer("matrixB", B, K*M);
@@ -336,6 +363,10 @@ void matrixmatrix(){
   //Define Shaders and their Interfaces
   Compute compute("shader/matmult.cs", {"matrixA", "matrixB", "result"});
 
+  //const int BS = 2;
+
+  glFinish();
+
   std::cout<<"Parallel ";
   timer::benchmark<std::chrono::microseconds>([&](){
 
@@ -343,8 +374,9 @@ void matrixmatrix(){
   compute.uniform("N", N);
   compute.uniform("K", K);
   compute.uniform("M", M);
+  //compute.uniform("BS", BS);
 
-  compute.dispatch(N, M/1024);
+  compute.dispatch(N/16, M/4);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   Compute::retrieve("result", R, N*M);
@@ -354,6 +386,26 @@ void matrixmatrix(){
   std::cout<<"Result: "<<R[0]<<std::endl;
   std::cout<<"Result: "<<R[1]<<std::endl;
   std::cout<<"Result: "<<R[M]<<std::endl;
+
+  //Serial Eigen
+
+  cacheFlusher.flush();
+
+  Eigen::Map<Eigen::Matrix<float,-1,-1,Eigen::RowMajor>> AM(A,N,K);
+  Eigen::Map<Eigen::Matrix<float,-1,-1,Eigen::RowMajor>> BM(B,K,M);
+  Eigen::Map<Eigen::Matrix<float,-1,-1,Eigen::RowMajor>> RM(R,N,M);
+
+  std::cout<<"Serial Eigen ";
+  timer::benchmark<std::chrono::microseconds>([&](){
+
+    RM = AM*BM;
+
+  });
+
+  std::cout<<"Result: "<<RM(0,0)<<std::endl;
+  std::cout<<"Result: "<<RM(0,1)<<std::endl;
+  std::cout<<"Result: "<<RM(1,0)<<std::endl;
+
 
   std::cout<<std::endl;
   delete[] A, B, R;

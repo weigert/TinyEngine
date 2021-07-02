@@ -136,8 +136,8 @@ void gausstransform(){
 
   std::cout<<"Launching Gauss Tranform Test..."<<std::endl;
 
-  int N = 4*1024;
-  int M = 4*1024;
+  int N = 1024*4;
+  int M = 1024*4;
 
   std::vector<glm::vec4> pointsetA;   //Pointset A
   std::vector<glm::vec4> pointsetB;   //Pointset B
@@ -169,7 +169,7 @@ void gausstransform(){
   //Serial
 
   std::cout<<"Serial ";
-  timer::benchmark<std::chrono::microseconds>([&](){
+  timer::benchmark<std::chrono::milliseconds>([&](){
 
   for(int m = 0; m < M; m++){
 
@@ -194,6 +194,9 @@ void gausstransform(){
   std::cout<<"Result: "<<P[0]<<std::endl;
   std::cout<<"Result: "<<PX[0]<<std::endl;
   std::cout<<"Result: "<<PY[0]<<std::endl;
+  std::cout<<"Result: "<<P[1]<<std::endl;
+  std::cout<<"Result: "<<PX[1]<<std::endl;
+  std::cout<<"Result: "<<PY[1]<<std::endl;
 
   //Parallel
 
@@ -207,24 +210,19 @@ void gausstransform(){
   for(int n = 0; n < N; n++)
     P[m*N+n] = 0.0f;
 
+  //Define SSBOs
+  Compute::buffer({"pointsetA", "pointsetB", "probability", "vector"});
+  Compute::buffer("pointsetA", pointsetA);
+  Compute::buffer("pointsetB", pointsetB);
+  Compute::buffer("probability", (float*)NULL, N*M);
+  Compute::buffer("vector", (float*)NULL, (M>N)?M:N);   //Empty Vector!
+
+  //Define Shaders and their Interfaces
   Compute compute("shader/gausstransform.cs", {"pointsetA", "pointsetB", "probability"});
-  compute.buffer("pointsetA", pointsetA);
-  compute.buffer("pointsetB", pointsetB);
-  compute.buffer("probability", (float*)NULL, N*M);
-
-  Compute accumulate("shader/2Daccumulate.cs", {"vector"});
-  accumulate.buffer("vector", (float*)NULL, (M>N)?M:N);   //Empty Vector!
-
-  //add the probability buffer to accumulate too
-
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ShaderBase::ssbo["probability"]);
-  glShaderStorageBlockBinding(accumulate.program, glGetProgramResourceIndex(compute.program, GL_SHADER_STORAGE_BLOCK, "probability"), ShaderBase::sbpi["probability"]);
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ShaderBase::sbpi["probability"], ShaderBase::ssbo["probability"]);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
+  Compute accumulate("shader/2Daccumulate.cs", {"vector", "probability"});
 
   std::cout<<"Parallel ";
-  timer::benchmark<std::chrono::microseconds>([&](){
+  timer::benchmark<std::chrono::milliseconds>([&](){
 
   //Execute N-N Interaction
 
@@ -236,14 +234,16 @@ void gausstransform(){
   compute.uniform("T", T);
 
   compute.dispatch(N/32, M/32);
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   accumulate.use();
 
-  accumulate.uniform("DY", N);
-  accumulate.uniform("DX", M);
+  accumulate.uniform("DX", N);
+  accumulate.uniform("DY", M);
 
   //Sum Z over Minor Dimension
   accumulate.uniform("set", bias);
+
   accumulate.uniform("operation", 0);
   accumulate.uniform("minordim", true);
   accumulate.dispatch(M/1024);
@@ -254,29 +254,106 @@ void gausstransform(){
   accumulate.dispatch(M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+  Compute::retrieve("probability", P, N*M);
+
   accumulate.uniform("set", 0.0);
+
   accumulate.uniform("operation", 0);
   accumulate.uniform("minordim", true);
   accumulate.dispatch(M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  accumulate.retrieve("vector", PY, M);
+  Compute::retrieve("vector", PY, M);
 
   accumulate.uniform("operation", 0);
   accumulate.uniform("minordim", false);
   accumulate.dispatch(N/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  accumulate.retrieve("vector", PX, N);
-  accumulate.retrieve("probability", P, N*M);
+  Compute::retrieve("vector", PX, N);
 
   });
 
   std::cout<<"Result: "<<P[0]<<std::endl;
   std::cout<<"Result: "<<PX[0]<<std::endl;
   std::cout<<"Result: "<<PY[0]<<std::endl;
+  std::cout<<"Result: "<<P[M]<<std::endl; //Note: P is transposed
+  std::cout<<"Result: "<<PX[1]<<std::endl;
+  std::cout<<"Result: "<<PY[1]<<std::endl;
 
   delete[] P, PX, PY;
   std::cout<<std::endl;
+
+}
+
+void matrixmatrix(){
+
+  std::cout<<"Launching Matrix-Matrix Multiply Test..."<<std::endl;
+
+  int N = 1024;
+  int K = 1024;
+  int M = 1024;
+
+  //Create the Buffers
+  float* A = new float[N*K];  //Matrix A
+  float* B = new float[K*M];  //Matrix B
+  float* R = new float[N*M];  //Result Matrix
+
+  //Fill the Buffers
+  for(int i = 0; i < N*K; i++)
+    A[i] = (float)(rand()%1000)/1000.0f;
+  for(int i = 0; i < K*M; i++)
+    B[i] = (float)(rand()%1000)/1000.0f;
+  for(int i = 0; i < K*M; i++)
+    R[i] = 0.0f;
+
+  //Serial
+
+  std::cout<<"Serial Naive ";
+  timer::benchmark<std::chrono::microseconds>([&](){
+
+    for (int i = 0; i < N; i++){
+      for (int j = 0; j < M; j++){
+        for (int p = 0; p < K; p++) {
+          R[i*M+j] += A[i*K+p]*B[p*M+j];
+        }
+      }
+    }
+
+  });
+
+  std::cout<<"Result: "<<R[0]<<std::endl;
+  std::cout<<"Result: "<<R[1]<<std::endl;
+  std::cout<<"Result: "<<R[M]<<std::endl;
+
+  //Parallel
+  Compute::buffer({"matrixA", "matrixB", "result"});
+  Compute::buffer("matrixA", A, N*K);
+  Compute::buffer("matrixB", B, K*M);
+  Compute::buffer("result", (float*)R, N*M);
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+  //Define Shaders and their Interfaces
+  Compute compute("shader/matmult.cs", {"matrixA", "matrixB", "result"});
+
+  std::cout<<"Parallel ";
+  timer::benchmark<std::chrono::microseconds>([&](){
+
+  compute.use();
+  compute.uniform("N", N);
+  compute.uniform("K", K);
+  compute.uniform("M", M);
+  compute.dispatch(N/32, M/32);
+
+  Compute::retrieve("result", R, N*M);
+
+  });
+
+  std::cout<<"Result: "<<R[0]<<std::endl;
+  std::cout<<"Result: "<<R[1]<<std::endl;
+  std::cout<<"Result: "<<R[M]<<std::endl;
+
+  std::cout<<std::endl;
+  delete[] A, B, R;
 
 }

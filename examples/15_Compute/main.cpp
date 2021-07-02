@@ -8,7 +8,8 @@ int main( int argc, char* args[] ){
 
 	//increment();						//Perform Increment Test
 	//accumulate(); 					//Perform Reduction Test
-	gausstransform();				//Perform Gauss Transform Test
+	//gausstransform();				//Perform Gauss Transform Test
+	matrixmatrix();
 
 	Tiny::quit();						//Elegantly Quit TinyEngine
 

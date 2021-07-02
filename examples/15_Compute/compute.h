@@ -312,9 +312,9 @@ void matrixmatrix(){
 
   std::cout<<"Launching Matrix-Matrix Multiply Test..."<<std::endl;
 
-  int N = 1024*8;
-  int K = 1024*8;
-  int M = 4;
+  int N = 1024*4;
+  int K = 1024*4;
+  int M = 1024*4;
 
   //Create the Buffers
   float* A = new float[N*K];  //Matrix A
@@ -374,9 +374,8 @@ void matrixmatrix(){
   compute.uniform("N", N);
   compute.uniform("K", K);
   compute.uniform("M", M);
-  //compute.uniform("BS", BS);
 
-  compute.dispatch(N/16, M/4);
+  compute.dispatch(N/16, M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   Compute::retrieve("result", R, N*M);

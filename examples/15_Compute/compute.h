@@ -343,7 +343,9 @@ void matrixmatrix(){
   compute.uniform("N", N);
   compute.uniform("K", K);
   compute.uniform("M", M);
-  compute.dispatch(N/32, M/32);
+
+  compute.dispatch(N, M/1024);
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   Compute::retrieve("result", R, N*M);
 

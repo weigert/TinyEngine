@@ -97,7 +97,7 @@ using namespace glm;
   }
 
 
-  std::function<void()> handler = [](){
+  std::function<bool()> handler = [](){
 
     moved = false;
 
@@ -144,6 +144,8 @@ using namespace glm;
       moved = true;
       update();
     }
+
+    return moved;
 
   };
 

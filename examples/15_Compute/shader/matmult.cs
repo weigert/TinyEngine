@@ -47,13 +47,9 @@ void main() {
 
 layout(local_size_x = 1, local_size_y = 1024) in;
 
-//uniform int N;
-//uniform int K;
-//uniform int M;
-
-int N = 4096;
-int K = 4096;
-int M = 4096;
+uniform int N;
+uniform int K;
+uniform int M;
 
 const uint BS = 16;
 
@@ -67,9 +63,12 @@ void main() {
   //Iterate over Multiply Direction
   const uint x = gl_GlobalInvocationID.x*BS;
 
-  for(int k = 0; k < K; k++)
-  for(int j = 0; j < BS; j++)
-    r[j] += A[(x+j)*K+k]*B[k*M+gl_LocalInvocationID.y];
+  for(int k = 0; k < K; k++){
+    float By = B[k*M+gl_LocalInvocationID.y];
+    for(int j = 0; j < BS; j++){
+      r[j] += A[(x+j)*K+k]*By;
+    }
+  }
 
   for(int i = 0; i < BS; i++)
     R[(x+i)*M+gl_LocalInvocationID.y] = r[i];

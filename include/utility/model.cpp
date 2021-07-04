@@ -65,6 +65,13 @@ struct Primitive{
   }
 };
 
+struct Point: Primitive{
+  GLfloat vert[3] = {0.0, 0.0, 0.0};
+  Point():Primitive(){
+    bind(0, 3, 3, &vert[0]);
+    SIZE = 1;
+  }
+};
 
 struct Square2D: Primitive{
   GLfloat vert[8] = {-1.0, -1.0,  1.0, -1.0, -1.0,  1.0,  1.0,  1.0};
@@ -166,8 +173,8 @@ public:
     colors.clear();
     indices.clear();
 
-    (constructor)(this);  //Call user-defined constructor
-    update();                //Update VAO / VBO / IBO
+    (constructor)(this);        //Call user-defined constructor
+    update();                   //Update VAO / VBO / IBO
   }
 
   template<typename... T>
@@ -194,7 +201,6 @@ public:
   void add(std::vector<GLfloat>& v, D a);
 };
 
-//Primitive Shapes (Pre-Made)
 template<>
 void Primitive::attrib<GLfloat>(int index, int size){
   glEnableVertexAttribArray(index);

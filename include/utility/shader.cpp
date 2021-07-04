@@ -2,10 +2,9 @@ class ShaderBase {
 public:
 
   GLuint program;     //Shader Program ID
-
   int boundtextures;                            //Texture Indexing
-  std::unordered_map<std::string, GLuint> ssbo; //SSBO Storage
-  std::unordered_map<std::string, GLuint> sbpi; //Shader Binding Point Index
+  static std::unordered_map<std::string, GLuint> ssbo; //SSBO Storage
+  static std::unordered_map<std::string, GLuint> sbpi; //Shader Binding Point Index
 
   ShaderBase(){
     program = glCreateProgram();        //Generate Shader
@@ -13,43 +12,35 @@ public:
 
   ~ShaderBase(){
     glDeleteProgram(program);
+    for(const auto& [id, num]: ssbo)
+      glDeleteBuffers(1, &num);
   }
 
+  static std::string readGLSLFile(std::string fileName, int32_t &size);  //Read File
   int addProgram(std::string fileName, GLenum shaderType);        //General Shader Addition
-  std::string readGLSLFile(std::string fileName, int32_t &size);  //Read File
-  void compile(GLuint shader);  //Compile and Add File
-  void link();                  //Link the entire program
-  void error(GLuint s, bool t); //Get Compile/Link Error
-  void use();                   //Use the program
+  void compile(GLuint shader);          //Compile and Add File
+  void link();                          //Link the entire program
+  void use();                           //Use the program
+  static void error(GLuint s, bool t);  //Get Compile/Link Error
 
-  void addBuffer(std::string name);                                 //General Buffer Addition
-  template<typename T> void buffer(std::string name, std::vector<T>& buf, bool update = false);
-  template<typename T> void retrieve(std::string name, std::vector<T>& buf);
-  template<typename T> void texture(std::string name, const T& t);
+  static void buffer(std::string name); //Define an SSBO by name
+  static void buffer(slist names);      //Define a list of SSBOs
+  void interface(std::string name);     //Add SSBO to permitted interface blocks
+  void interface(slist names);          //Add a list of buffers to interface
+
+  template<typename T> static void buffer(std::string name, T* buf, size_t size, bool update = false);
+  template<typename T> static void buffer(std::string name, std::vector<T>& buf, bool update = false);
+  template<typename T> static void retrieve(std::string name, T* buf, size_t size);
+  template<typename T> static void retrieve(std::string name, std::vector<T>& buf);    //Retrieve Full Buffer
+
   template<typename T> void uniform(std::string name, const T u);
   template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
+  template<typename T> void texture(std::string name, const T& t);
 
 };
 
-void ShaderBase::compile(GLuint shader){
-  glCompileShader(shader);
-  int success;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-  if(success) glAttachShader(program, shader);
-  else        error(shader, true);
-}
-
-void ShaderBase::link(){
-  glLinkProgram(program);
-  int success;
-  glGetProgramiv(program, GL_LINK_STATUS, &success);
-  if(!success) error(program, false);
-}
-
-void ShaderBase::use(){
-  boundtextures = 0;
-  glUseProgram(program);
-}
+std::unordered_map<std::string, GLuint> ShaderBase::ssbo; //SSBO Storage
+std::unordered_map<std::string, GLuint> ShaderBase::sbpi; //Shader Binding Point Index
 
 std::string ShaderBase::readGLSLFile(std::string file, int32_t &size){
   boost::filesystem::path data_dir(boost::filesystem::current_path());
@@ -94,6 +85,26 @@ int ShaderBase::addProgram(std::string fileName, GLenum shaderType){
   return shaderID;
 }
 
+void ShaderBase::compile(GLuint shader){
+  glCompileShader(shader);
+  int success;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+  if(success) glAttachShader(program, shader);
+  else        error(shader, true);
+}
+
+void ShaderBase::link(){
+  glLinkProgram(program);
+  int success;
+  glGetProgramiv(program, GL_LINK_STATUS, &success);
+  if(!success) error(program, false);
+}
+
+void ShaderBase::use(){
+  boundtextures = 0;
+  glUseProgram(program);
+}
+
 void ShaderBase::error(GLuint s, bool t){
   int m;
   if(t) glGetShaderiv(s, GL_INFO_LOG_LENGTH, &m);
@@ -107,23 +118,44 @@ void ShaderBase::error(GLuint s, bool t){
 
 /* Shader Storage Buffer Objects */
 
-void ShaderBase::addBuffer(std::string name){
-  unsigned int b;
-  glGenBuffers(1, &b);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, b);
-  glShaderStorageBlockBinding(program, glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name.c_str()), ssbo.size());
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo.size(), b);
-  sbpi[name] = ssbo.size();
-  ssbo[name] = b;
+void ShaderBase::buffer(std::string name){
+  if(ssbo.find(name) != ssbo.end()) return; //Buffer by this name exists!
+  glGenBuffers(1, &ssbo[name]);
+  sbpi[name] = ssbo.size()-1;
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], ssbo[name]);
+}
+
+void ShaderBase::buffer(slist names){
+  for(auto& l: names) buffer(l);
+}
+
+void ShaderBase::interface(std::string name){
+  buffer(name); //Make sure buffer exists
+  glShaderStorageBlockBinding(program, glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name.c_str()), sbpi[name]);
+}
+
+void ShaderBase::interface(slist names){
+  for(auto& l: names) interface(l);
+}
+
+template<typename T>
+void ShaderBase::buffer(std::string name, T* buf, size_t size, bool update){
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo[name]);
+  if(update) glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, size*sizeof(T), buf);
+  else glBufferData(GL_SHADER_STORAGE_BUFFER, size*sizeof(T), buf, GL_STREAM_READ);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], ssbo[name]);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 template<typename T>
 void ShaderBase::buffer(std::string name, std::vector<T>& buf, bool update){
+  buffer(name, &buf[0], buf.size(), update);
+}
+
+template<typename T>
+void ShaderBase::retrieve(std::string name, T* buf, size_t size){
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo[name]);
-  if(update) glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, buf.size()*sizeof(T), &buf[0]);
-  else glBufferData(GL_SHADER_STORAGE_BUFFER, buf.size()*sizeof(T), &buf[0], GL_DYNAMIC_COPY);
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], ssbo[name]);
+  glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, size*sizeof(T), buf);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -204,6 +236,11 @@ public:
     link();                             //Link the shader program!
   }
 
+  Shader(slist shaders):ShaderBase(){
+    setup(shaders);                     //Add Individual Shaders
+    link();                             //Link the shader program!
+  }
+
   Shader(slist shaders, slist in):ShaderBase(){
     setup(shaders);                     //Add Individual Shaders
     for(auto &n : in)                   //Add all Attributes of Shader
@@ -212,7 +249,7 @@ public:
   }
 
   Shader(slist shaders, slist in, slist buf):Shader(shaders, in){
-    for(auto&b : buf) addBuffer(b);     //Add Storage Buffers to Shader
+    buffer(buf);
   }
 
   ~Shader(){
@@ -251,15 +288,16 @@ public:
   }
 
   Compute(std::string shader, slist buf):Compute(shader){
-    for(auto&b : buf) addBuffer(b);     //Add Storage Buffers to Shader
+    buffer(buf);
   }
 
   ~Compute(){
     glDeleteShader(computeShader);
   }
 
-  void dispatch(glm::vec3 workgroups){
-     glDispatchCompute(workgroups.x, workgroups.y, workgroups.z);
+  void dispatch(int x = 1, int y = 1, int z = 1, bool block = true){
+    glDispatchCompute(x, y, z);
+    if(block) glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   }
 
   static void limits(){

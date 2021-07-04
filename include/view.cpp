@@ -1,7 +1,7 @@
 #include "view.h"
 
 bool View::init(std::string _name, int W, int H){
-  enabled = true;
+  enabled = windowed;
   WIDTH = W; HEIGHT = H;
 
   #ifndef TINYENGINE_COMPATIBILITY
@@ -10,7 +10,10 @@ bool View::init(std::string _name, int W, int H){
   #endif
 
   //Initialize the Window and Context
-  gWindow = SDL_CreateWindow(_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
+  Uint32 windowflags = SDL_WINDOW_OPENGL;
+  if(!windowed) windowflags = windowflags | SDL_WINDOW_HIDDEN;
+  
+  gWindow = SDL_CreateWindow(_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, windowflags);
   if( gWindow == NULL ){
     printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
     return false;

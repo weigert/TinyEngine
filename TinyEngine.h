@@ -2,6 +2,7 @@
 #include <functional>
 #include <initializer_list>
 #include <string>
+#include <csignal>
 using Handle = std::function<void()>;
 using slist = std::initializer_list<std::string>;
 
@@ -48,7 +49,11 @@ static View view;           //Window and Interface  (Requires Initialization)
 static Event event;         //Event Handler
 static Audio audio;         //Audio Processor       (Requires Initialization)
 
-bool window(std::string windowName, int width, int height){ //Open a window
+void sighandler(int signal){
+  event.quit = true;
+}
+
+bool init(){
 
   if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){
     printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
@@ -71,6 +76,24 @@ bool window(std::string windowName, int width, int height){ //Open a window
     printf( "SDL_ttf could not initialize! Error: %s\n", TTF_GetError() );
     return false;
   }
+
+  signal(SIGINT, &sighandler);
+
+  if(!view.windowed && !view.init("TinyEngine OpenGL Context", 0, 0)){ //Open a Dummy Window
+    std::cout<<"Failed to launch OpenGL Context"<<std::endl;
+    return false;
+  }
+
+  return true;
+
+}
+
+bool window(std::string windowName, int width, int height){ //Open a window
+
+  view.windowed = true;
+
+  if(!Tiny::init())
+    return false;
 
   if(!view.init(windowName, width, height)){ //Start the View Class
     std::cout<<"Failed to launch visual interface."<<std::endl;

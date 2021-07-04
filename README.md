@@ -164,7 +164,7 @@ This will reduce the version to a compatibility version, reducing some features 
 Note that some examples rely on features introduced in OpenGL4+, meaning that the required version of GLSL will not be available. All example programs are reduced to the **minimum necessary version**.
 
 ### Dependencies
-(+ how to install on debian based systems)
+(+ how to install on debian / fedora based systems)
 
     - OpenGL3: apt-get install libglu1-mesa-dev
     - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
@@ -177,9 +177,13 @@ Note that some examples rely on features introduced in OpenGL4+, meaning that th
 
 In a single command:
 
-		sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
+	sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
+		
+For systems with `dnf` as package manager:
 
-Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS). It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
+	sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel
+
+Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33). It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
 
 ## License
 MIT License

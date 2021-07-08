@@ -9,7 +9,7 @@ INCLUDEPATH = /usr/local/include
 
 # Compilation Settings
 CC = g++ -std=c++17
-CF = -Wfatal-errors -O3
+CF = -Wfatal-errors -O3 -I$(INCLUDEPATH)
 
 ##########################
 #  TinyEngine Installer  #
@@ -20,7 +20,7 @@ all: setup helpers install
 # Copy Required Header Files to Target Location
 setup:
 			@echo "Copying Core Header Files ...";
-			@if [ ! -d "/usr/local/include/TinyEngine" ]; then mkdir $(INCLUDEPATH)/TinyEngine; fi;
+			@if [ ! -d "$(INCLUDEPATH)/TinyEngine" ]; then mkdir $(INCLUDEPATH)/TinyEngine; fi;
 			@cp TinyEngine.h $(INCLUDEPATH)/TinyEngine/TinyEngine
 			@cp include/audio.h $(INCLUDEPATH)/TinyEngine/Audio
 			@cp include/event.h $(INCLUDEPATH)/TinyEngine/Event
@@ -62,6 +62,6 @@ HELPERS = camera color helper image object timer parse log
 
 helpers:
 			@echo "Copying Helper Header Files ...";
-			@if [ ! -d "/usr/local/include/TinyEngine" ]; then mkdir $(INCLUDEPATH)/TinyEngine; fi;
+			@if [ ! -d "$(INCLUDEPATH)/TinyEngine" ]; then mkdir $(INCLUDEPATH)/TinyEngine; fi;
 			@$(foreach var,$(HELPERS), cp include/helpers/$(var).h $(INCLUDEPATH)/TinyEngine/$(var);)
 			@echo "Done";

@@ -136,7 +136,7 @@ Note that the installation has only been tested on GNU/Linux and install locatio
 #### Building a Project
 Building a project by default only requires inclusion of the TinyEngine header
 
-		#inlude <TinyEngine/TinyEngine>
+		#include <TinyEngine/TinyEngine>
 
 and optionally any helper namespace headers, e.g.
 

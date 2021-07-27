@@ -2,7 +2,7 @@
 in vec2 ex_Tex;
 out vec4 fragColor;
 
-layout (std430, binding = 3) buffer centroids {
+layout (std430, binding = 0) buffer centroids {
   vec2 c[];
 };
 

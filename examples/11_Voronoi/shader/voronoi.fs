@@ -36,8 +36,8 @@ float Ltwist(vec2 a, vec2 b){
 
   const float PI = 3.14159265f;
 
-  const vec2 dir = b-a;
-  const float d = length(dir);
+  vec2 dir = b-a;
+  float d = length(dir);
   float theta = atan(dir.y/dir.x);
 
   if(dir.x < 0)

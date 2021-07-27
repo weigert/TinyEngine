@@ -2,24 +2,28 @@
 
 Small OpenGL based 2D/3D Engine / Wrapper in C++
 
+Supported on GNU/Linux and MacOS
+
 ![Rendering Example Program](screenshots/banner.png)
 Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)
 
 	LINES OF CODE (without unreasonable compression):
 
-		Main File: 103
-		Main Classes: 264
-		Utility Classes: 579
-		Helpers Namespaces: 199
-		Total: 1145
+		Main File: 188
+		Main Classes: 302
+		Utility Classes: 775
+		Helpers Namespaces: 678
+		Core Total: 1265
+		Total: 1943
 
 	History:
 		12. Apr 2020: 885
 		29. Apr 2020: 1116
 		17. May 2020: 1667
 		23. May 2020: 1065
-    01. Aug 2020: 1145
-    21. Feb 2021: 1378
+ 		01. Aug 2020: 1145
+		21. Feb 2021: 1378
+		27. Jul 2021: 1943
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -116,7 +120,7 @@ As of 2021, TinyEngine is built as a statically linked library for easier inclus
 - Easier continuous maintenance and updating
 - Faster compilation times
 
-The installation process occurs in the makefile:
+The installation process occurs in the makefile (valid for all operating systems):
 
 		sudo make setup     #Copy Core Header Files to Install Location
 		sudo make helpers   #Copy Helper Headers
@@ -145,9 +149,9 @@ TinyEngine standalone is linked using:
 
 		-lTinyEngine
 
-but also requires linking of all additional dependencies! See the example programs to see exactly how to link the program (makefile). Note that all makesfiles are identical!
+but also requires linking of all additional dependencies! See the example programs to see exactly how to link the program (makefile). Note that all makesfiles are identical! Different operating systems have slightly different linkage.
 
-Compiled using g++ on Ubuntu 18/20 LTS.
+Compiled using g++ on Ubuntu 18/20 LTS, Fedora 33 and MacOS Big Sur.
 
 #### Compatibility Profile
 
@@ -159,7 +163,9 @@ This will reduce the version to a compatibility version, reducing some features 
 
 Note that some examples rely on features introduced in OpenGL4+, meaning that the required version of GLSL will not be available. All example programs are reduced to the **minimum necessary version**.
 
-### Dependencies
+### Dependencies / Installation
+
+#### Debian-Based Systems (e.g. Ubuntu)
 (+ how to install on debian based systems)
 
     - OpenGL3: apt-get install libglu1-mesa-dev
@@ -172,9 +178,27 @@ Note that some examples rely on features introduced in OpenGL4+, meaning that th
 
 In a single command:
 
-		sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev
+	sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev
+	
+#### Fedora / DNF Package Manager Systems
 
-Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS). It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
+#### MacOS
+
+To install on MacOS, you need to install xcode commandline tools:
+
+	sudo xcode-select --install
+	
+Then, to install the dependencies, I recommend installing [homebrew from here](https://brew.sh) and installing the packages:
+
+	brew update
+	brew upgrade
+	brew install glew sdl2 sdl2_image sdl2_mixer sld2_ttf glm boost
+
+Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs. 
+
+#### Windows
+
+I am currently working on an elegant windows port.
 
 ## License
 MIT License

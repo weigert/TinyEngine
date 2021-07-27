@@ -1,4 +1,4 @@
-#version 130
+#version 330
 in vec4 FragPos;
 
 uniform vec3 lightPos;

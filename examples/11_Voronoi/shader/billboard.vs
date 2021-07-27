@@ -1,4 +1,4 @@
-#version 330 core
+#version 330
 layout (location = 0) in vec2 in_Quad;
 layout (location = 1) in vec2 in_Tex;
 out vec2 ex_Tex;

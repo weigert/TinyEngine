@@ -25,6 +25,7 @@ class View {
     void render();
     void target(glm::vec3 clearcolor, bool clear = true);  //Target main window for drawing
 
+    bool windowed = false;
     bool fullscreen = false;    //Settings
     bool vsync = true;
     bool ccw = true;

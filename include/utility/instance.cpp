@@ -6,9 +6,8 @@ public:
   };
 
   ~Instance(){
-    for(auto& b: instances){
-        glDeleteBuffers(1, &b);
-    }
+    for(auto& b: instances)
+      glDeleteBuffers(1, &b);
   }
 
   Primitive* m;                     //Instanced Render Model (must be derived from primitive)
@@ -20,6 +19,7 @@ public:
   template<typename D> void configBuffer(GLuint instance);
 
   void render(GLenum mode = GL_TRIANGLE_STRIP); //Default because of primitive models
+  void render(GLenum mode, int size);           //Default because of primitive models
 };
 
 template<typename D>
@@ -65,4 +65,9 @@ void Instance::updateBuffer(std::vector<D>& buf, int index){
 void Instance::render(GLenum mode){
   glBindVertexArray(m->vao);
   glDrawArraysInstanced(mode, 0, m->SIZE, SIZE); //Instanced render
+}
+
+void Instance::render(GLenum mode, int size){
+  glBindVertexArray(m->vao);
+  glDrawArraysInstanced(mode, 0, m->SIZE, size); //Instanced render
 }

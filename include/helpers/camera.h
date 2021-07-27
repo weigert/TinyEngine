@@ -69,7 +69,9 @@ using namespace glm;
   }
 
   void tilt(float inc){
-    roty = (roty+inc+360.0f)-(int)((roty+inc+360.0f)/360.0f)*360.0f;
+    roty += inc;
+    if(roty >= 90.0f) roty = 90.0f-inc;
+    if(roty <= -90.0f) roty = -90.0f-inc;
     update();
     moved = true;
   }
@@ -97,7 +99,7 @@ using namespace glm;
   }
 
 
-  std::function<void()> handler = [](){
+  std::function<bool()> handler = [](){
 
     moved = false;
 
@@ -144,6 +146,8 @@ using namespace glm;
       moved = true;
       update();
     }
+
+    return moved;
 
   };
 

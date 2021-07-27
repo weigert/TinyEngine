@@ -1,6 +1,6 @@
 #version 430
 
-layout(local_size_x = 16, local_size_y = 16) in;
+layout(local_size_x = 32, local_size_y = 32) in;
 
 layout (std430, binding = 0) buffer position {
   vec4 p[];
@@ -32,6 +32,8 @@ void main() {
   const uvec3 wsize = gl_WorkGroupSize*gl_NumWorkGroups;
   const uint index = gl_GlobalInvocationID.x*wsize.y+gl_GlobalInvocationID.y;
 
+  if(index > size) return;
+
   vec4 F = vec4(0.0f);
   for(int i = 0; i < size; i++){
 
@@ -43,7 +45,7 @@ void main() {
   }
 
   //Black-Hole
-  F.xyz += G*force(vec3(0), p[index].xyz)*500.0f;
+  F.xyz += G*force(vec3(0), p[index].xyz)*100.0f;
 
   v[index] += dt*F;
   p[index] += dt*v[index];

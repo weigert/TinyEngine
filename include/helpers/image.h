@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_IMAGE
+#define TINYENGINE_IMAGE
+
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -51,6 +54,26 @@ using Handle = function<void()>;
     return s;
   }
 
+  #else
+
+  SDL_Surface* make(function<vec4(int)> handle, vec2 size){
+    SDL_Surface *s = SDL_CreateRGBSurface(0, size.x, size.y, 32, 0, 0, 0, 0);
+    SDL_LockSurface(s);
+
+    unsigned char* img_raw = (unsigned char*)s->pixels; //Raw Data
+
+    for(int i = 0; i < size.x*size.y; i++){
+      vec4 color = (handle)(i);  //Construct from Algorithm
+      *(img_raw+4*i)    = (unsigned char)(255*color.x);
+      *(img_raw+4*i+1)  = (unsigned char)(255*color.y);
+      *(img_raw+4*i+2)  = (unsigned char)(255*color.z);
+      *(img_raw+4*i+3)  = (unsigned char)(255*color.w);
+    }
+
+    SDL_UnlockSurface(s);
+    return s;
+  }
+
   #endif
 
   vec4 color(SDL_Surface* s, int x, int y){
@@ -82,3 +105,5 @@ using Handle = function<void()>;
 
 
 }
+
+#endif

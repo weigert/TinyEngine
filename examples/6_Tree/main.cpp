@@ -14,8 +14,9 @@ int main( int argc, char* args[] ) {
 
 	Tiny::window("Procedural Tree", 1200, 800);
 	cam::look = glm::vec3(0, 100, 0);
-	cam::far = 1200.0f;
+	cam::far = 2000.0f;
 	cam::roty = 25.0f;
+	cam::zoomrate = 10.0f;
 	cam::init(600, cam::PROJ);
 
 	bool paused = false;

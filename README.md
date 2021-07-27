@@ -81,6 +81,10 @@ A simple scene (example program 9) that uses .obj / .mtl files generated in Blen
 
 An example image of a shader-based voronoi texture generator I implemented as a small experiment (example program 11). Lets you do real-time voronoi filters because its very fast. Here seen for N = 2048. See [my blog here here](https://weigert.vsos.ethz.ch/2020/08/01/gpu-accelerated-voronoi-textures-and-filters/).
 
+![Vertex Pooling Voxel Animation](https://github.com/weigert/TinyEngine/blob/master/screenshots/voxels.gif)
+
+A rendering of a dynamic alpha-blended voxel scene which uses a technique called vertex pooling to reduce driver overhead while drawing. See [my blog here](https://weigert.vsos.ethz.ch/2021/04/04/high-performance-voxel-engine/)
+
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.
 
@@ -165,22 +169,28 @@ Note that some examples rely on features introduced in OpenGL4+, meaning that th
 
 ### Dependencies / Installation
 
+Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) and MacOS. It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
+
 #### Debian-Based Systems (e.g. Ubuntu)
-(+ how to install on debian based systems)
 
     - OpenGL3: apt-get install libglu1-mesa-dev
     - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
     - GLEW:    apt-get install libglew-dev
     - Boost:   apt-get install libboost-system-dev libboost-filesystem-dev
+    - GLM:     apt-get install libglm-dev
 
     - DearImGUI (already included!)
     - g++ (compiler)
 
 In a single command:
 
-	sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev
-	
+    sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
+		
 #### Fedora / DNF Package Manager Systems
+	
+For systems with `dnf` as package manager, the dependencies can be installed using:
+
+	sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel
 
 #### MacOS
 
@@ -198,7 +208,7 @@ Note that MacOS only supports a specific OpenGL version, giving access to GLSL v
 
 #### Windows
 
-I am currently working on an elegant windows port.
+I am currently working on an elegant windows port. Stay tuned.
 
 ## License
 MIT License

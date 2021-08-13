@@ -24,9 +24,9 @@ public:
   static void error(GLuint s, bool t);  //Get Compile/Link Error
 
   static void buffer(std::string name); //Define an SSBO by name
-  static void buffer(slist names);      //Define a list of SSBOs
+  static void buffer(std::vector<std::string> names);      //Define a list of SSBOs
   void interface(std::string name);     //Add SSBO to permitted interface blocks
-  void interface(slist names);          //Add a list of buffers to interface
+  void interface(std::vector<std::string> names);          //Add a list of buffers to interface
 
   template<typename T> static void buffer(std::string name, T* buf, size_t size, bool update = false);
   template<typename T> static void buffer(std::string name, std::vector<T>& buf, bool update = false);
@@ -125,7 +125,7 @@ void ShaderBase::buffer(std::string name){
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], ssbo[name]);
 }
 
-void ShaderBase::buffer(slist names){
+void ShaderBase::buffer(std::vector<std::string> names){
   for(auto& l: names) buffer(l);
 }
 
@@ -134,7 +134,7 @@ void ShaderBase::interface(std::string name){
   glShaderStorageBlockBinding(program, glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name.c_str()), sbpi[name]);
 }
 
-void ShaderBase::interface(slist names){
+void ShaderBase::interface(std::vector<std::string> names){
   for(auto& l: names) interface(l);
 }
 
@@ -229,26 +229,26 @@ private:
 public:
 
   template<typename... Args>
-  Shader(slist shaders, slist in):ShaderBase(){
+  Shader(std::vector<std::string> shaders, std::vector<std::string> in):ShaderBase(){
     setup(shaders);                     //Add Individual Shaders
-    for(auto &n : in)                   //Add all Attributes of Shader
-      glBindAttribLocation(program, &n - in.begin(), n.c_str());
+    for(int i = 0; i < in.size(); i++)
+      glBindAttribLocation(program, i, in[i].c_str());
     link();                             //Link the shader program!
   }
 
-  Shader(slist shaders):ShaderBase(){
+  Shader(std::vector<std::string> shaders):ShaderBase(){
     setup(shaders);                     //Add Individual Shaders
     link();                             //Link the shader program!
   }
 
-  Shader(slist shaders, slist in):ShaderBase(){
+  Shader(std::vector<std::string> shaders, std::vector<std::string> in):ShaderBase(){
     setup(shaders);                     //Add Individual Shaders
-    for(auto &n : in)                   //Add all Attributes of Shader
-      glBindAttribLocation(program, &n - in.begin(), n.c_str());
+    for(int i = 0; i < in.size(); i++)
+      glBindAttribLocation(program, i, in[i].c_str());
     link();                             //Link the shader program!
   }
 
-  Shader(slist shaders, slist in, slist buf):Shader(shaders, in){
+  Shader(std::vector<std::string> shaders, std::vector<std::string> in, std::vector<std::string> buf):Shader(shaders, in){
     buffer(buf);
   }
 
@@ -258,7 +258,7 @@ public:
     glDeleteShader(vertexShader);
   }
 
-  void setup(slist shaders){
+  void setup(std::vector<std::string> shaders){
     std::vector<std::string> s = shaders;
 
     if(s.size() == 2){
@@ -287,7 +287,7 @@ public:
     link();                             //Link the shader program!
   }
 
-  Compute(std::string shader, slist buf):Compute(shader){
+  Compute(std::string shader, std::vector<std::string> buf):Compute(shader){
     buffer(buf);
   }
 

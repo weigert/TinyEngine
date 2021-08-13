@@ -2,24 +2,28 @@
 
 Small OpenGL based 2D/3D Engine / Wrapper in C++
 
+Supported on GNU/Linux and MacOS
+
 ![Rendering Example Program](screenshots/banner.png)
 Simple generated perlin-noise heightmap rendered with normal vectors as colors (Example Program 2)
 
 	LINES OF CODE (without unreasonable compression):
 
-		Main File: 103
-		Main Classes: 264
-		Utility Classes: 579
-		Helpers Namespaces: 199
-		Total: 1145
+		Main File: 188
+		Main Classes: 302
+		Utility Classes: 775
+		Helpers Namespaces: 678
+		Core Total: 1265
+		Total: 1943
 
 	History:
 		12. Apr 2020: 885
 		29. Apr 2020: 1116
 		17. May 2020: 1667
 		23. May 2020: 1065
-    01. Aug 2020: 1145
-    21. Feb 2021: 1378
+ 		01. Aug 2020: 1145
+		21. Feb 2021: 1378
+		27. Jul 2021: 1943
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -77,6 +81,10 @@ A simple scene (example program 9) that uses .obj / .mtl files generated in Blen
 
 An example image of a shader-based voronoi texture generator I implemented as a small experiment (example program 11). Lets you do real-time voronoi filters because its very fast. Here seen for N = 2048. See [my blog here here](https://weigert.vsos.ethz.ch/2020/08/01/gpu-accelerated-voronoi-textures-and-filters/).
 
+![Vertex Pooling Voxel Animation](https://github.com/weigert/TinyEngine/blob/master/screenshots/voxels.gif)
+
+A rendering of a dynamic alpha-blended voxel scene which uses a technique called vertex pooling to reduce driver overhead while drawing. See [my blog here](https://weigert.vsos.ethz.ch/2021/04/04/high-performance-voxel-engine/)
+
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.
 
@@ -116,7 +124,7 @@ As of 2021, TinyEngine is built as a statically linked library for easier inclus
 - Easier continuous maintenance and updating
 - Faster compilation times
 
-The installation process occurs in the makefile:
+The installation process occurs in the makefile (valid for all operating systems):
 
 		sudo make setup     #Copy Core Header Files to Install Location
 		sudo make helpers   #Copy Helper Headers
@@ -145,9 +153,9 @@ TinyEngine standalone is linked using:
 
 		-lTinyEngine
 
-but also requires linking of all additional dependencies! See the example programs to see exactly how to link the program (makefile). Note that all makesfiles are identical!
+but also requires linking of all additional dependencies! See the example programs to see exactly how to link the program (makefile). Note that all makesfiles are identical! Different operating systems have slightly different linkage.
 
-Compiled using g++ on Ubuntu 18/20 LTS.
+Compiled using g++ on Ubuntu 18/20 LTS, Fedora 33 and MacOS Big Sur.
 
 #### Compatibility Profile
 
@@ -159,22 +167,48 @@ This will reduce the version to a compatibility version, reducing some features 
 
 Note that some examples rely on features introduced in OpenGL4+, meaning that the required version of GLSL will not be available. All example programs are reduced to the **minimum necessary version**.
 
-### Dependencies
-(+ how to install on debian based systems)
+### Dependencies / Installation
+
+Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) and MacOS. It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
+
+#### Debian-Based Systems (e.g. Ubuntu)
 
     - OpenGL3: apt-get install libglu1-mesa-dev
     - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
     - GLEW:    apt-get install libglew-dev
     - Boost:   apt-get install libboost-system-dev libboost-filesystem-dev
+    - GLM:     apt-get install libglm-dev
 
     - DearImGUI (already included!)
     - g++ (compiler)
 
 In a single command:
 
-		sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev
+    sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
+		
+#### Fedora / DNF Package Manager Systems
+	
+For systems with `dnf` as package manager, the dependencies can be installed using:
 
-Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS). It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
+	sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel
+
+#### MacOS
+
+To install on MacOS, you need to install xcode commandline tools:
+
+	sudo xcode-select --install
+	
+Then, to install the dependencies, I recommend installing [homebrew from here](https://brew.sh) and installing the packages:
+
+	brew update
+	brew upgrade
+	brew install glew sdl2 sdl2_image sdl2_mixer sld2_ttf glm boost
+
+Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs. 
+
+#### Windows
+
+I am currently working on an elegant windows port. Stay tuned.
 
 ## License
 MIT License

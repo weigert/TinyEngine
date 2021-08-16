@@ -1,15 +1,16 @@
 namespace obj {
+using namespace std;
 
   //Get Colors from material list
-  std::unordered_map<std::string, glm::vec3> materials(std::string file){
-    std::unordered_map<std::string, glm::vec3> mat;
+  unordered_map<string, glm::vec3> materials(string file){
+    unordered_map<string, glm::vec3> mat;
 
     //Open the File
-    std::ifstream in(file+".mtl", std::ios::in);
+    ifstream in(file+".mtl", ios::in);
     if(in){
 
-      std::string line;
-      std::string matname;
+      string line;
+      string matname;
       while (getline(in, line)){
         if(line[0] == '#') continue;  //Ignore Comments
 
@@ -18,61 +19,58 @@ namespace obj {
 
         else if(line.substr(0, 2) == "Kd"){
           float R, G, B;
-          int m = std::sscanf(line.substr(3).c_str(), "%f %f %f\n", &R, &G, &B);
-          if(m != 3) std::cout<<"Material Color Data was not read correctly."<<std::endl;
+          int m = sscanf(line.substr(3).c_str(), "%f %f %f\n", &R, &G, &B);
+          if(m != 3) cout<<"Material Color Data was not read correctly."<<endl;
           else mat[matname] = glm::vec3(R, G, B);
         }
       }
       in.close();
     }
-    else std::cout<<"Failed to open file "<<file<<".mtl"<<std::endl;
+    else cout<<"Failed to open file "<<file<<".mtl"<<endl;
     return mat;
   }
 
-  //Construct a Model from a .Obj File
-  std::function<void(Model*, std::string)> load = [](Model* h, std::string file){
-    h->indexed = false;
-    std::unordered_map<std::string, glm::vec3> mat = materials(file);
+  Model* load(string file){
 
-    //Temporary Buffers
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec3> normals;
+    unordered_map<string, glm::vec3> mat = materials(file);
 
-    std::ifstream in(file+".obj", std::ios::in);
+    vector<glm::vec3> vbuf;
+    vector<glm::vec3> nbuf;
 
+    vector<float> positions;
+    vector<float> normals;
+    vector<float> colors;
+
+    ifstream in(file+".obj", ios::in);
     if(!in){
-      std::cout<<"Failed to open file "<<file<<".obj"<<std::endl;
-      return;
+      cout<<"Failed to open file "<<file<<".obj"<<endl;
+      return NULL;
     }
 
     glm::vec3 color = glm::vec3(1.0);
     bool vt = false;
 
-    std::string line;
+    string line;
     while (getline(in, line)){
 
-      //Ignore Comments
-      if(line[0] == '#') continue;
+      if(line[0] == '#') continue;  //Ignore Comments
 
-      //Extract Vertex Information
-      else if(line.substr(0,2) == "v "){
-        std::istringstream s(line.substr(2));
+      else if(line.substr(0,2) == "v "){  //Vertex Data
+        istringstream s(line.substr(2));
         glm::vec3 v;
         s >> v.x; s >> v.y; s >> v.z;
-        vertices.push_back(v);
+        vbuf.push_back(v);
       }
 
-      else if(line.substr(0,3) == "vt"){
-        //Currently Not Handled
+      else if(line.substr(0,3) == "vt"){  //Texture Data - Not Handled
         vt = true;
       }
 
-      //Extract Normal Information
-      else if(line.substr(0,3) == "vn "){
-        std::istringstream s(line.substr(3));
+      else if(line.substr(0,3) == "vn "){ //Normal Data
+        istringstream s(line.substr(3));
         glm::vec3 n;
         s >> n.x; s >> n.y; s >> n.z;
-        normals.push_back(n);
+        nbuf.push_back(n);
       }
 
       else if(line.substr(0, 6) == "usemtl"){
@@ -83,59 +81,65 @@ namespace obj {
       //Map Index Information
       else if(line.substr(0,2) == "f "){
         unsigned int vI[3], uI[3], nI[3];
-        if(normals.empty() && !vt){ //Simple Format
-          int m = std::sscanf(line.substr(2).c_str(), "%d %d %d\n", &vI[0], &vI[1], &vI[2]);
+        if(nbuf.empty() && !vt){ //Simple Format
+          int m = sscanf(line.substr(2).c_str(), "%d %d %d\n", &vI[0], &vI[1], &vI[2]);
           if(m != 3){
-            std::cout<<"Face data could not be read correctly."<<std::endl;
-            return;
+            cout<<"Face data could not be read correctly."<<endl;
+            return NULL;
           }
         }
         else { //Parse Face Data Normally
-          int m = std::sscanf(line.substr(2).c_str(), "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vI[0], &uI[0], &nI[0], &vI[1], &uI[1], &nI[1], &vI[2], &uI[2], &nI[2]);
+          int m = sscanf(line.substr(2).c_str(), "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vI[0], &uI[0], &nI[0], &vI[1], &uI[1], &nI[1], &vI[2], &uI[2], &nI[2]);
           if(m != 9) {
-            m = std::sscanf(line.substr(2).c_str(), "-%d//-%d -%d//-%d -%d//-%d\n", &vI[0], &nI[0], &vI[1], &nI[1], &vI[2], &nI[2]);
+            m = sscanf(line.substr(2).c_str(), "-%d//-%d -%d//-%d -%d//-%d\n", &vI[0], &nI[0], &vI[1], &nI[1], &vI[2], &nI[2]);
             if(m != 6){
-                std::cout<<"Face data could not be read correctly."<<std::endl;
-                return;
+                cout<<"Face data could not be read correctly."<<endl;
+                return NULL;
             }
           }
         }
 
-        //Push Face Data
-        h->indices.push_back(h->positions.size()/3);
-
         for(int i = 0; i < 3; i++){
-          h->positions.push_back(vertices[vI[i]-1].x);
-          h->positions.push_back(vertices[vI[i]-1].y);
-          h->positions.push_back(vertices[vI[i]-1].z);
+          positions.push_back(vbuf[vI[i]-1].x);
+          positions.push_back(vbuf[vI[i]-1].y);
+          positions.push_back(vbuf[vI[i]-1].z);
         }
         if(!normals.empty())
           for(int i = 0; i < 3; i++){
-            h->normals.push_back(normals[nI[i]-1].x);
-            h->normals.push_back(normals[nI[i]-1].y);
-            h->normals.push_back(normals[nI[i]-1].z);
+            normals.push_back(nbuf[nI[i]-1].x);
+            normals.push_back(nbuf[nI[i]-1].y);
+            normals.push_back(nbuf[nI[i]-1].z);
           }
         else{
-          glm::vec3 a = vertices[vI[0]-1];
-          glm::vec3 b = vertices[vI[1]-1];
-          glm::vec3 c = vertices[vI[2]-1];
+          glm::vec3 a = vbuf[vI[0]-1];
+          glm::vec3 b = vbuf[vI[1]-1];
+          glm::vec3 c = vbuf[vI[2]-1];
           glm::vec3 n = glm::normalize(glm::cross(b-a, c-a));
           for(int i = 0; i < 3; i++){
-            h->normals.push_back(n.x);
-            h->normals.push_back(n.y);
-            h->normals.push_back(n.z);
+            normals.push_back(n.x);
+            normals.push_back(n.y);
+            normals.push_back(n.z);
           }
         }
         for(int i = 0; i < 3; i++){
-          h->colors.push_back(color.x);
-          h->colors.push_back(color.y);
-          h->colors.push_back(color.z);
-          h->colors.push_back(1.0);
+          colors.push_back(color.x);
+          colors.push_back(color.y);
+          colors.push_back(color.z);
+          colors.push_back(1.0);
         }
       }
     }
 
     in.close();
-  };
+
+    //Construct the Model with Buffers
+    Model* model = new Model({"in_Position", "in_Normal", "in_Color"});
+    model->bind<glm::vec3>("in_Position", new Buffer(positions));
+    model->bind<glm::vec3>("in_Normal", new Buffer(normals));
+    model->bind<glm::vec4>("in_Color", new Buffer(colors));
+    model->SIZE = positions.size()/3;
+    return model;
+
+  }
 
 }

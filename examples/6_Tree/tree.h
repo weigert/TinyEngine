@@ -152,8 +152,11 @@ glm::vec3 Branch::leafdensity(int searchdepth){
 
 Branch* root;
 
-// Model Constructing Function for Tree
-std::function<void(Model*)> _construct = [](Model* h){
+
+void construct(Buffer& positions, Buffer& normals, Buffer& colors, Buffer& indices){
+
+  std::vector<int> indbuf;
+  std::vector<float> posbuf, norbuf, colbuf;
 
   //Basically Add Lines for the Tree!
   std::function<void(Branch*, glm::vec3)> addBranch = [&](Branch* b, glm::vec3 p){
@@ -169,36 +172,36 @@ std::function<void(Model*)> _construct = [](Model* h){
     glm::mat4 r = glm::rotate(glm::mat4(1.0), PI/ringsize, b->dir);
 
     //Index Buffer
-    int _b = h->positions.size()/3;
+    int _b = posbuf.size()/3;
 
     //GL TRIANGLES
     for(int i = 0; i < ringsize; i++){
       //Bottom Triangle
-      h->indices.push_back(_b+i*2+0);
-      h->indices.push_back(_b+(i*2+2)%(2*ringsize));
-      h->indices.push_back(_b+i*2+1);
+      indbuf.push_back(_b+i*2+0);
+      indbuf.push_back(_b+(i*2+2)%(2*ringsize));
+      indbuf.push_back(_b+i*2+1);
       //Upper Triangle
-      h->indices.push_back(_b+(i*2+2)%(2*ringsize));
-      h->indices.push_back(_b+(i*2+3)%(2*ringsize));
-      h->indices.push_back(_b+i*2+1);
+      indbuf.push_back(_b+(i*2+2)%(2*ringsize));
+      indbuf.push_back(_b+(i*2+3)%(2*ringsize));
+      indbuf.push_back(_b+i*2+1);
     }
 
     for(int i = 0; i < ringsize; i++){
 
-      h->positions.push_back(start.x + b->radius*treescale[1]*n.x);
-      h->positions.push_back(start.y + b->radius*treescale[1]*n.y);
-      h->positions.push_back(start.z + b->radius*treescale[1]*n.z);
-      h->normals.push_back(n.x);
-      h->normals.push_back(n.y);
-      h->normals.push_back(n.z);
+      posbuf.push_back(start.x + b->radius*treescale[1]*n.x);
+      posbuf.push_back(start.y + b->radius*treescale[1]*n.y);
+      posbuf.push_back(start.z + b->radius*treescale[1]*n.z);
+      norbuf.push_back(n.x);
+      norbuf.push_back(n.y);
+      norbuf.push_back(n.z);
       n = r*n;
 
-      h->positions.push_back(end.x + taper*b->radius*treescale[1]*n.x);
-      h->positions.push_back(end.y + taper*b->radius*treescale[1]*n.y);
-      h->positions.push_back(end.z + taper*b->radius*treescale[1]*n.z);
-      h->normals.push_back(n.x);
-      h->normals.push_back(n.y);
-      h->normals.push_back(n.z);
+      posbuf.push_back(end.x + taper*b->radius*treescale[1]*n.x);
+      posbuf.push_back(end.y + taper*b->radius*treescale[1]*n.y);
+      posbuf.push_back(end.z + taper*b->radius*treescale[1]*n.z);
+      norbuf.push_back(n.x);
+      norbuf.push_back(n.y);
+      norbuf.push_back(n.z);
       n = r*n;
 
     }
@@ -212,6 +215,12 @@ std::function<void(Model*)> _construct = [](Model* h){
 
   //Recursive add Branches
   addBranch(root, glm::vec3(0.0));
+
+  positions.fill<float>(posbuf);
+  normals.fill<float>(norbuf);
+  colors.fill<float>(colbuf);
+  indices.fill<int>(indbuf);
+
 };
 
 //Construct Leaf Particle System from Tree Data
@@ -250,4 +259,5 @@ std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [](std::vector<gl
   };
 
   addLeaf(root, glm::vec3(0.0));
+
 };

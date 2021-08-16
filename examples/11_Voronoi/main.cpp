@@ -40,13 +40,13 @@ Possible OpenGL Implementations (2 Types):
 		-> Rendering to Sphere using Cubemaps (trivial to extend)
 */
 
-#define SIZE 768
+#define _SIZE_ 768
 
 int main( int argc, char* args[] ) {
 
 	//Setup Window
 	Tiny::view.vsync = false;
-	Tiny::window("GPU Accelerated Voronoise", SIZE, SIZE);
+	Tiny::window("GPU Accelerated Voronoise", _SIZE_, _SIZE_);
 
 	Tiny::event.handler  = [](){}; //eventHandler;
 	Tiny::view.interface = interfaceFunc;
@@ -56,12 +56,13 @@ int main( int argc, char* args[] ) {
 	//Generate Set of Centroids
 	sample::disc(centroids, K, glm::vec2(-1), glm::vec2(1));
 	offset = centroids;
+	Buffer centroidbuf(centroids);
 
 	//Utility Classes
 	Square2D flat;
 	Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Centroid"});
 
-	Billboard billboard(SIZE, SIZE);
+	Billboard billboard(_SIZE_, _SIZE_);
 	Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
 
 	//Filter Effects
@@ -69,12 +70,12 @@ int main( int argc, char* args[] ) {
 	Shader mosaic({"shader/mosaic.vs", "shader/mosaic.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
 
 	//SSBO Centroids into Filters
-	bubble.buffer("centroids", centroids);
-	mosaic.buffer("centroids", centroids);
+	bubble.bind<glm::vec2>("centroids", &centroidbuf);
+	mosaic.bind<glm::vec2>("centroids", &centroidbuf);
 
 	//Prepare instance render of flat, per-centroid
 	Instance instance(&flat);
-	instance.addBuffer(centroids);
+	instance.bind<glm::vec2>("in_Centroid", &centroidbuf);
 
 	Texture tex(image::load("starry_night.png")); //Load Texture with Image
 
@@ -157,19 +158,14 @@ int main( int argc, char* args[] ) {
 				offset[i].y = centroids[i].y + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, -t);
 			}
 
-		//Centroids have moved, so we update the instance buffer
-		instance.updateBuffer(offset, 0);
-		}
+			//Centroids have moved, so we update the instance buffer
+			centroidbuf.fill<glm::vec2>(offset);
 
-		if(translate){ //Update Bubble Centroids (if desired and applicable)
-			if(drawstyle == 2) mosaic.buffer("centroids", offset); //This means the centroids are the offset centroids
-			if(drawstyle == 3) bubble.buffer("centroids", offset);
 		}
 
 		if(updated){ //Update the data in the buffers!
-			bubble.buffer("centroids", centroids);
-			mosaic.buffer("centroids", centroids);
-			instance.updateBuffer(offset, 0); //Also update the number of centroids in the instance buffer
+			centroidbuf.fill<glm::vec2>(centroids);
+			instance.SIZE = centroids.size();
 			updated = false;
 		}
 

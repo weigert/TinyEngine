@@ -43,24 +43,22 @@ int main( int argc, char* args[] ) {
 	for(int i = 0; i < NPARTICLES; i++)
 		position.push_back(glm::vec4(randf(),randf(),randf(), 1));
 
+	Buffer posbuf(position);
+	Buffer colbuf;
+	colbuf.fill<glm::vec4>(NPARTICLES, NULL);
+
   //Compute Shader
 	Compute compute("shader/ODE.cs", {"position", "color"});
-	compute.buffer("position", position);										//Buffer Positions into Compute Shader
-	compute.buffer("color", (glm::vec4*)NULL, NPARTICLES);	//Empty Color Buffer into Compute Shader
+	compute.bind<glm::vec4>("position", &posbuf);
+	compute.bind<glm::vec4>("color", &colbuf);
 
 	//Visualization Shader
 	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos", "in_Col"});
 
-	//Shader SSBO with Particle Shader
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glEnableVertexAttribArray(0);
-	glBindVertexBuffer(0, Compute::ssbo["position"], 0, sizeof(glm::vec4));
-
-	glEnableVertexAttribArray(1);
-	glBindVertexBuffer(1, Compute::ssbo["color"], 0, sizeof(glm::vec4));
+	Model particles({"position", "color"});
+	particles.bind<glm::vec4>("position", &posbuf);
+	particles.bind<glm::vec4>("color", &colbuf);
+	particles.SIZE = NPARTICLES;
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){
@@ -70,9 +68,7 @@ int main( int argc, char* args[] ) {
 		particleShader.use();
 		particleShader.uniform("vp", cam::vp);
 		particleShader.uniform("op", ((streak)?0.3f:1.0f));
-
-		glBindVertexArray(vao);
-		glDrawArrays(GL_POINTS, 0, NPARTICLES);
+		particles.render(GL_POINTS);
 
 	};
 

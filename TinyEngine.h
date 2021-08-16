@@ -26,6 +26,7 @@ using slist = std::initializer_list<std::string>;
 #ifndef TINYENGINE_UTILITIES
 #define TINYENGINE_UTILITIES
 
+#include <TinyEngine/Buffer>
 #include <TinyEngine/Texture>
 #include <TinyEngine/Shader>
 #include <TinyEngine/Target>

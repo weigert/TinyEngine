@@ -121,6 +121,7 @@ Handle interfaceFunc = [](){
   ImGui::End();
 };
 
+/*
 std::function<void(Model* m)> construct_floor = [](Model* h){
 
   float floor[24] = {
@@ -154,3 +155,4 @@ std::function<void(Model* m)> construct_floor = [](Model* h){
     h->colors.push_back(1.0);
   }
 };
+*/

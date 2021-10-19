@@ -19,7 +19,7 @@ ifeq ($(UNAME), Darwin)			#Detext MacOS
 TINYOS = -framework OpenGL
 endif
 
-FILES = 0_Empty 1_Image 2_Heightmap 3_Automata 4_Julia 5_Particles 6_Tree 7_SDF 8_Raymarch 9_Scene \
+FILES = 0_Empty 01_Windowless 1_Image 2_Heightmap 3_Automata 4_Julia 5_Particles 6_Tree 7_SDF 8_Raymarch 9_Scene \
 10_Audio 11_Voronoi 12_Diffusion 13_Dither 15_Compute 16_Gravity 17_ODE3D
 
 all:

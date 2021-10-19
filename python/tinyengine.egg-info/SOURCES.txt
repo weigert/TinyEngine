@@ -1,0 +1,7 @@
+README.md
+setup.py
+source/core.cpp
+tinyengine.egg-info/PKG-INFO
+tinyengine.egg-info/SOURCES.txt
+tinyengine.egg-info/dependency_links.txt
+tinyengine.egg-info/top_level.txt

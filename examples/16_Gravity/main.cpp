@@ -39,22 +39,26 @@ int main( int argc, char* args[] ) {
 		mass.push_back(1.0f+(float)(rand()%1000)/100.0f);
 	}
 
-  //Compute Shader
+	//3 Buffers
+	Buffer posbuf(position);
+	Buffer velbuf(velocity);
+	Buffer massbuf(mass);
+
+  //Compute Shader with SSBO Binding Points
 	Compute compute("shader/gravity.cs", {"position", "velocity", "mass"});
-	compute.buffer("position", position);
-	compute.buffer("velocity", velocity);
-	compute.buffer("mass", mass);
+
+	//Link Buffers to the SSBO Binding Points
+	compute.bind<glm::vec4>("position", &posbuf);
+	compute.bind<glm::vec4>("velocity", &velbuf);
+	compute.bind<float>("mass", &massbuf);
+
+	//Use the Buffer as an Attribute of a Model VAO
+	Model particles({"in_Pos"});
+	particles.bind<glm::vec4>("in_Pos", &posbuf);
+	particles.SIZE = NPARTICLES;
 
 	//Visualization Shader, does not need attributes
 	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos"});
-
-	//Basically: Share the SSBO with the Particle Shader!
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glEnableVertexAttribArray(0);
-	glBindVertexBuffer(0, Compute::ssbo["position"], 0, sizeof(glm::vec4));
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){
@@ -62,9 +66,7 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(glm::vec3(0));	//Clear Screen to white
     particleShader.use();
 		particleShader.uniform("vp", cam::vp);
-
-		glBindVertexArray(vao);
-		glDrawArrays(GL_POINTS, 0, NPARTICLES);
+		particles.render(GL_POINTS);
 
 	};
 

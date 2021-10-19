@@ -25,6 +25,7 @@ setup:
 			@cp include/audio.h $(INCLUDEPATH)/TinyEngine/Audio
 			@cp include/event.h $(INCLUDEPATH)/TinyEngine/Event
 			@cp include/view.h $(INCLUDEPATH)/TinyEngine/View
+			@cp include/utility/buffer.cpp $(INCLUDEPATH)/TinyEngine/Buffer
 			@cp include/utility/instance.cpp $(INCLUDEPATH)/TinyEngine/Instance
 			@cp include/utility/model.cpp $(INCLUDEPATH)/TinyEngine/Model
 			@cp include/utility/shader.cpp $(INCLUDEPATH)/TinyEngine/Shader

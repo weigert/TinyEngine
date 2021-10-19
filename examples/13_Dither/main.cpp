@@ -30,8 +30,8 @@ int main( int argc, char* args[] ) {
 	};
 
 	std::string path = "skull";
-	Model skull(obj::load, path);
-	skull.shift(glm::vec3(0,-3.5,0));
+	Model* skull = obj::load(path);
+	skull->model = glm::translate(glm::mat4(1.0f), glm::vec3(0,-3.5,0));
 
 	Square2D flat;	//Flat square primitive for drawing billboard to screen
 	Shader dither({"shader/dither.vs", "shader/dither.fs"}, {"in_Quad", "in_Tex"});
@@ -44,10 +44,10 @@ int main( int argc, char* args[] ) {
 		image.target(color::black);
 
 		basic.use();
-		basic.uniform("model", skull.model);
+		basic.uniform("model", skull->model);
 		basic.uniform("vp", cam::vp);
 
-		skull.render(GL_TRIANGLES);
+		skull->render(GL_TRIANGLES);
 
 		Tiny::view.target(color::black);									//Target screen
 

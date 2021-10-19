@@ -41,15 +41,24 @@ int main( int argc, char* args[] ) {
 
 	root = new Branch({0.6, 0.45, 2.5}); //Create Root
 
-	Model treemesh(_construct);											//Construct a Mesh
+	Buffer positions, normals, colors;
+	Buffer indices;
+	construct(positions, normals, colors, indices);
+
+	Model treemesh({"in_Position", "in_Normal", "in_Color"});
+	treemesh.bind<glm::vec3>("in_Position", &positions);
+	treemesh.bind<glm::vec3>("in_Normal", &normals);
+	treemesh.bind<glm::vec4>("in_Color", &colors);
+	treemesh.index(&indices);
 
 	Square3D flat;																	//Geometry for Particle System
 
 	std::vector<glm::mat4> leaves;
 	addLeaves(leaves, true);												//Generate the model matrices
 
+	Buffer models(leaves);
 	Instance particle(&flat);												//Make Particle System
-	particle.addBuffer(leaves);											//Add Matrices
+	particle.bind<glm::mat4>("in_Model", &models);  //Add Matrices
 
 	Texture tex(image::load("leaf.png"));
 
@@ -59,8 +68,9 @@ int main( int argc, char* args[] ) {
 	Shader particledepth({"shader/particledepth.vs", "shader/particledepth.fs"}, {"in_Quad", "in_Tex", "in_Model"});
 	Billboard shadow(1600, 1600, false); 						//No Color Buffer
 
-	Model floor(construct_floor);
-	floor.move(glm::vec3(0), 0, glm::vec3(1000));	//So we can cast shadows
+	Square3D floor;
+	floor.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1,0,0));
+	floor.model = glm::scale(floor.model, glm::vec3(1000));
 
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 
@@ -76,7 +86,7 @@ int main( int argc, char* args[] ) {
 			particledepth.uniform("dvp", lproj*lview);
 			particledepth.texture("spriteTexture", tex);
 			addLeaves(leaves, false);						//Generate the model matrices
-			particle.updateBuffer(leaves, 0);
+			models.fill<glm::mat4>(leaves);
 
 			particle.render(GL_TRIANGLE_STRIP); 		//Render Particle System
 		}
@@ -136,7 +146,8 @@ int main( int argc, char* args[] ) {
 
 			particleShader.uniform("lookDir", cam::look - cam::pos);
 			addLeaves(leaves, true);
-			particle.updateBuffer(leaves, 0);
+			models.fill<glm::mat4>(leaves);
+			particle.SIZE = leaves.size();
 			particle.render(GL_TRIANGLE_STRIP); //Render Particle System
 		}
 	};
@@ -151,8 +162,9 @@ int main( int argc, char* args[] ) {
 			root->grow(growthrate);
 
 		//Update Rendering Structures
-		treemesh.construct(_construct);
-		particle.updateBuffer(leaves, 0);
+		construct(positions, normals, colors, indices);
+
+		models.fill<glm::mat4>(leaves);
 
 	});
 

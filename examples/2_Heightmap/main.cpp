@@ -22,8 +22,16 @@ int main( int argc, char* args[] ) {
 
 	setup();																					//Prepare Model Stuff
 
-	Model mesh(_construct);														//Construct a Mesh
-	mesh.shift(glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));				//Translate Mesh
+	Buffer positions, normals;
+	Buffer indices;
+	construct(positions, normals, indices);
+
+	Model mesh({"in_Position", "in_Normal"});
+	mesh.bind<glm::vec3>("in_Position", &positions);
+	mesh.bind<glm::vec3>("in_Normal", &normals);
+	mesh.index(&indices);
+	mesh.model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
+
 	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
 	Tiny::view.pipeline = [&](){											//Setup Drawing Pipeline

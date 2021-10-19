@@ -19,5 +19,6 @@ ifeq ($(UNAME), Darwin)			#Detext MacOS
 TINYOS = -framework OpenGL
 endif
 
-all: main.cpp
-			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
+all: source/main.cpp
+			@echo "WARNING: RENDERPOOL IS CURRENTLY BROKEN";
+			$(CC) source/main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main

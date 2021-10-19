@@ -68,9 +68,9 @@ Handle interfaceFunc = [](){
   ImGui::End();
 };
 
-std::function<void(Model* m)> construct_room = [](Model* h){
+Model* construct_room(){
 
-  float room[24] = {
+  std::vector<float> positions = {
     -1.0, 0.0, -1.0,
     -1.0, 0.0,  1.0,
      1.0, 0.0, -1.0,
@@ -81,24 +81,25 @@ std::function<void(Model* m)> construct_room = [](Model* h){
      1.0, 1.0,  1.0
   };
 
-  for(int i = 0; i < 24; i++)
-    h->positions.push_back(room[i]);
+  std::vector<int> indices;
+  std::vector<float> normals;
+  std::vector<float> colors;
 
-  h->indices.push_back(0);
-  h->indices.push_back(1);
-  h->indices.push_back(2);
+  indices.push_back(0);
+  indices.push_back(1);
+  indices.push_back(2);
 
-  h->indices.push_back(1);
-  h->indices.push_back(3);
-  h->indices.push_back(2);
+  indices.push_back(1);
+  indices.push_back(3);
+  indices.push_back(2);
 
-  h->indices.push_back(4);
-  h->indices.push_back(6);
-  h->indices.push_back(5);
+  indices.push_back(4);
+  indices.push_back(6);
+  indices.push_back(5);
 
-  h->indices.push_back(5);
-  h->indices.push_back(6);
-  h->indices.push_back(7);
+  indices.push_back(5);
+  indices.push_back(6);
+  indices.push_back(7);
 
   //Ceiling
 
@@ -106,25 +107,25 @@ std::function<void(Model* m)> construct_room = [](Model* h){
   glm::vec3 ceilingcolor = glm::vec3(0.9, 0.9, 0.8);
 
   for(int i = 0; i < 4; i++){
-    h->normals.push_back(0.0);
-    h->normals.push_back(1.0);
-    h->normals.push_back(0.0);
+    normals.push_back(0.0);
+    normals.push_back(1.0);
+    normals.push_back(0.0);
 
-    h->colors.push_back(floorcolor.x);
-    h->colors.push_back(floorcolor.y);
-    h->colors.push_back(floorcolor.z);
-    h->colors.push_back(1.0);
+    colors.push_back(floorcolor.x);
+    colors.push_back(floorcolor.y);
+    colors.push_back(floorcolor.z);
+    colors.push_back(1.0);
   }
 
   for(int i = 0; i < 4; i++){
-    h->normals.push_back(0.0);
-    h->normals.push_back(-1.0);
-    h->normals.push_back(0.0);
+    normals.push_back(0.0);
+    normals.push_back(-1.0);
+    normals.push_back(0.0);
 
-    h->colors.push_back(ceilingcolor.x);
-    h->colors.push_back(ceilingcolor.y);
-    h->colors.push_back(ceilingcolor.z);
-    h->colors.push_back(1.0);
+    colors.push_back(ceilingcolor.x);
+    colors.push_back(ceilingcolor.y);
+    colors.push_back(ceilingcolor.z);
+    colors.push_back(1.0);
   }
 
   float wallA[12] = {
@@ -135,26 +136,26 @@ std::function<void(Model* m)> construct_room = [](Model* h){
   };
 
   //Walls
-  int P = h->positions.size()/3;
-  h->indices.push_back(P);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+2);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+3);
-  h->indices.push_back(P+2);
+  int P = positions.size()/3;
+  indices.push_back(P);
+  indices.push_back(P+1);
+  indices.push_back(P+2);
+  indices.push_back(P+1);
+  indices.push_back(P+3);
+  indices.push_back(P+2);
 
   for(int i = 0; i < 12; i++)
-    h->positions.push_back(wallA[i]);
+    positions.push_back(wallA[i]);
 
   for(int i = 0; i < 4; i++){
-    h->normals.push_back(0.0);
-    h->normals.push_back(0.0);
-    h->normals.push_back(1.0);
+    normals.push_back(0.0);
+    normals.push_back(0.0);
+    normals.push_back(1.0);
 
-    h->colors.push_back(ceilingcolor.x);
-    h->colors.push_back(ceilingcolor.y);
-    h->colors.push_back(ceilingcolor.z);
-    h->colors.push_back(1.0);
+    colors.push_back(ceilingcolor.x);
+    colors.push_back(ceilingcolor.y);
+    colors.push_back(ceilingcolor.z);
+    colors.push_back(1.0);
   }
 
   float wallB[12] = {
@@ -165,26 +166,26 @@ std::function<void(Model* m)> construct_room = [](Model* h){
   };
 
   //Walls
-  P = h->positions.size()/3;
-  h->indices.push_back(P);
-  h->indices.push_back(P+2);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+2);
-  h->indices.push_back(P+3);
+  P = positions.size()/3;
+  indices.push_back(P);
+  indices.push_back(P+2);
+  indices.push_back(P+1);
+  indices.push_back(P+1);
+  indices.push_back(P+2);
+  indices.push_back(P+3);
 
   for(int i = 0; i < 12; i++)
-    h->positions.push_back(wallB[i]);
+    positions.push_back(wallB[i]);
 
   for(int i = 0; i < 4; i++){
-    h->normals.push_back( 0.0);
-    h->normals.push_back( 0.0);
-    h->normals.push_back(-1.0);
+    normals.push_back( 0.0);
+    normals.push_back( 0.0);
+    normals.push_back(-1.0);
 
-    h->colors.push_back(ceilingcolor.x);
-    h->colors.push_back(ceilingcolor.y);
-    h->colors.push_back(ceilingcolor.z);
-    h->colors.push_back(1.0);
+    colors.push_back(ceilingcolor.x);
+    colors.push_back(ceilingcolor.y);
+    colors.push_back(ceilingcolor.z);
+    colors.push_back(1.0);
   }
 
 
@@ -196,26 +197,26 @@ std::function<void(Model* m)> construct_room = [](Model* h){
   };
 
   //Walls
-  P = h->positions.size()/3;
-  h->indices.push_back(P);
-  h->indices.push_back(P+2);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+2);
-  h->indices.push_back(P+3);
+  P = positions.size()/3;
+  indices.push_back(P);
+  indices.push_back(P+2);
+  indices.push_back(P+1);
+  indices.push_back(P+1);
+  indices.push_back(P+2);
+  indices.push_back(P+3);
 
   for(int i = 0; i < 12; i++)
-    h->positions.push_back(wallC[i]);
+    positions.push_back(wallC[i]);
 
   for(int i = 0; i < 4; i++){
-    h->normals.push_back( 1.0);
-    h->normals.push_back( 0.0);
-    h->normals.push_back( 0.0);
+    normals.push_back( 1.0);
+    normals.push_back( 0.0);
+    normals.push_back( 0.0);
 
-    h->colors.push_back(ceilingcolor.x);
-    h->colors.push_back(ceilingcolor.y);
-    h->colors.push_back(ceilingcolor.z);
-    h->colors.push_back(1.0);
+    colors.push_back(ceilingcolor.x);
+    colors.push_back(ceilingcolor.y);
+    colors.push_back(ceilingcolor.z);
+    colors.push_back(1.0);
   }
 
   float wallD[12] = {
@@ -226,25 +227,34 @@ std::function<void(Model* m)> construct_room = [](Model* h){
   };
 
   //Walls
-  P = h->positions.size()/3;
-  h->indices.push_back(P);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+2);
-  h->indices.push_back(P+1);
-  h->indices.push_back(P+3);
-  h->indices.push_back(P+2);
+  P = positions.size()/3;
+  indices.push_back(P);
+  indices.push_back(P+1);
+  indices.push_back(P+2);
+  indices.push_back(P+1);
+  indices.push_back(P+3);
+  indices.push_back(P+2);
 
   for(int i = 0; i < 12; i++)
-    h->positions.push_back(wallD[i]);
+    positions.push_back(wallD[i]);
 
   for(int i = 0; i < 4; i++){
-    h->normals.push_back(-1.0);
-    h->normals.push_back( 0.0);
-    h->normals.push_back( 0.0);
+    normals.push_back(-1.0);
+    normals.push_back( 0.0);
+    normals.push_back( 0.0);
 
-    h->colors.push_back(ceilingcolor.x);
-    h->colors.push_back(ceilingcolor.y);
-    h->colors.push_back(ceilingcolor.z);
-    h->colors.push_back(1.0);
+    colors.push_back(ceilingcolor.x);
+    colors.push_back(ceilingcolor.y);
+    colors.push_back(ceilingcolor.z);
+    colors.push_back(1.0);
   }
-};
+
+  Model* model = new Model({"in_Position", "in_Normal", "in_Color"});
+  model->bind<glm::vec3>("in_Position", new Buffer(positions));
+  model->bind<glm::vec3>("in_Normal", new Buffer(normals));
+  model->bind<glm::vec4>("in_Color", new Buffer(colors));
+  model->SIZE = positions.size()/3;
+  model->index(new Buffer(indices));
+  return model;
+
+}

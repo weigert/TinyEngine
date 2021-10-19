@@ -20,4 +20,5 @@ TINYOS = -framework OpenGL
 endif
 
 all: main.cpp
+		@echo "WARNING: COMPUTE IS CURRENTLY BROKEN";
 			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main

@@ -11,7 +11,8 @@ using namespace glm;
   float far = 10.0f;
   float FOV = 1.0f;       //Field of View
 
-  vec3 pos = vec3(cos(glm::radians(rot)), sin(glm::radians(roty)), sin(glm::radians(rot)));
+  vec3 pos = vec3(cos(glm::radians(roty))*sin(glm::radians(rot)), sin(glm::radians(roty)), -cos(glm::radians(roty))*cos(glm::radians(rot)));
+
   vec3 look = vec3(0);
 
   float zoomrate = 0.5f;
@@ -30,7 +31,9 @@ using namespace glm;
   void shift(mat4 rt){ view = rt*view; vp = proj*view; }
 
   void update(){
-    pos = vec3(cos(glm::radians(roty))*cos(glm::radians(rot)), sin(glm::radians(roty)), cos(glm::radians(roty))*sin(glm::radians(rot)));
+//    vec3 pos = vec3(sin(glm::radians(rot)), sin(glm::radians(roty)), cos(glm::radians(rot)));
+
+    pos = vec3(cos(glm::radians(roty))*sin(glm::radians(rot)), sin(glm::radians(roty)), -cos(glm::radians(roty))*cos(glm::radians(rot)));
 
     if(type == PROJ) view = lookAt(look+rad*pos, look, vec3(0,1,0));
     if(type == ORTHO) view = lookAt(look+pos, look, vec3(0,1,0));
@@ -79,15 +82,15 @@ using namespace glm;
   /* Translations */
 
   void stride(float inc){
-    look.x += inc*cos(glm::radians(rot));
-    look.z += inc*sin(glm::radians(rot));
+    look.x += inc*sin(glm::radians(rot));
+    look.z -= inc*cos(glm::radians(rot));
     update();
     moved = true;
   }
 
   void strafe(float inc){
-    look.x -= inc*sin(glm::radians(rot));
-    look.z += inc*cos(glm::radians(rot));
+    look.x += inc*cos(glm::radians(rot));
+    look.z += inc*sin(glm::radians(rot));
     update();
     moved = true;
   }
@@ -120,6 +123,12 @@ using namespace glm;
 
     if(Tiny::event.active[SDLK_DOWN])
       cam::tilt(-cam::turnrate);
+
+    if(Tiny::event.active[SDLK_LEFT])
+      cam::pan(cam::turnrate);
+
+    if(Tiny::event.active[SDLK_RIGHT])
+      cam::pan(-cam::turnrate);
 
     if(Tiny::event.active[SDLK_c])
       cam::rise(-cam::moverate);

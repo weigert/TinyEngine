@@ -14,10 +14,10 @@ __version__ = "0.1"
 
 ext_modules = [
 
-# Submodule
+# Core Module
 pybind11.setup_helpers.Pybind11Extension(
     name = "tinyengine.tiny",
-    sources = ['source/tiny.bind.cpp'],
+    sources = ['source/core.cpp'],
     language = 'c++',
     include_dirs = ["/usr/local/include"],
     library_dirs = ["/usr/local/lib"],
@@ -32,7 +32,6 @@ setuptools.setup(
     author = "Nicholas McDonald",
     url = "https://github.com/weigert/TinyEngine",
     description = "tinyengine python binding",
-
     ext_modules = ext_modules,
     cmdclass={'build_ext': build_ext}
 )

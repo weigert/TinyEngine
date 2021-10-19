@@ -29,7 +29,7 @@ module.def("benchmark", [](bool toggle){  //Lambda Setter
 
 //Main Submodules
 
-py::module view =  module.def_submodule("view");
+py::module view = module.def_submodule("view");
 
   view.def("pipeline", [](const Handle& f){
     Tiny::view.pipeline = f;
@@ -61,66 +61,91 @@ py::module event =  module.def_submodule("event");
 
 //Utility Classes
 
+//Buffer Class (Important)
+
+py::class_<Buffer>(module, "Buffer")
+  .def(py::init<>())
+  .def(py::init<std::vector<float>>())
+  .def("fill_float", static_cast<void(Buffer::*)(std::vector<float>)>(&Buffer::fill));
+
 //Shader Class
 
 py::class_<ShaderBase>(module, "ShaderBase")
   .def(py::init<>())
   .def("use", &ShaderBase::use)
+  //Uniform Setters
   .def("uniform", &ShaderBase::uniform<bool>)
   .def("uniform", &ShaderBase::uniform<int>)
   .def("uniform", &ShaderBase::uniform<float>)
+  .def("uniform", &ShaderBase::uniform<double>)
+  .def("uniform", &ShaderBase::uniform<glm::vec2>)
   .def("uniform", &ShaderBase::uniform<glm::vec3>)
-  .def("uniform", &ShaderBase::uniform<glm::mat4>);
+  .def("uniform", &ShaderBase::uniform<glm::vec4>)
+  .def("uniform", &ShaderBase::uniform<glm::mat3>)
+  .def("uniform", &ShaderBase::uniform<glm::mat4>)
+  //Texture Setters
+  .def("texture", &ShaderBase::texture<Texture>)
+  .def("texture", &ShaderBase::texture<Cubetexture>)
+  //Buffering
+  .def_static("ssbo", static_cast<void(*)(std::string)>(&ShaderBase::ssbo), "Define an SSBO")
+  .def_static("ssbo", static_cast<void(*)(std::vector<std::string>)>(&ShaderBase::ssbo), "Define multiple SSBOs")
+  .def("interface", static_cast<void(ShaderBase::*)(std::string)>(&ShaderBase::interface), "Add named SSBO to permitted interface blocks")
+  .def("interface", static_cast<void(ShaderBase::*)(std::vector<std::string>)>(&ShaderBase::interface), "Add multiple named SSBOs to permitted interface blocks");
+
+  //Two more Missing!
 
 py::class_<Shader, ShaderBase>(module, "Shader")
-  .def(py::init<std::vector<std::string>>());
+  .def(py::init<std::vector<std::string>>())
+  .def(py::init<std::vector<std::string>, std::vector<std::string>>());
 
 //Primitives and Models
 
-py::class_<Primitive>(module, "Primitive")
+py::class_<Model>(module, "Model")
   .def(py::init<>())
-  .def("render", &Primitive::render,
-       py::arg("mode") = GL_TRIANGLE_STRIP);
+  .def(py::init<std::vector<std::string>>())
+  .def_readwrite("SIZE", &Model::SIZE)
+  .def("render", &Model::render,
+       py::arg("mode") = GL_TRIANGLE_STRIP)
+  .def("bind_vec3", &Model::bind<glm::vec3>);
 
-py::class_<Point, Primitive>(module, "Point")
+py::class_<Point, Model>(module, "Point")
   .def(py::init<>());
 
-py::class_<Square2D, Primitive>(module, "Square2D")
+py::class_<Square2D, Model>(module, "Square2D")
   .def(py::init<>());
 
-py::class_<Square3D, Primitive>(module, "Square3D")
+py::class_<Square3D, Model>(module, "Square3D")
   .def(py::init<>());
 
-py::class_<Gizmo, Primitive>(module, "Gizmo")
+py::class_<Gizmo, Model>(module, "Gizmo")
   .def(py::init<>());
 
-// Helper Namespace: Camera (Important)
+  py::module cam =  module.def_submodule("cam");
 
-py::module cam =  module.def_submodule("cam");
+  //Enum and Initializer
 
-//Enum and Initializer
+  py::enum_<cam::camtype>(cam, "type")
+    .value("PROJ", cam::PROJ)
+    .value("ORTHO", cam::ORTHO);
 
-py::enum_<cam::camtype>(cam, "type")
-  .value("PROJ", cam::PROJ)
-  .value("ORTHO", cam::ORTHO);
+  cam.def("init", cam::init,
+          py::arg("r") = 5.0f, py::arg("t") = cam::PROJ);
 
-cam.def("init", cam::init,
-        py::arg("r") = 5.0f, py::arg("t") = cam::PROJ);
+  cam.def("handler", [](){
+    cam::handler();
+  });
 
-cam.def("handler", [](){
-  cam::handler();
-});
+  //Matrix Extraction
+  cam.def("vp", [](){
+    return cam::vp;
+  });
 
-//Matrix Extraction
-cam.def("vp", [](){
-  return cam::vp;
-});
+  // Property Setting
 
-// Property Setting
-
-cam.def("zoomrate", [](float set){ cam::zoomrate = set; });
-cam.def("near",     [](float set){ cam::near = set; });
-cam.def("far",      [](float set){ cam::far = set; });
+  cam.def("zoomrate", [](float set){ cam::zoomrate = set; });
+  cam.def("moverate", [](float set){ cam::moverate = set; });
+  cam.def("near",     [](float set){ cam::near = set; });
+  cam.def("far",      [](float set){ cam::far = set; });
 
 // OpenGL Enumerator Hack
 

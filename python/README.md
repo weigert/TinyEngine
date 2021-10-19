@@ -24,3 +24,12 @@ The TinyEngine module should then be available for import regularly in python:
 ### Feature Availability
 
 Currently, None
+
+
+###
+
+tinyengine
+tinyengine.tiny
+
+tinyengine.torch
+tinyengine.numpy

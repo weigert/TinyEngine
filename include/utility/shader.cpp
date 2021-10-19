@@ -158,6 +158,9 @@ template<> void ShaderBase::uniform(std::string name, const double u){ //GLSL In
 template<> void ShaderBase::uniform(std::string name, const glm::vec2 u){
   glUniform2fv(glGetUniformLocation(program, name.c_str()), 1, &u[0]); }
 
+template<> void ShaderBase::uniform(std::string name, const glm::ivec2 u){
+  glUniform2iv(glGetUniformLocation(program, name.c_str()), 1, &u[0]); }
+
 template<> void ShaderBase::uniform(std::string name, const glm::vec3 u){
   glUniform3fv(glGetUniformLocation(program, name.c_str()), 1, &u[0]); }
 

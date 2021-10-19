@@ -1,8 +1,6 @@
 README.md
 setup.py
-setup_torch.py
 source/core.cpp
-source/torch.cpp
 tinyengine.egg-info/PKG-INFO
 tinyengine.egg-info/SOURCES.txt
 tinyengine.egg-info/dependency_links.txt

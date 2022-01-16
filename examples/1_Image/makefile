@@ -21,3 +21,11 @@ endif
 
 all: main.cpp
 			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
+
+# Build Embedded Form
+
+DAT = shader			#data directory to embed
+.PHONY: embedded
+embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE
+embedded:
+	$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main

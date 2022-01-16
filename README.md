@@ -167,6 +167,18 @@ This will reduce the version to a compatibility version, reducing some features 
 
 Note that some examples rely on features introduced in OpenGL4+, meaning that the required version of GLSL will not be available. All example programs are reduced to the **minimum necessary version**.
 
+#### Shipping Resources
+
+TinyEngine supports the embedded shipping of resources in executables in a native way. It does this by utilizing [c-embed](https://github.com/weigert/c-embed) and desiging file-loading structures to use an `<stdio.h>` style interface. To ship your resources (i.e. shaders, images, .obj files) as embedded in the executable, use the `c-embed` style make rule as follows:
+
+	DAT = resource			#resource directory to embed (e.g. /shader/)
+	.PHONY: embedded
+	embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE
+	embedded:
+		$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main ${CEF}
+
+For a working example, read the `c-embed` documentation and see the TinyEngine examples. All examples have been provided with an embedded rule. Running `make all` results in relative path dependency, while running `make embedded` embeds the resource folder as a virtual filesystem while the code remains entirely unchanged.
+
 ### Dependencies / Installation
 
 Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) and MacOS. It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  
@@ -182,12 +194,16 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
     - DearImGUI (already included!)
     - g++ (compiler)
 
+		Optional:
+
+		- c-embed: https://github.com/weigert/c-embed
+
 In a single command:
 
     sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
-		
+
 #### Fedora / DNF Package Manager Systems
-	
+
 For systems with `dnf` as package manager, the dependencies can be installed using:
 
 	sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel
@@ -197,14 +213,14 @@ For systems with `dnf` as package manager, the dependencies can be installed usi
 To install on MacOS, you need to install xcode commandline tools:
 
 	sudo xcode-select --install
-	
+
 Then, to install the dependencies, I recommend installing [homebrew from here](https://brew.sh) and installing the packages:
 
 	brew update
 	brew upgrade
 	brew install glew sdl2 sdl2_image sdl2_mixer sld2_ttf glm boost
 
-Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs. 
+Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs.
 
 #### Windows
 

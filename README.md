@@ -140,7 +140,7 @@ Note that the installation has only been tested on GNU/Linux and install locatio
 #### Building a Project
 Building a project by default only requires inclusion of the TinyEngine header
 
-		#inlude <TinyEngine/TinyEngine>
+		#include <TinyEngine/TinyEngine>
 
 and optionally any helper namespace headers, e.g.
 
@@ -221,6 +221,7 @@ Then, to install the dependencies, I recommend installing [homebrew from here](h
 	brew install glew sdl2 sdl2_image sdl2_mixer sld2_ttf glm boost
 
 Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs.
+(Credit: User CodingWatching)
 
 #### Windows
 

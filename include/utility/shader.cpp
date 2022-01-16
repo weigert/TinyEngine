@@ -37,31 +37,31 @@ public:
 std::unordered_map<std::string, GLuint> ShaderBase::sbpi; //Shader Binding Point Index
 
 std::string ShaderBase::readGLSLFile(std::string file, int32_t &size){
-  boost::filesystem::path data_dir(boost::filesystem::current_path());
   boost::filesystem::path local_dir = boost::filesystem::path(file).parent_path();
 
-  std::ifstream t;
+  FILE* stream;
   std::string fileContent;
   std::string line;
 
-  t.open((data_dir/file).string()); //Read GLSL File Contents
-  if(t.is_open()){
+  stream = fopen(file.c_str(), "r");
+  if(stream != NULL){
     std::stringstream buffer;
-    while(!t.eof()){
-      getline(t, line);
+    char* cline = NULL; size_t len = 0; ssize_t nread;
+    while ((nread = getline(&cline, &len, stream)) != -1) {
+      line.assign(cline, nread);
       if(line.substr(0, 9) == "#include "){
         int includesize = 0;
         buffer << readGLSLFile((local_dir/line.substr(9)).string(), includesize);
       }
-      else{
-        buffer << line;
-        buffer << "\n";
-      }
+      else buffer << line;
     }
     fileContent = buffer.str();
   }
-  else std::cout<<"File opening \""<<file<<"\" failed"<<std::endl;
-  t.close();
+  else{
+    std::cout<<"File opening \""<<file<<"\" failed"<<std::endl;
+    return "";
+  }
+  fclose(stream);
 
   size = fileContent.length();  //Set the Size
   return fileContent;

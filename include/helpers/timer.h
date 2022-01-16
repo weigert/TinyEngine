@@ -5,7 +5,8 @@
 #include <thread>
 #include <atomic>
 
-namespace timer{
+namespace timer {
+typedef std::chrono::milliseconds ms;
 
   template<typename D, typename F, typename... Args>
   float benchmark(F function, Args&&... args, bool out = true){
@@ -18,7 +19,21 @@ namespace timer{
   };
 
   template<typename D>
-  class Timer{
+  struct measure {
+    measure(){
+      start = std::chrono::high_resolution_clock::now();
+    }
+    ~measure(){
+      stop = std::chrono::high_resolution_clock::now();
+      auto duration = std::chrono::duration_cast<D>(stop - start);
+      std::cout<<"Execution Time: "<<duration.count()<<std::endl;
+    }
+    std::chrono::time_point<std::chrono::high_resolution_clock> start;
+    std::chrono::time_point<std::chrono::high_resolution_clock> stop;
+  };
+
+  template<typename D>
+  class Timer {
     //Finish the Guy
     std::atomic<bool> active = false;
 
@@ -82,6 +97,7 @@ namespace timer{
       }
     }
   };
+
 }
 
 #endif

@@ -11,10 +11,10 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 
 		Main File: 188
 		Main Classes: 302
-		Utility Classes: 775
-		Helpers Namespaces: 678
-		Core Total: 1265
-		Total: 1943
+		Utility Classes: 772
+		Helpers Namespaces: 707
+		Core Total: 1262
+		Total: 1969
 
 	History:
 		12. Apr 2020: 885
@@ -24,6 +24,7 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
  		01. Aug 2020: 1145
 		21. Feb 2021: 1378
 		27. Jul 2021: 1943
+		26. Jan 2022: 1969
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.

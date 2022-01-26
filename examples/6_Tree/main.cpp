@@ -131,9 +131,11 @@ int main( int argc, char* args[] ) {
 		}
 
 		if(drawleaf){
+
 			particleShader.use();
 			particleShader.texture("spriteTexture", tex);
 			particleShader.uniform("projectionCamera", cam::vp);
+			particleShader.uniform("ff", glm::rotate(glm::mat4(1.0f), glm::radians(180-cam::rot), glm::vec3(0,1,0)));
 			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 			particleShader.uniform("lightcolor", lightcolor);
 
@@ -149,7 +151,9 @@ int main( int argc, char* args[] ) {
 			models.fill<glm::mat4>(leaves);
 			particle.SIZE = leaves.size();
 			particle.render(GL_TRIANGLE_STRIP); //Render Particle System
+
 		}
+
 	};
 
 	//Loop over Stuff

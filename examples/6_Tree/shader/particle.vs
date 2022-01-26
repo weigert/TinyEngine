@@ -6,6 +6,7 @@ in mat4 in_Model;
 
 uniform mat4 projectionCamera;
 uniform mat4 dbvp;
+uniform mat4 ff;
 
 out vec2 ex_Tex;
 out vec3 ex_Color;
@@ -16,6 +17,6 @@ void main(void) {
 	ex_Tex = in_Tex;
 
 	//Actual Position in Space
-	gl_Position = projectionCamera * in_Model * vec4(in_Quad, 1.0f);
+	gl_Position = projectionCamera * in_Model * ff * vec4(in_Quad, 1.0f);
 	ex_Shadow = dbvp * in_Model * vec4(in_Quad, 1.0f);
 }

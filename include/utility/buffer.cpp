@@ -21,6 +21,11 @@ struct Buffer {
     fill<T>(buf);
   }
 
+  template<typename T>
+  Buffer(size_t size, T* data):Buffer(){
+    fill(size, data);
+  }
+
   template<typename T> void fill(size_t size, T* data);
   template<typename T> void fill(std::vector<T> buf);
   template<typename T> void fill(T val);

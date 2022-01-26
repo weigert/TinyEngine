@@ -2,6 +2,6 @@
 
 ## Controls
 
-        ESC - Toggle Interface
-        Scroll - Zoom
-        WASD - Move
+    ESC - Toggle Interface
+    Scroll - Zoom
+    WASD - Move

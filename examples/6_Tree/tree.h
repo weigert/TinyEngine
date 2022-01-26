@@ -239,12 +239,7 @@ std::function<void(std::vector<glm::mat4>&, bool)> addLeaves = [](std::vector<gl
         glm::vec3 d = glm::vec3(hashrand(b->ID+i), hashrand(b->ID+i+leafcount), hashrand(b->ID+i+2*leafcount))-glm::vec3(0.5);
         d = d * glm::vec3(leafspread[0], leafspread[1], leafspread[2]);
 
-        //Rotate Towards Camera (or not) and Scale
         glm::mat4 model = glm::translate(glm::mat4(1.0), pos+d);
-
-        if(face) model = glm::rotate(model, glm::radians(45.0f-cam::rot), glm::vec3(0.0, 1.0, 0.0));
-        else model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
-
         p.push_back(glm::scale(model, glm::vec3(leafsize)));
 
       }

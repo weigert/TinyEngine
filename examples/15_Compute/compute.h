@@ -65,19 +65,21 @@ void increment(){
 
   //Parallel
 
-	std::fill(buffer.begin(), buffer.end(), 0.0f);       //Reset Buffer
+	std::fill(buffer.begin(), buffer.end(), 0.0f);         //Reset Buffer
 
-	Compute compute("shader/increment.cs", {"buff"});		 //Create the Compute Shader
-	compute.buffer("buff", buffer);									     //Upload the Buffer
-	compute.use();																	     //Use the Shader
+  Buffer buf(buffer);                                   //Raw Buffer Object
+
+	Compute compute("shader/increment.cs", {"buff"});		  //Create the Compute Shader
+	compute.bind<float>("buff", &buf);								    //Upload the Buffer
+	compute.use();																	      //Use the Shader
 
 	std::cout<<"Parallel ";
 	timer::benchmark<std::chrono::milliseconds>([&](){
 
 	for(int i = 0; i < ITER; i++)
-		compute.dispatch(SIZE/1024);			                 //Execute the Compute Shader
+		compute.dispatch(SIZE/1024);			                  //Execute the Compute Shader
 
-	compute.retrieve("buff", buffer);			               //Retrieve Data from Compute Shader
+	buf.retrieve(buffer);			                            //Retrieve Data from Compute Shader
 
 	});
 
@@ -86,6 +88,7 @@ void increment(){
   std::cout<<std::endl;
 
 }
+
 
 
 void accumulate(){
@@ -119,7 +122,8 @@ void accumulate(){
   //Parallel
 
   Compute compute("shader/accumulate.cs", {"buff"});		//Create the Compute Shader
-  compute.buffer("buff", buffer);							          //Upload the Buffer
+  Buffer buf(buffer);
+  compute.bind<float>("buff", &buf);							    //Upload the Buffer
   compute.use();																        //Use the Shader
 
   int K = 256;                                          //K-Ary Merge
@@ -140,15 +144,16 @@ void accumulate(){
 
   }
 
-  compute.retrieve("buff", buffer);
+  buf.retrieve(buffer);
 
   });
 
+
   std::cout<<"Result: "<<std::setprecision(16)<<buffer[0]<<std::endl;
 
-  std::cout<<std::endl;
-
 }
+
+
 
 //IMPORTANT NOTE: WATCH THE DIMENSIONS!
 
@@ -230,16 +235,19 @@ void gausstransform(){
   for(int n = 0; n < N; n++)
     P[m*N+n] = 0.0f;
 
-  //Define SSBOs
-  Compute::buffer({"pointsetA", "pointsetB", "probability", "vector"});
-  Compute::buffer("pointsetA", pointsetA);
-  Compute::buffer("pointsetB", pointsetB);
-  Compute::buffer("probability", (float*)NULL, N*M);
-  Compute::buffer("vector", (float*)NULL, (M>N)?M:N);   //Empty Vector!
-
   //Define Shaders and their Interfaces
   Compute compute("shader/gausstransform.cs", {"pointsetA", "pointsetB", "probability"});
   Compute accumulate("shader/2Daccumulate.cs", {"vector", "probability"});
+
+  Buffer pA(pointsetA);
+  Buffer pB(pointsetB);
+  Buffer prob(N*M, (float*)NULL);
+  Buffer vec((M>N)?M:N, (float*)NULL);
+
+  compute.bind<glm::vec4>("pointsetA", &pA);
+  compute.bind<glm::vec4>("pointsetB", &pB);
+  compute.bind<float>("probability", &prob);
+  compute.bind<float>("vector", &vec);
 
   std::cout<<"Parallel ";
   timer::benchmark<std::chrono::milliseconds>([&](){
@@ -274,7 +282,7 @@ void gausstransform(){
   accumulate.dispatch(M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  Compute::retrieve("probability", P, N*M);
+  prob.retrieve(N*M, P);
 
   accumulate.uniform("set", 0.0);
 
@@ -283,14 +291,14 @@ void gausstransform(){
   accumulate.dispatch(M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  Compute::retrieve("vector", PY, M);
+  vec.retrieve(M, PY);
 
   accumulate.uniform("operation", 0);
   accumulate.uniform("minordim", false);
   accumulate.dispatch(N/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  Compute::retrieve("vector", PX, N);
+  vec.retrieve(N, PX);
 
   });
 
@@ -305,6 +313,8 @@ void gausstransform(){
   std::cout<<std::endl;
 
 }
+
+
 
 void matrixmatrix(){
 
@@ -329,39 +339,20 @@ void matrixmatrix(){
   for(int i = 0; i < K*M; i++)
     R[i] = 0.0f;
 
-  /* //Too Damn Slow
-
-  //Serial Naive
-
-  std::cout<<"Serial Naive ";
-  timer::benchmark<std::chrono::microseconds>([&](){
-
-    for (int i = 0; i < N; i++){
-      for (int j = 0; j < M; j++){
-        for (int p = 0; p < K; p++) {
-          R[i*M+j] += A[i*K+p]*B[p*M+j];
-        }
-      }
-    }
-
-  });
-
-  std::cout<<"Result: "<<R[0]<<std::endl;
-  std::cout<<"Result: "<<R[1]<<std::endl;
-  std::cout<<"Result: "<<R[M]<<std::endl;
-
-  */
-
   //Parallel
 
-  Compute::buffer({"matrixA", "matrixB", "result"});
-  Compute::buffer("matrixA", A, N*K);
-  Compute::buffer("matrixB", B, K*M);
-  Compute::buffer("result", (float*)R, N*M);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   //Define Shaders and their Interfaces
   Compute compute("shader/matmult.cs", {"matrixA", "matrixB", "result"});
+
+  Buffer mA(N*K, A);
+  Buffer mB(K*M, B);
+  Buffer res(N*M, (float*)R);
+
+  compute.bind<float>("matrixA", &mA);
+  compute.bind<float>("matrixB", &mB);
+  compute.bind<float>("result", &res);
 
   //const int BS = 2;
 
@@ -378,7 +369,7 @@ void matrixmatrix(){
   compute.dispatch(N/16, M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  Compute::retrieve("result", R, N*M);
+  res.retrieve(N*M, R);
 
   });
 

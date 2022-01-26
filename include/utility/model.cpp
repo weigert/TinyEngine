@@ -1,8 +1,10 @@
 struct Model {
 
-  GLuint vao;                             //Vertex Array Object
-  std::unordered_map<std::string, int> bindings;    //Binding Points of Attributes
-  size_t SIZE = 0;                        //Number of Vertices
+  GLuint vao;                                       //Vertex Array Object
+  size_t SIZE = 0;                                  //Number of Vertices
+
+  std::unordered_map<std::string, int> bindings;        //Binding Points of Attributes
+  std::unordered_map<std::string, Buffer*> buffers;     //Owned Buffer
 
   Model(){
     glGenVertexArrays(1, &vao);
@@ -12,6 +14,8 @@ struct Model {
   ~Model(){
     glDisableVertexAttribArray(vao);
     glDeleteVertexArrays(1, &vao);
+    for(auto& buf: buffers)    //Delete Owned Buffers
+      delete buf.second;
   }
 
   Model(std::vector<std::string> nbinding):Model(){     //Generate Model with Defined Bindings
@@ -22,29 +26,30 @@ struct Model {
   }
 
   template<typename T>
-  void bind(std::string binding, Buffer* buf){  //Bind a specific buffer to a binding point
-
+  void bind(std::string binding, Buffer* buf, bool owned = false){  //Bind a specific buffer to a binding point
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, buf->index);
     glBindVertexBuffer(bindings[binding], buf->index, 0, sizeof(T));
     glVertexAttribFormat(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
-
+    if(owned) buffers[binding] = buf;
   }
 
-  glm::mat4 model = glm::mat4(1.0f);
-
+  GLuint iindex;
   bool indexed = false;
-  Buffer* ibo = NULL;
-  void index(Buffer* buf){
-    ibo = buf;
+  void index(Buffer* buf, bool owned = false){
     indexed = true;
+    SIZE = buf->SIZE;
+    iindex = buf->index;
+    if(owned) buffers["index"] = buf;
   }
+
+  glm::mat4 model = glm::mat4(1.0f);                //Model Matrix
 
   void render(GLenum mode = GL_TRIANGLE_STRIP){
     glBindVertexArray(vao);
     if(indexed){
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->index);
-      glDrawElements(mode, ibo->SIZE, GL_UNSIGNED_INT, 0);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iindex);
+      glDrawElements(mode, SIZE, GL_UNSIGNED_INT, 0);
     }
     else glDrawArrays(mode, 0, SIZE);
   }

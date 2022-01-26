@@ -1,7 +1,7 @@
 # TinyEngine Makefile
 # Compiler Configuration
 
-CC = g++ -std=c++17
+CC = g++-10 -std=c++20
 CF = -Wfatal-errors -O
 LF = -I/usr/local/include -L/usr/local/lib
 
@@ -19,10 +19,14 @@ ifeq ($(UNAME), Darwin)			#Detext MacOS
 TINYOS = -framework OpenGL
 endif
 
-all: source/main.cpp
-			@echo "WARNING: RENDERPOOL IS CURRENTLY BROKEN";
+pooled: source/main.cpp
 			$(CC) source/main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
-	
+
+naive: source/naive.cpp
+			$(CC) source/naive.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
+
+all: naive pool
+
 DAT = shader			#data directory to embed
 .PHONY: embedded
 embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE

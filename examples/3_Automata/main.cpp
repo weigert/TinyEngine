@@ -51,8 +51,6 @@ int main( int argc, char* args[] ) {
 
 		Tiny::view.target(color::black);									//Target screen
 		shader.use(); 																		//Setup Shader
-		if(flip) shader.texture("imageTexture", targetB.texture);
-		else 		 shader.texture("imageTexture", targetA.texture);
 		shader.texture("imageTexture", targetA.texture);
 		shader.uniform("model", flat.model);
 		flat.render();																		//Render Objects

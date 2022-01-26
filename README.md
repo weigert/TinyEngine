@@ -179,6 +179,13 @@ TinyEngine supports the embedded shipping of resources in executables in a nativ
 
 For a working example, read the `c-embed` documentation and see the TinyEngine examples. All examples have been provided with an embedded rule. Running `make all` results in relative path dependency, while running `make embedded` embeds the resource folder as a virtual filesystem while the code remains entirely unchanged.
 
+Currently Implemented Loading Interfaces:
+- Shaders
+
+Not-Yet Implemented Loading Interfaces:
+- Images
+- Object Files
+
 ### Dependencies / Installation
 
 Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) and MacOS. It would be possible to port to windows, but I lack a dedicated windows development environment to reliably port it. I might do this in the future.  

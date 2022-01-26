@@ -20,9 +20,8 @@ TINYOS = -framework OpenGL
 endif
 
 all: main.cpp
-		@echo "WARNING: COMPUTE IS CURRENTLY BROKEN";
 			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
-		
+
 DAT = shader			#data directory to embed
 .PHONY: embedded
 embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE

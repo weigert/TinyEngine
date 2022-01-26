@@ -8,6 +8,6 @@ layout (std430, binding = 0) buffer buff {
 
 void main(){
 
-  b[gl_GlobalInvocationID.x] = 0.0f;
+  b[gl_GlobalInvocationID.x] += 1.0f;
 
 };

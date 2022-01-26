@@ -44,8 +44,8 @@ void Instance::config<glm::mat4>(Buffer* buf){
 void Instance::render(GLenum mode, int size){
   glBindVertexArray(model->vao);
   if(model->indexed){
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->ibo->index);
-    glDrawElementsInstanced(mode, model->ibo->SIZE, GL_UNSIGNED_INT, 0, size);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->iindex);
+    glDrawElementsInstanced(mode, model->SIZE, GL_UNSIGNED_INT, 0, size);
   }
   else glDrawArraysInstanced(mode, 0, model->SIZE, size);
 }

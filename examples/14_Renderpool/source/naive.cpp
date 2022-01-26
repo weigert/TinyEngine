@@ -44,7 +44,21 @@ int main( int argc, char* args[] ) {
   for(int k = 0; k < 5; k++){
 
 		chunks.emplace_back(ivec3(i, j, k));
-    Model* model = new Model(chunkmesh::greedy, &chunks.back());
+
+		//Define Buffers
+		Buffer* positions = new Buffer();
+		Buffer* normals = new Buffer();
+		Buffer* colors = new Buffer();
+		Buffer* indices = new Buffer();
+
+		chunkmesh::greedy(&chunks.back(), indices, positions, normals, colors);
+
+		Model* model = new Model({"in_Position", "in_Normal", "in_Color"});
+		model->bind<glm::vec3>("in_Position", positions, true);
+		model->bind<glm::vec3>("in_Normal", normals, true);
+		model->bind<glm::vec4>("in_Color", colors, true);
+		model->index(indices, true);
+
     models.push_back(model);
 
   }
@@ -62,7 +76,7 @@ int main( int argc, char* args[] ) {
 		shader.use();
     shader.uniform("vp",  cam::vp);
     for(int i = 0; i < models.size(); i++)
-      models[i]->render();
+      models[i]->render(GL_TRIANGLES);
 
 	};
 
@@ -85,11 +99,14 @@ int main( int argc, char* args[] ) {
 
 			t += timer::benchmark<std::chrono::microseconds>([&](){
 
-			models[i]->construct(chunkmesh::greedy, &chunks[i]);
+			chunkmesh::greedy(&chunks[i], models[i]->buffers["index"], models[i]->buffers["in_Position"], models[i]->buffers["in_Normal"], models[i]->buffers["in_Color"]);
+			models[i]->SIZE = models[i]->buffers["index"]->SIZE;
 
 			}, false);
 
 		}
+
+
 
 		 std::cout<<"AVERAGE TIME: "<<t/chunks.size()<<std::endl;
 		 at = 0.99f*at + 0.01f*float(t);

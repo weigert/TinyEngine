@@ -29,3 +29,4 @@ DAT = shader			#data directory to embed
 embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE
 embedded:
 	$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
+	rm c-embed.o

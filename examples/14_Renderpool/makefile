@@ -19,12 +19,13 @@ ifeq ($(UNAME), Darwin)			#Detext MacOS
 TINYOS = -framework OpenGL
 endif
 
-all: source/main.cpp
+pooled: source/main.cpp
 			$(CC) source/main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
 
 naive: source/naive.cpp
 			$(CC) source/naive.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
 
+all: naive pool
 
 DAT = shader			#data directory to embed
 .PHONY: embedded

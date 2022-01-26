@@ -2,7 +2,7 @@
 #include <TinyEngine/camera>
 #include <TinyEngine/image>
 
-#define SPARTICLES 128
+#define SPARTICLES 64
 #define NPARTICLES (SPARTICLES*SPARTICLES)
 
 int main( int argc, char* args[] ) {

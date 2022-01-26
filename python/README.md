@@ -1,5 +1,7 @@
 # TinyEngine
 
+Note: These featuers are experimental.
+
 ## Python Binding
 
 This is an attempt to make TinyEngine available in Python as a module using pybind11.

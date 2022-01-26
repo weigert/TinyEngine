@@ -53,7 +53,7 @@ A number of utility classes wrap typical OpenGL features into easily useable str
 	- Texture:      OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
 	- Shader:       Load, compile, link and use shader programs (vertex, fragment, geometry) easily, pass SSBO.
 	- Compute:      Derived from Shader, allows for compute shader dispatching
-	- Buffer:				OpenGL Buffer Object wrapper. Allows for easy templated loading and data retrieval for the GPU.
+	- Buffer:	OpenGL Buffer Object wrapper. Allows for easy templated loading and data retrieval for the GPU.
 	- Model:        OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
 	- Target:       OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
 	- Instance:     OpenGL instanced rendering wrapper (any Model object, any data). Simply add model buffers and render model instanced.

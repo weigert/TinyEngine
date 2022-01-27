@@ -134,9 +134,9 @@ using namespace std;
 
     //Construct the Model with Buffers
     Model* model = new Model({"in_Position", "in_Normal", "in_Color"});
-    model->bind<glm::vec3>("in_Position", new Buffer(positions));
-    model->bind<glm::vec3>("in_Normal", new Buffer(normals));
-    model->bind<glm::vec4>("in_Color", new Buffer(colors));
+    model->bind<glm::vec3>("in_Position", new Buffer(positions), true);
+    model->bind<glm::vec3>("in_Normal", new Buffer(normals), true);
+    model->bind<glm::vec4>("in_Color", new Buffer(colors), true);
     model->SIZE = positions.size()/3;
     return model;
 

@@ -19,11 +19,16 @@ bool View::init(std::string _name, int W, int H){
     return false;
   }
   SDL_SetWindowResizable(gWindow, SDL_TRUE);
+	
   gContext = SDL_GL_CreateContext(gWindow);
-
-	SDL_GL_SetSwapInterval(vsync);
-	glewExperimental = GL_TRUE;     //Launch GLEW
-	glewInit();
+  if( gContext == NULL ){
+    printf( "Context could not be created! SDL_Error: %s\n", SDL_GetError() );
+    return false;
+  }
+	
+  SDL_GL_SetSwapInterval(vsync);
+  glewExperimental = GL_TRUE;     //Launch GLEW
+  glewInit();
 
   IMGUI_CHECKVERSION();           //Setup ImGUI
   ImGui::CreateContext();
@@ -62,8 +67,8 @@ void View::quit(){
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
-	SDL_GL_DeleteContext( gContext );
-	SDL_DestroyWindow( gWindow );
+  SDL_GL_DeleteContext( gContext );
+  SDL_DestroyWindow( gWindow );
 }
 
 void View::render(){

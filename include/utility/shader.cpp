@@ -51,6 +51,7 @@ std::string ShaderBase::readGLSLFile(std::string file, int32_t &size){
       line.assign(cline, nread);
       if(line.substr(0, 9) == "#include "){
         int includesize = 0;
+        line.assign(cline, nread-1);  //Remove Newline
         buffer << readGLSLFile((local_dir/line.substr(9)).string(), includesize);
       }
       else buffer << line;

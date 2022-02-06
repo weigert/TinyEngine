@@ -92,8 +92,8 @@ void construct(Buffer& positions, Buffer& normals, Buffer& indices){
     }
   }
 
-  indices.fill<int>(indbuf);
-  positions.fill<float>(posbuf);
-  normals.fill<float>(norbuf);
+  indices.fill(indbuf);
+  positions.fill(posbuf);
+  normals.fill(norbuf);
 
 }

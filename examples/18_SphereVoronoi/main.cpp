@@ -3,6 +3,7 @@
 #include <random>
 
 #include "icosphere.h"
+#include "FastNoiseLite.h"
 
 std::uniform_real_distribution<double> u(0.0, 1.0);
 
@@ -21,6 +22,7 @@ glm::vec3 spheresample(std::mt19937& g){
 int main( int argc, char* args[] ) {
 
   Tiny::view.ccw = false;
+  Tiny::view.vsync = false;
   Tiny::window("Spherical Voronoi Diagram with Cubemap Texture", 800, 800);	//Open Window
 
   // Camera for Viewing Sphere
@@ -38,7 +40,7 @@ int main( int argc, char* args[] ) {
   // Cubemap and Cube Voronoi Shader
 
   Shader cubevoronoi({"shader/cubevoronoi.vs", "shader/cubevoronoi.gs", "shader/cubevoronoi.fs"}, {"in_Position"});
-  Cubemap voronoi(256, 256);
+  Cubemap voronoi(512, 512);
 
   // View Matrices for Cubemap Geometry Shader
 
@@ -62,18 +64,22 @@ int main( int argc, char* args[] ) {
   std::mt19937 generator (seed);
 
   std::vector<glm::vec3> centroids;
-  for(size_t i = 0; i < 2048; i++)//(2 << 12); i++)
+  std::vector<glm::vec3> offsets;
+  for(size_t i = 0; i < (2 << 13); i++)
     centroids.push_back(spheresample(generator));
+  offsets = centroids;
 
   // Buffer and Instance of Flat
 
-  Buffer centroidbuf(centroids);
+  Buffer centroidbuf(offsets);
 
   Square3D flat;
   Instance instance(&flat);
   instance.bind<glm::vec3>("in_Centroid", &centroidbuf);
 
   // Loop
+
+  const float R = 0.1f;
 
   Tiny::event.handler = cam::handler;
   Tiny::view.pipeline = [&](){
@@ -82,7 +88,7 @@ int main( int argc, char* args[] ) {
     cubevoronoi.use();
     cubevoronoi.uniform("vp", views);
     cubevoronoi.uniform("far", pointfar);
-    cubevoronoi.uniform("R", 0.2);
+    cubevoronoi.uniform("R", R);
     instance.render();
 
     Tiny::view.target(glm::vec3(0));
@@ -95,7 +101,30 @@ int main( int argc, char* args[] ) {
 
   };
 
+  // Extra Stuff (Movement)
+
+  float t = 0.0f;
+
+  FastNoiseLite noise;
+  noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+  noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+  noise.SetFractalOctaves(8.0f);
+  noise.SetFractalLacunarity(2.0f);
+  noise.SetFractalGain(0.6f);
+  noise.SetFrequency(1.0);
+
   Tiny::loop([&](){											//Extra Stuff (every tick)
+
+
+    t += 0.01f;
+
+    for(unsigned int i = 0; i < offsets.size(); i++){
+      offsets[i].x = centroids[i].x + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
+      offsets[i].y = centroids[i].y + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
+      offsets[i].z = centroids[i].z + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
+    }
+    centroidbuf.fill(offsets);
+
 
   });
 

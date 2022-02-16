@@ -30,8 +30,8 @@ void main(){
   if(abs(in_Centroid.y) > 0.8)
     d = vec3(0,0,1);
 
-  vec3 px = cross(in_Centroid, d);
-  vec3 py = cross(in_Centroid, px);
+  vec3 px = normalize(cross(in_Centroid, d));
+  vec3 py = normalize(cross(in_Centroid, px));
 
   // Orient the Quad Correctly!
 

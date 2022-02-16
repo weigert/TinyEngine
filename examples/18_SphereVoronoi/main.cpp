@@ -44,10 +44,7 @@ int main( int argc, char* args[] ) {
 
   // View Matrices for Cubemap Geometry Shader
 
-  float pointnear = 0.01f;
-  float pointfar = 2.0f;
-
-  glm::mat4 pointproj = glm::perspective(glm::radians(90.0f), 1.0f, pointnear, pointfar);
+  glm::mat4 pointproj = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 1.1f);
   std::vector<glm::mat4> views;
   views.push_back(pointproj*glm::lookAt(glm::vec3(0), glm::vec3( 1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
   views.push_back(pointproj*glm::lookAt(glm::vec3(0), glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
@@ -79,7 +76,7 @@ int main( int argc, char* args[] ) {
 
   // Loop
 
-  const float R = 0.1f;
+  const float R = 0.05f;
 
   Tiny::event.handler = cam::handler;
   Tiny::view.pipeline = [&](){
@@ -87,7 +84,6 @@ int main( int argc, char* args[] ) {
     voronoi.target();
     cubevoronoi.use();
     cubevoronoi.uniform("vp", views);
-    cubevoronoi.uniform("far", pointfar);
     cubevoronoi.uniform("R", R);
     instance.render();
 
@@ -120,7 +116,7 @@ int main( int argc, char* args[] ) {
 
     for(unsigned int i = 0; i < offsets.size(); i++){
       offsets[i].x = centroids[i].x + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
-      offsets[i].y = centroids[i].y + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
+      offsets[i].y = centroids[i].y + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, -t);
       offsets[i].z = centroids[i].z + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
     }
     centroidbuf.fill(offsets);

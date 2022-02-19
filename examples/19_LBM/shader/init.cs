@@ -1,18 +1,12 @@
 #version 460 core
 
-layout(local_size_x = 25, local_size_y = 25) in;
+layout(local_size_x = 32, local_size_y = 32) in;
 
 #include lbm.cs
 
 void main(){
 
   uint ind = gl_GlobalInvocationID.x*NY + gl_GlobalInvocationID.y;
-
-  // Initialize the Boundary Condition Array
-
-  B[ind] = 0.0;
-  if(length(gl_GlobalInvocationID.xy - vec2(NX/2, NY)/2) < 10)
-    B[ind] = 1.0;
 
   // Initialize the Boltzmann Distribution
 

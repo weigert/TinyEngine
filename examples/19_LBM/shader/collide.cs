@@ -1,6 +1,6 @@
 #version 460 core
 
-layout(local_size_x = 25, local_size_y = 25) in;
+layout(local_size_x = 32, local_size_y = 32) in;
 
 #include lbm.cs
 
@@ -12,7 +12,7 @@ layout (std430, binding = 4) buffer v {
   vec2 V[];
 };
 
-const float tau = 0.57;
+const float tau = 0.6;
 const float dt = 1.0;
 
 void main(){
@@ -28,7 +28,7 @@ void main(){
   // TRT Method
 
   const float omega_plus = 1.0/tau;
-  const float lambda = 0.25;
+  const float lambda = 0.32;
   const float omega_minus = 1.0/(lambda/(1.0/omega_plus-0.5)+0.5);
 
   for(int q = 0; q < Q; q++){

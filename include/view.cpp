@@ -19,8 +19,13 @@ bool View::init(std::string _name, int W, int H){
     return false;
   }
   SDL_SetWindowResizable(gWindow, SDL_TRUE);
+	
   gContext = SDL_GL_CreateContext(gWindow);
-
+  if( gContext == NULL ){
+    printf( "Context could not be created! SDL_Error: %s\n", SDL_GetError() );
+    return false;
+  }
+	
   SDL_GL_SetSwapInterval(vsync);
   glewExperimental = GL_TRUE;     //Launch GLEW
   glewInit();

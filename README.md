@@ -11,10 +11,10 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 
 		Main File: 188
 		Main Classes: 302
-		Utility Classes: 775
-		Helpers Namespaces: 678
-		Core Total: 1265
-		Total: 1943
+		Utility Classes: 772
+		Helpers Namespaces: 707
+		Core Total: 1262
+		Total: 1969
 
 	History:
 		12. Apr 2020: 885
@@ -24,6 +24,7 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
  		01. Aug 2020: 1145
 		21. Feb 2021: 1378
 		27. Jul 2021: 1943
+		26. Jan 2022: 1969
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -52,7 +53,7 @@ A number of utility classes wrap typical OpenGL features into easily useable str
 	- Texture:      OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
 	- Shader:       Load, compile, link and use shader programs (vertex, fragment, geometry) easily, pass SSBO.
 	- Compute:      Derived from Shader, allows for compute shader dispatching
-	- Buffer:				OpenGL Buffer Object wrapper. Allows for easy templated loading and data retrieval for the GPU.
+	- Buffer:	OpenGL Buffer Object wrapper. Allows for easy templated loading and data retrieval for the GPU.
 	- Model:        OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
 	- Target:       OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
 	- Instance:     OpenGL instanced rendering wrapper (any Model object, any data). Simply add model buffers and render model instanced.

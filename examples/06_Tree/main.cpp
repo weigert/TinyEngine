@@ -63,7 +63,7 @@ int main( int argc, char* args[] ) {
 	Texture tex(image::load("leaf.png"));
 
 	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
-	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
+	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color"});
 	Shader depth({"shader/depth.vs", "shader/depth.fs"}, {"in_Position"});
 	Shader particledepth({"shader/particledepth.vs", "shader/particledepth.fs"}, {"in_Quad", "in_Tex", "in_Model"});
 	Billboard shadow(1600, 1600, false); 						//No Color Buffer
@@ -78,9 +78,10 @@ int main( int argc, char* args[] ) {
 		if(drawshadow){
 			depth.use();
 			depth.uniform("dvp", lproj*lview);
-			defaultShader.uniform("model", treemesh.model);
+			depth.uniform("model", treemesh.model);
 			treemesh.render(GL_TRIANGLES);
 		}
+
 		if(leafshadow){
 			particledepth.use();
 			particledepth.uniform("dvp", lproj*lview);
@@ -91,10 +92,14 @@ int main( int argc, char* args[] ) {
 			particle.render(GL_TRIANGLE_STRIP); 		//Render Particle System
 		}
 
+		std::cout<<"AYY"<<std::endl;
+
+
 		//Prepare Render Target
 		Tiny::view.target(glm::vec3(backcolor[0], backcolor[1], backcolor[2]));
 
 		if(drawwire || drawtree){
+
 			defaultShader.use();
 			defaultShader.uniform("model", treemesh.model);
 			defaultShader.uniform("projectionCamera", cam::vp);
@@ -113,14 +118,17 @@ int main( int argc, char* args[] ) {
 			defaultShader.uniform("drawcolor", glm::vec4(backcolor[0],backcolor[1],backcolor[2],1));
 			defaultShader.uniform("model", floor.model);
 			floor.render();
+
 			defaultShader.uniform("drawfloor", false);
 
 			defaultShader.uniform("model", treemesh.model);
-
+			
 			if(drawtree){
 				defaultShader.uniform("drawcolor", glm::vec4(treecolor[0], treecolor[1], treecolor[2], treeopacity));
 				defaultShader.uniform("wireframe", false);
-				treemesh.render(GL_TRIANGLES);
+				
+			//	std::cout<<"AYY"<<std::endl;
+			//	treemesh.render(GL_TRIANGLES);
 			}
 
 			if(drawwire){
@@ -128,8 +136,10 @@ int main( int argc, char* args[] ) {
 				defaultShader.uniform("wireframe", true);
 				treemesh.render(GL_LINES);
 			}
+
 		}
 
+		
 		if(drawleaf){
 
 			particleShader.use();
@@ -157,7 +167,7 @@ int main( int argc, char* args[] ) {
 	};
 
 	//Loop over Stuff
-	Tiny::loop([&](){ /* ... */
+	Tiny::loop([&](){
 
 		if(autorotate)
 			cam::pan(0.5f);
@@ -167,6 +177,7 @@ int main( int argc, char* args[] ) {
 
 		//Update Rendering Structures
 		construct(positions, normals, colors, indices);
+		treemesh.index(&indices);
 
 		models.fill<glm::mat4>(leaves);
 

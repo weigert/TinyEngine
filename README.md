@@ -227,7 +227,7 @@ Then, to install the dependencies, I recommend installing [homebrew from here](h
 
 	brew update
 	brew upgrade
-	brew install glew sdl2 sdl2_image sdl2_mixer sld2_ttf glm boost
+	brew install glew sdl2 sdl2_image sdl2_mixer sdl2_ttf glm boost
 
 Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs.
 (Credit: User CodingWatching)

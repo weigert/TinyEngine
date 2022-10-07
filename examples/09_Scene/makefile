@@ -27,7 +27,7 @@ endif
 
 all: main.cpp
 			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
-
+			
 DAT = shader			#data directory to embed
 .PHONY: embedded
 embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE

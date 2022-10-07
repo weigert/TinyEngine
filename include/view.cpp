@@ -12,7 +12,7 @@ bool View::init(std::string _name, int W, int H){
   //Initialize the Window and Context
   Uint32 windowflags = SDL_WINDOW_OPENGL;
   if(!windowed) windowflags = windowflags | SDL_WINDOW_HIDDEN;
-  
+
   gWindow = SDL_CreateWindow(_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, windowflags);
   if( gWindow == NULL ){
     printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
@@ -93,9 +93,10 @@ void View::drawInterface(){
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void View::target(glm::vec3 clearcolor, bool clear){
+void View::target(glm::vec3 clearcolor, bool clearc, bool cleard){
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, WIDTH, HEIGHT);
   glClearColor(clearcolor.x, clearcolor.y, clearcolor.z, 1.0f);
-  if(clear) glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  if(clearc) glClear(GL_COLOR_BUFFER_BIT);
+  if(cleard) glClear(GL_DEPTH_BUFFER_BIT);
 }

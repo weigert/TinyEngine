@@ -13,10 +13,10 @@ public:
 
   static std::string readGLSLFile(std::string fileName, int32_t &size);  //Read File
   int addProgram(std::string fileName, GLenum shaderType);        //General Shader Addition
-  void compile(GLuint shader);          //Compile and Add File
-  void link();                          //Link the entire program
+  void compile(GLuint shader, std::string fileName);          //Compile and Add File
+  void link(std::string fileName);                          //Link the entire program
   void use();                           //Use the program
-  static void error(GLuint s, bool t);  //Get Compile/Link Error
+  static void error(GLuint s, bool t, std::string fileName);  //Get Compile/Link Error
 
   static std::unordered_map<std::string, GLuint> sbpi; //Shader Binding Point Index
 
@@ -51,6 +51,7 @@ std::string ShaderBase::readGLSLFile(std::string file, int32_t &size){
       line.assign(cline, nread);
       if(line.substr(0, 9) == "#include "){
         int includesize = 0;
+        line.assign(cline, nread-1);  //Remove Newline
         buffer << readGLSLFile((local_dir/line.substr(9)).string(), includesize);
       }
       else buffer << line;
@@ -74,24 +75,24 @@ int ShaderBase::addProgram(std::string fileName, GLenum shaderType){
 
   int shaderID = glCreateShader(shaderType);
   glShaderSource(shaderID, 1, &src, &size);
-  compile(shaderID);
+  compile(shaderID, fileName);
 
   return shaderID;
 }
 
-void ShaderBase::compile(GLuint shader){
+void ShaderBase::compile(GLuint shader, std::string fileName){
   glCompileShader(shader);
   int success;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
   if(success) glAttachShader(program, shader);
-  else        error(shader, true);
+  else        error(shader, true, fileName);
 }
 
-void ShaderBase::link(){
+void ShaderBase::link(std::string fileName){
   glLinkProgram(program);
   int success;
   glGetProgramiv(program, GL_LINK_STATUS, &success);
-  if(!success) error(program, false);
+  if(!success) error(program, false, fileName);
 }
 
 void ShaderBase::use(){
@@ -99,14 +100,14 @@ void ShaderBase::use(){
   glUseProgram(program);
 }
 
-void ShaderBase::error(GLuint s, bool t){
+void ShaderBase::error(GLuint s, bool t, std::string fileName){
   int m;
   if(t) glGetShaderiv(s, GL_INFO_LOG_LENGTH, &m);
   else glGetProgramiv(s, GL_INFO_LOG_LENGTH, &m);
   char* l = new char[m];
   if(t) glGetShaderInfoLog(s, m, &m, l);
   else glGetProgramInfoLog(s, m, &m, l);
-  std::cout<<"Linker Error: "<<l<<std::endl;
+  std::cout<<"Linker Error ("<<fileName<<"): "<<l<<std::endl;
   delete[] l;
 }
 
@@ -201,19 +202,19 @@ public:
     setup(shaders);                     //Add Individual Shaders
     for(int i = 0; i < in.size(); i++)
       glBindAttribLocation(program, i, in[i].c_str());
-    link();                             //Link the shader program!
+    link(shaders[0]);                        //Link the shader program!
   }
 
   Shader(std::vector<std::string> shaders):ShaderBase(){
     setup(shaders);                     //Add Individual Shaders
-    link();                             //Link the shader program!
+    link(shaders[0]);                             //Link the shader program!
   }
 
   Shader(std::vector<std::string> shaders, std::vector<std::string> in):ShaderBase(){
     setup(shaders);                     //Add Individual Shaders
     for(int i = 0; i < in.size(); i++)
       glBindAttribLocation(program, i, in[i].c_str());
-    link();                             //Link the shader program!
+    link(shaders[0]);                             //Link the shader program!
   }
 
   Shader(std::vector<std::string> shaders, std::vector<std::string> in, std::vector<std::string> buf):Shader(shaders, in){
@@ -252,7 +253,7 @@ public:
 
   Compute(std::string shader):ShaderBase(),
   computeShader(addProgram(shader, GL_COMPUTE_SHADER)){
-    link();
+    link(shader);
   }
 
   Compute(std::string shader, std::vector<std::string> buf):Compute(shader){

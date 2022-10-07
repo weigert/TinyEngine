@@ -95,28 +95,30 @@ Building a program with TinyEngine is extremely simple!
 
 Example Program 0:
 
-    #include <TinyEngine/TinyEngine>
+```cpp
+#include <TinyEngine/TinyEngine>
 
-    int main( int argc, char* args[] ) {
+int main( int argc, char* args[] ) {
 
-		Tiny::window("Example Window", 600, 400);   //Open Window
+	Tiny::window("Example Window", 600, 400);   //Open Window
 
-		Tiny::event.handler = [&](){ /*...*/ };   //Define Event Handler
+	Tiny::event.handler = [&](){ /*...*/ };   //Define Event Handler
 
-		Tiny::view.interface = [&](){ /*...*/ };  //Define ImGUI Interface
+	Tiny::view.interface = [&](){ /*...*/ };  //Define ImGUI Interface
 
-		/*...Define Utility Classes...*/
+	/*...Define Utility Classes...*/
 
-		Tiny::view.pipeline = [&](){ /*...*/ };   //Define Rendering Pipeline
+	Tiny::view.pipeline = [&](){ /*...*/ };   //Define Rendering Pipeline
 
-		Tiny::loop([&](){ //Start Main Game Loop
-            		//... additional code here
-		});
+	Tiny::loop([&](){ //Start Main Game Loop
+        		//... additional code here
+	});
 
-		Tiny::quit(); //Close the window, cleanup
+	Tiny::quit(); //Close the window, cleanup
 
-		return 0;
-    }
+	return 0;
+}
+```
 
 Check the [TinyEngine Wiki](https://github.com/weigert/TinyEngine/wiki) for more information on how to construct a basic program. Read the example programs to see how the utility classes are combined to create interactive 2D and 3D programs using OpenGL in very little code.
 
@@ -128,10 +130,12 @@ As of 2021, TinyEngine is built as a statically linked library for easier inclus
 
 The installation process occurs in the makefile (valid for all operating systems):
 
-		sudo make setup     #Copy Core Header Files to Install Location
-		sudo make helpers   #Copy Helper Headers
-		sudo make install   #Compile TinyEngine and Copy to Install Location
-		sudo make all       #All of the above! Run this for easy install.
+```bash
+sudo make setup     #Copy Core Header Files to Install Location
+sudo make helpers   #Copy Helper Headers
+sudo make install   #Compile TinyEngine and Copy to Install Location
+sudo make all       #All of the above! Run this for easy install.
+```
 
 The default install locations are `/usr/local/lib` for the compiled library and `/usr/local/include` for the header files.
 
@@ -142,18 +146,24 @@ Note that the installation has only been tested on GNU/Linux and install locatio
 #### Building a Project
 Building a project by default only requires inclusion of the TinyEngine header
 
-		#include <TinyEngine/TinyEngine>
+```cpp
+#include <TinyEngine/TinyEngine>
+```
 
 and optionally any helper namespace headers, e.g.
 
-		//...
-		#include <TinyEngine/object>
-		#include <TinyEngine/image>
-		//...
+```cpp
+//...
+#include <TinyEngine/object>
+#include <TinyEngine/image>
+//...
+```
 
 TinyEngine standalone is linked using:
 
-		-lTinyEngine
+```bash
+-lTinyEngine
+```
 
 but also requires linking of all additional dependencies! See the example programs to see exactly how to link the program (makefile). Note that all makesfiles are identical! Different operating systems have slightly different linkage.
 
@@ -163,7 +173,9 @@ Compiled using g++ on Ubuntu 18/20 LTS, Fedora 33 and MacOS Big Sur.
 
 In case your computer / graphics card does not support the latest versions of OpenGL, you can compile your program by defining the additional macro `TINYENGINE_COMPATIBILITY`, i.e.:
 
-		gcc main.cpp -D TINYENGINE_COMPATIBILITY -o main
+```bash
+gcc main.cpp -D TINYENGINE_COMPATIBILITY -o main
+```
 
 This will reduce the version to a compatibility version, reducing some features (i.e. lower GLSL versions), but allowing for 95% of all features to operate normally.
 
@@ -173,11 +185,13 @@ Note that some examples rely on features introduced in OpenGL4+, meaning that th
 
 TinyEngine supports the embedded shipping of resources in executables in a native way. It does this by utilizing [c-embed](https://github.com/weigert/c-embed) and desiging file-loading structures to use an `<stdio.h>` style interface. To ship your resources (i.e. shaders, images, .obj files) as embedded in the executable, use the `c-embed` style make rule as follows:
 
-	DAT = resource			#resource directory to embed (e.g. /shader/)
-	.PHONY: embedded
-	embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE
-	embedded:
-		$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main ${CEF}
+```make
+DAT = resource			#resource directory to embed (e.g. /shader/)
+.PHONY: embedded
+embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE
+embedded:
+	$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main ${CEF}
+```
 
 For a working example, read the `c-embed` documentation and see the TinyEngine examples. All examples have been provided with an embedded rule. Running `make all` results in relative path dependency, while running `make embedded` embeds the resource folder as a virtual filesystem while the code remains entirely unchanged.
 
@@ -209,28 +223,60 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
 
 In a single command:
 
-    sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
+```bash
+sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
+```
 
 #### Fedora / DNF Package Manager Systems
 
 For systems with `dnf` as package manager, the dependencies can be installed using:
 
-	sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel
+```bash
+sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel
+```
 
-#### MacOS
+#### MacOS (+Apple M1)
 
 To install on MacOS, you need to install xcode commandline tools:
 
-	sudo xcode-select --install
+```bash
+sudo xcode-select --install
+```
 
 Then, to install the dependencies, I recommend installing [homebrew from here](https://brew.sh) and installing the packages:
 
-	brew update
-	brew upgrade
-	brew install glew sdl2 sdl2_image sdl2_mixer sdl2_ttf glm boost
+```bash
+brew update
+brew upgrade
+brew install gcc
+brew install glew 
+brew install sdl2 
+brew install sdl2_image 
+brew install sdl2_mixer 
+brew install sld2_ttf
+brew install glm 
+brew install boost
+```
 
 Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs.
 (Credit: User CodingWatching)
+
+Note that you might get the following errors if you have `binutils` installed via `homebrew`:
+
+```
+ld: warning: ignoring file /usr/local/lib/libTinyEngine.a, building for macOS-arm64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x61 0x72 0x63 0x68 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
+ld: symbol(s) not found for architecture arm64
+
+ld: warning: ignoring file /usr/local/lib/libTinyEngine.a, building for macOS-arm64 but attempting to link with file built for macOS-arm64
+```
+
+See the [following issue](https://stackoverflow.com/questions/71285115/cannot-link-library-for-macos-arm64-with-executable-for-macos-arm64) for more information.
+
+Uninstall homebrew binutils to compile correctly.
+
+```bash
+brew uninstall binutils
+```
 
 #### Windows
 

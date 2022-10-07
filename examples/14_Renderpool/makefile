@@ -12,18 +12,24 @@ TINYLINK = -lpthread -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lGLEW -lboost_
 # OS Specific Linking
 
 UNAME := $(shell uname)
-ifeq ($(UNAME), Linux)			#Detect GNU/Linux
-TINYOS = -lX11 -lGL
+
+## Detect GNU/Linux
+ifeq ($(UNAME), Linux)			
+TINYLINK += -lX11 -lGL
 endif
-ifeq ($(UNAME), Darwin)			#Detext MacOS
-TINYOS = -framework OpenGL
+
+## Detect MacOS
+ifeq ($(UNAME), Darwin)			
+TINYLINK += -framework OpenGL -DTINYENGINE_OS_MAC
+LF += -I/opt/homebrew/include -L/opt/homebrew/lib
+CC = g++-12 -std=c++17
 endif
 
 pooled: source/main.cpp
-			$(CC) source/main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
+			$(CC) source/main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
 
 naive: source/naive.cpp
-			$(CC) source/naive.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
+			$(CC) source/naive.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
 
 all: naive pool
 
@@ -31,5 +37,5 @@ DAT = shader			#data directory to embed
 .PHONY: embedded
 embedded: CEF = $(shell c-embed $(DAT)) c-embed.o -include /usr/local/include/c-embed.h -DCEMBED_TRANSLATE
 embedded:
-	$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main ${CEF}
+	$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main ${CEF}
 	rm c-embed.o

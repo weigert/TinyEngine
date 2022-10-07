@@ -12,11 +12,17 @@ TINYLINK = -lpthread -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lGLEW -lboost_
 # OS Specific Linking
 
 UNAME := $(shell uname)
-ifeq ($(UNAME), Linux)			#Detect GNU/Linux
-TINYOS = -lX11 -lGL
+
+## Detect GNU/Linux
+ifeq ($(UNAME), Linux)			
+TINYLINK += -lX11 -lGL
 endif
-ifeq ($(UNAME), Darwin)			#Detext MacOS
-TINYOS = -framework OpenGL
+
+## Detect MacOS
+ifeq ($(UNAME), Darwin)			
+TINYLINK += -framework OpenGL -DTINYENGINE_OS_MAC
+LF += -I/opt/homebrew/include -L/opt/homebrew/lib
+CC = g++-12 -std=c++17
 endif
 
 all: main.cpp

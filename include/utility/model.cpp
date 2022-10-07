@@ -29,8 +29,12 @@ struct Model {
   void bind(std::string binding, Buffer* buf, bool owned = false){  //Bind a specific buffer to a binding point
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, buf->index);
+    #ifdef TINYENGINE_OS_MAC
+    glVertexAttribPointer( bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0, 0 );
+    #else
     glBindVertexBuffer(bindings[binding], buf->index, 0, sizeof(T));
     glVertexAttribFormat(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
+    #endif
     if(owned) buffers[binding] = buf;
   }
 
@@ -66,7 +70,7 @@ struct Point: Model {
 };
 
 struct Square2D : Model {
-  Buffer vert, tex;                                  //2 Buffers
+  Buffer vert, tex;                                         //2 Buffers
   Square2D():Model({"in_Quad", "in_Tex"}),                  //2 Binding Points
   vert({-1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f,  1.0f}),   //Initialize Buffer "vert"
   tex({ 0.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f}){    //Initialize Buffer "tex"

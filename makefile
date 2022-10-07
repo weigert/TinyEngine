@@ -9,7 +9,19 @@ INCLUDEPATH = /usr/local/include
 
 # Compilation Settings
 CC = g++ -std=c++17
-CF = -Wfatal-errors -O3 -I$(INCLUDEPATH)
+
+# MacOS: Dependencies install with homegrew
+
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)			#Detect GNU/Linux
+TINYOS =
+endif
+ifeq ($(UNAME), Darwin)			#Detext MacOS
+TINYOS = -I/opt/homebrew/include
+CC = g++-12 -std=c++17
+endif
+
+CF = -Wfatal-errors -O3 -I$(INCLUDEPATH) $(TINYOS)
 
 ##########################
 #  TinyEngine Installer  #
@@ -20,6 +32,7 @@ all: setup helpers install
 # Copy Required Header Files to Target Location
 setup:
 			@echo "Copying Core Header Files ...";
+			@if [ ! -d "$(INCLUDEPATH)" ]; then mkdir $(INCLUDEPATH); fi;
 			@if [ ! -d "$(INCLUDEPATH)/TinyEngine" ]; then mkdir $(INCLUDEPATH)/TinyEngine; fi;
 			@cp TinyEngine.h $(INCLUDEPATH)/TinyEngine/TinyEngine
 			@cp include/audio.h $(INCLUDEPATH)/TinyEngine/Audio
@@ -51,6 +64,7 @@ install:
 			@echo "Generating Static Library Archive ...";
 			@ar cr tmp/libTinyEngine.a tmp/TinyEngine.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
 			@echo "Placing Compiled TinyEngine Library ...";
+			@if [ ! -d "$(LIBPATH)" ]; then mkdir $(LIBPATH); fi;
 			@cp tmp/libTinyEngine.a $(LIBPATH)/libTinyEngine.a
 			@rm -rf tmp
 			@echo "Done";
@@ -63,6 +77,7 @@ HELPERS = camera color helper image object timer parse log
 
 helpers:
 			@echo "Copying Helper Header Files ...";
+			@if [ ! -d "$(INCLUDEPATH)" ]; then mkdir $(INCLUDEPATH); fi;							
 			@if [ ! -d "$(INCLUDEPATH)/TinyEngine" ]; then mkdir $(INCLUDEPATH)/TinyEngine; fi;
 			@$(foreach var,$(HELPERS), cp include/helpers/$(var).h $(INCLUDEPATH)/TinyEngine/$(var);)
 			@echo "Done";

@@ -155,8 +155,8 @@ Branch* root;
 
 void construct(Buffer& positions, Buffer& normals, Buffer& colors, Buffer& indices){
 
-  std::vector<int> indbuf;
-  std::vector<float> posbuf, norbuf, colbuf;
+  std::vector<GLuint> indbuf;
+  std::vector<GLfloat> posbuf, norbuf, colbuf;
 
   //Basically Add Lines for the Tree!
   std::function<void(Branch*, glm::vec3)> addBranch = [&](Branch* b, glm::vec3 p){
@@ -219,7 +219,7 @@ void construct(Buffer& positions, Buffer& normals, Buffer& colors, Buffer& indic
   positions.fill<float>(posbuf);
   normals.fill<float>(norbuf);
   colors.fill<float>(colbuf);
-  indices.fill<int>(indbuf);
+  indices.fill<GLuint>(indbuf);
 
 };
 

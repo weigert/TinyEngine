@@ -20,19 +20,26 @@ void main(){
 
     const int nind = n.x*NY + n.y;
 
-    // Bounce-Back
+
 
     /*
 
-    if(B[nind] == 0.0)
+    for(int q = 0; q < Q; q++){
+
+      ivec2 n = ivec2(gl_GlobalInvocationID.xy) + c[q];
+      if(n.x < 0 || n.x >= NX) continue;
+      if(n.y < 0 || n.y >= NY) continue;
+
+      const int nind = (n.x*NY + n.y);
       F[nind*Q+q] = FPROP[ind*Q+q];
 
-    else{
-      F[ind*Q + cp[q]] = FPROP[ind*Q + q];
-      F[nind*Q+q] = 0.0;
     }
 
     */
+
+
+
+
 
     // Wetnode
 
@@ -41,9 +48,20 @@ void main(){
 
     F[q*NX*NY + nind] = FPROP[q*NX*NY + ind];
 
+    // Bounce-Back
+
+
+//    if(B[nind] == 0.0)
+//      F[q*NX*NY+nind] = FPROP[q*NX*NY+ind];
+//    else{
+//      F[cp[q]*NX*NY+ind] = FPROP[q*NX*NY+ind];
+    //  F[nind*Q+q] = 0.0;
+    //}
+
   }
 
-  vec2 force = 0.2f*vec2(1, 0);
+
+  vec2 force = 0.15f*vec2(1, 0);
 
   if(
     gl_GlobalInvocationID.x == 0
@@ -53,6 +71,7 @@ void main(){
   )
     for(int q = 0; q < Q; q++)
       F[q*NX*NY + ind] = equilibrium(q, 1.0, force);
+
 
 
 }

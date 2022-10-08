@@ -3,7 +3,7 @@
 // General Parameters
 
 const int NX = 256;
-const int NY = 256;
+const int NY = 128;
 const int Q = 9;
 
 int main(int argc, char* argv[]){
@@ -11,7 +11,7 @@ int main(int argc, char* argv[]){
   Tiny::view.vsync = false;
   Tiny::view.antialias = 0;
   Tiny::benchmark = true;
-  Tiny::window("Lattice Boltzmann Method 2D", 800, 800);
+  Tiny::window("Lattice Boltzmann Method 2D", 800, 400);
 
   // Initialize our Arrays
 
@@ -38,8 +38,26 @@ int main(int argc, char* argv[]){
 
       boundary[x*NY + y] = 0.0f;
 
-      if(glm::length(glm::vec2(x,y) - glm::vec2(NX/4, NY/2)) < 10)
+      if(x < 2*NX/8 && y < NY/2 && x >= 1*NX/8){
         boundary[x*NY + y] = 1.0f;
+      }
+
+      if(x < 4*NX/8 && y > NY/2 && x >= 3*NX/8){
+        boundary[x*NY + y] = 1.0f;
+      }
+
+      if(x < 6*NX/8 && y < NY/2 && x >= 5*NX/8){
+        boundary[x*NY + y] = 1.0f;
+      }
+
+      if(x < 8*NX/8 && y > NY/2 && x >= 7*NX/8){
+        boundary[x*NY + y] = 1.0f;
+      }
+      
+      /*
+
+    //  if(glm::length(glm::vec2(x,y) - glm::vec2(NX/4, NY/2)) < 10)
+    //    boundary[x*NY + y] = 1.0f;
 
       if(glm::length(glm::vec2(x,y) - glm::vec2(NX/2, NY/4)) < 10)
         boundary[x*NY + y] = 1.0f;
@@ -49,6 +67,7 @@ int main(int argc, char* argv[]){
 
       if(glm::length(glm::vec2(x,y) - glm::vec2(3*NX/4, NY/2)) < 10)
         boundary[x*NY + y] = 1.0f;
+        */
 
     }
   }
@@ -88,9 +107,13 @@ int main(int argc, char* argv[]){
   // Loop
 
   int n = 0;
+  bool paused = true;
 
   Tiny::view.interface = [](){};
-  Tiny::event.handler = [](){};
+  Tiny::event.handler = [&](){
+    if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
+      paused = !paused;
+  };
   Tiny::view.pipeline = [&](){
 
     Tiny::view.target(glm::vec4(0,0,0,1));
@@ -102,6 +125,8 @@ int main(int argc, char* argv[]){
   };
 
   Tiny::loop([&](){
+
+    if(paused) return;
 
     collide.use();
     collide.uniform("NX", NX);

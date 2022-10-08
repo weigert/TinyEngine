@@ -45,7 +45,7 @@ const float cs4 = 1.0/cs/cs/cs/cs;
 
 // Parameters
 
-const vec2 init_velocity = vec2(0.2, 0);
+const vec2 init_velocity = vec2(0.0, 0);
 const float init_density = 1.0;
 
 // Compute the Equilibrium Boltzmann Distribution

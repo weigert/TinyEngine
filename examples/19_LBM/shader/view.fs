@@ -23,10 +23,12 @@ void main(){
   if(B[ind] > 0)
     fragColor = vec4(vec3(B[ind]), 1);//vec4(vec3(v), 1);
 
-  //else
-  //  fragColor = vec4(abs(V[ind]), 0, 1);
+  else
+    fragColor = vec4(4*abs(V[ind]), 0, 1);
 
   // Visualize the Vorticity
+
+  /*
 
   else {
 
@@ -47,5 +49,6 @@ void main(){
     else fragColor = vec4(0,0,0,1);
 
   }
+  */
 
 }

@@ -121,3 +121,15 @@ struct Gizmo: Model {
     SIZE = 6;
   }
 };
+
+struct Triangle : Model {
+	Buffer vert;
+	Triangle():Model({"vert"}),
+	vert({1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				1.0f, 0.0f, 0.0f, 0.0f}){
+		bind<glm::vec4>("vert", &vert);
+		SIZE = 4;
+	}
+};

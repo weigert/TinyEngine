@@ -25,6 +25,7 @@ void main(){
   RHO[ind] = _rho;
   V[ind] = _v;
 
+
   // TRT Method
 
   const float omega_plus = 1.0/tau;
@@ -52,6 +53,7 @@ void main(){
 
   /*
 
+
   // BGK Method
 
   for(int q = 0; q < Q; q++){
@@ -59,5 +61,7 @@ void main(){
   }
 
   */
+
+
 
 }

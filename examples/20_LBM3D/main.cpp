@@ -20,7 +20,16 @@ int main( int argc, char* args[] ) {
 	cam::init(10, cam::ORTHO);
 	cam::update();
 
-	Tiny::event.handler = cam::handler;								//Event Handler
+	bool paused = true;
+
+	Tiny::event.handler = [&](){
+
+		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
+			paused = !paused;
+			
+		cam::handler();
+
+	};								//Event Handler
 	Tiny::view.interface = [&](){ /* ... */ };				//No Interface
 
 	setup();																					//Prepare Model Stuff
@@ -192,6 +201,9 @@ int main( int argc, char* args[] ) {
 	float t = 0.0f;
 
 	Tiny::loop([&](){ //Autorotate Camera
+
+		if(paused)
+			return;
 
 		t += 0.005f;
 

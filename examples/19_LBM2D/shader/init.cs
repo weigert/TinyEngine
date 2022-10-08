@@ -10,9 +10,7 @@ void main(){
 
   // Initialize the Boltzmann Distribution
 
-  const vec2 init_velocity = vec2(0.2, 0);
-  const float init_density = 1.0;
   for(int q = 0; q < Q; q++)
-    F[ind*Q + q] = equilibrium(q, init_density, init_velocity);
+    F[q*NX*NY + ind] = equilibrium(q, init_density, init_velocity);
 
 }

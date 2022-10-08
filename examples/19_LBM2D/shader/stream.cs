@@ -8,6 +8,8 @@ void main(){
 
   const uint ind = gl_GlobalInvocationID.x*NY + gl_GlobalInvocationID.y;
 
+  // Push Scheme!
+
   for(int q = 0; q < Q; q++){
 
     // Stream-To Position (Push Scheme)
@@ -35,24 +37,22 @@ void main(){
     // Wetnode
 
     if(B[ind] > 0.0)
-      FPROP[ind*Q+q] = equilibrium(q, 1.0, vec2(0));
+      FPROP[q*NX*NY+ind] = equilibrium(q, 1.0, vec2(0));
 
-    F[nind*Q+q] = FPROP[ind*Q+q];
+    F[q*NX*NY + nind] = FPROP[q*NX*NY + ind];
 
   }
 
   vec2 force = 0.2f*vec2(1, 0);
 
   if(
-      gl_GlobalInvocationID.x == 0
-      ||  gl_GlobalInvocationID.x == NX-1
-      ||  gl_GlobalInvocationID.y == 0
-      ||  gl_GlobalInvocationID.y == NY-1
-    ){
-
+    gl_GlobalInvocationID.x == 0
+  ||  gl_GlobalInvocationID.x == NX-1
+  ||  gl_GlobalInvocationID.y == 0
+  ||  gl_GlobalInvocationID.y == NY-1
+  )
     for(int q = 0; q < Q; q++)
-      F[ind*Q + q] = equilibrium(q, 1.0, force);
+      F[q*NX*NY + ind] = equilibrium(q, 1.0, force);
 
-  }
 
 }

@@ -43,12 +43,16 @@ const float cs = 1.0/sqrt(3.0);
 const float cs2 = 1.0/cs/cs;
 const float cs4 = 1.0/cs/cs/cs/cs;
 
+// Parameters
+
+const vec2 init_velocity = vec2(0.2, 0);
+const float init_density = 1.0;
+
 // Compute the Equilibrium Boltzmann Distribution
 
 float equilibrium(int q, float rho, vec2 v){
 
-  float eq = 0.0;
-  eq += w[q]*rho;
+  float eq = w[q]*rho;
   eq += w[q]*rho*(dot(v, c[q]))*cs2;
   eq += w[q]*rho*(dot(v, c[q])*dot(v, c[q]))*0.5*cs4;
   eq -= w[q]*rho*(dot(v, v))*0.5*cs2;
@@ -58,27 +62,20 @@ float equilibrium(int q, float rho, vec2 v){
 
 // Compute the Density at a Position
 
-float getRho(uint index){
+float getRho(uint ind){
   float rho = 0.0;
   for(int q = 0; q < 9; q++)
-    rho += F[index*Q + q];
+    rho += F[q*NX*NY + ind];
   return rho;
 }
 
 // Compute the Momentum at a Position
 
-vec2 getV(uint index){
+vec2 getV(uint ind){
 
   vec2 v = vec2(0);
   for(int q = 0; q < 9; q++)
-    v += F[index*Q + q]*c[q];
+    v += F[q*NX*NY + ind]*c[q];
   return v;
-
-  /*
-  vec2 v;
-  v.x = F[index*Q + 1] + F[index*Q + 5] + F[index*Q + 8] - F[index*Q + 3] - F[index*Q + 6] - F[index*Q + 7];
-  v.y = F[index*Q + 2] + F[index*Q + 5] + F[index*Q + 6] - F[index*Q + 4] - F[index*Q + 7] - F[index*Q + 8];
-  return v;
-  */
 
 }

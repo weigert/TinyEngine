@@ -2,7 +2,7 @@
 #include <TinyEngine/color>
 #include <TinyEngine/camera>
 
-#define GRIDSIZE 128
+#define GRIDSIZE 64
 
 #include "model.h"
 
@@ -36,7 +36,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){											//Setup Drawing Pipeline
 
-		Tiny::view.target(color::black);								//Target Screen
+		Tiny::view.target(color::white);								//Target Screen
 
 		defaultShader.use();														//Prepare Shader
 		defaultShader.uniform("model", mesh.model);			//Set Model Matrix
@@ -46,7 +46,7 @@ int main( int argc, char* args[] ) {
 	};
 
 	Tiny::loop([&](){ //Autorotate Camera
-		cam::pan(0.1f);
+	//	cam::pan(0.1f);
 	});
 
 	Tiny::quit();

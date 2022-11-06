@@ -23,7 +23,7 @@ class View {
 
     Handle pipeline = [](){};           //User defined Pipeline
     void render();
-    void target(glm::vec3 clearcolor, bool clear = true);  //Target main window for drawing
+    void target(glm::vec3 clearcolor, bool clearc = true, bool cleard = true);  //Target main window for drawing
 
     bool windowed = false;
     bool fullscreen = false;    //Settings

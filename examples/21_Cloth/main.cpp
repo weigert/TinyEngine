@@ -3,15 +3,6 @@
 
 const int RES = 150;
 
-struct Triangle : Model {
-	Buffer vert;
-	Triangle():Model({"vert"}),
-	vert({1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}){
-		bind<glm::vec4>("vert", &vert);
-		SIZE = 4;
-	}
-};
-
 int main( int argc, char* args[] ) {
 
 

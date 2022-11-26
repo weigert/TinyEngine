@@ -9,12 +9,12 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 
 	LINES OF CODE (without unreasonable compression):
 
-		Main File: 188
+		Main File: 189
 		Main Classes: 302
-		Utility Classes: 772
+		Utility Classes: 730
 		Helpers Namespaces: 707
-		Core Total: 1262
-		Total: 1969
+		Core Total: 1221
+		Total: 1928
 
 	History:
 		12. Apr 2020: 885
@@ -25,6 +25,9 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 		21. Feb 2021: 1378
 		27. Jul 2021: 1943
 		26. Jan 2022: 1969
+		26. Nov 2022: 1928
+
+`Note`: If you are using TinyEngine for any projects, please let me know!
 
 ## Description
 Based on many previous OpenGL projects, I have a good idea of what features I need in an engine to build visually appealing visualizations of generated data. Many of the projects had the same overarching structure, and used the same OpenGL wrapping structures. This engine unifies those basic concepts.
@@ -39,7 +42,7 @@ As I continue to build projects using this engine, I plan on slowly expanding it
 
 ![Multi-Julia Animation](screenshots/julia.gif)
 
-Animated Julia-Set (Example 4). See my blog [here](https://weigert.vsos.ethz.ch/2020/04/14/animated-multi-julia-sets/).
+Animated Julia-Set (Example 4). See my blog [here](https://nickmcd.me/2020/04/14/animated-multi-julia-sets/).
 
 ## Structure
 The main engine interface is wrapped in a namespace `Tiny`. This namespace has three (global) static members, which are its main component classes:
@@ -81,11 +84,19 @@ A simple scene (example program 9) that uses .obj / .mtl files generated in Blen
 
 ![Shader Based Voronoi Texture](screenshots/2048.png)
 
-An example image of a shader-based voronoi texture generator I implemented as a small experiment (example program 11). Lets you do real-time voronoi filters because its very fast. Here seen for N = 2048. See [my blog here here](https://weigert.vsos.ethz.ch/2020/08/01/gpu-accelerated-voronoi-textures-and-filters/).
+An example image of a shader-based voronoi texture generator I implemented as a small experiment (example program 11). Lets you do real-time voronoi filters because its very fast. Here seen for N = 2048. See [my blog here here](https://nickmcd.me/2020/08/01/gpu-accelerated-voronoi-textures-and-filters/).
 
 ![Vertex Pooling Voxel Animation](https://github.com/weigert/TinyEngine/blob/master/screenshots/voxels.gif)
 
-A rendering of a dynamic alpha-blended voxel scene which uses a technique called vertex pooling to reduce driver overhead while drawing. See [my blog here](https://weigert.vsos.ethz.ch/2021/04/04/high-performance-voxel-engine/)
+A rendering of a dynamic alpha-blended voxel scene which uses a technique called vertex pooling to reduce driver overhead while drawing. See [my blog here](https://nickmcd.me/2021/04/04/high-performance-voxel-engine/)
+
+![Lattice-Boltzmann 2D Vortex Shedding](https://github.com/weigert/TinyEngine/blob/master/screenshots/LBM2D.gif)
+
+A simple implementation of a 2D Lattice Boltzmann Method, showcasing vortex shedding. See [my blog here](https://nickmcd.me/2022/10/01/procedural-wind-and-clouds-using-gpu-accelerated-lattice-boltzmann-method/)
+
+![Simple 3D Cloth Simulation Video](https://github.com/weigert/TinyEngine/blob/master/screenshots/cloth.mp4)
+
+A 3D cloth simulation, implemented using compute shaders performing a time-integration over a set of particles connected using springs.
 
 ## Usage
 As the code-base is extremely brief, I recommend reading through the code and the example programs to understand how it works. The Wiki contains more information on the individual functions of the classes and how they are used.
@@ -135,6 +146,7 @@ sudo make setup     #Copy Core Header Files to Install Location
 sudo make helpers   #Copy Helper Headers
 sudo make install   #Compile TinyEngine and Copy to Install Location
 sudo make all       #All of the above! Run this for easy install.
+make examples
 ```
 
 The default install locations are `/usr/local/lib` for the compiled library and `/usr/local/include` for the header files.
@@ -249,12 +261,12 @@ Then, to install the dependencies, I recommend installing [homebrew from here](h
 brew update
 brew upgrade
 brew install gcc
-brew install glew 
-brew install sdl2 
-brew install sdl2_image 
-brew install sdl2_mixer 
+brew install glew
+brew install sdl2
+brew install sdl2_image
+brew install sdl2_mixer
 brew install sld2_ttf
-brew install glm 
+brew install glm
 brew install boost
 ```
 

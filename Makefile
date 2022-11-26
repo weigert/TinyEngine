@@ -92,18 +92,17 @@ helpers:
 # Compiler / Linking Configuration
 TINYLINK = -lpthread -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lGLEW -lboost_system -lboost_filesystem
 
-EXAMPLES = 000_Empty 001_Windowless \
-01_Image 02_Heightmap \
-03_Automata 04_Julia \
-05_Particles 06_Tree \
-07_SDF 08_Raymarch \
-09_Scene 10_Audio \
-11_Voronoi 12_Diffusion 13_Dither \
-15_Compute 16_Gravity 17_ODE3D \
-18_SphereVoronoi \
-19_LBM2D 20_LBM3D \
-21_Cloth \
-22_CollidingBalls
+EXAMPLES = 0.0_Empty 0.1_Windowless \
+1.0_Image 2.0_Heightmap \
+3.0_Automata 4.0_Julia \
+5.0_Particles 6.0_Tree \
+7.0_SDF 8.0_Raymarch \
+9.0_Scene 10.0_Audio \
+11.0_Voronoi 12.0_Diffusion 13.0_Dither \
+15.0_Compute 16.0_Gravity 17.0_ODE3D \
+18.0_SphereVoronoi \
+19.0_LBM2D 19.1_LBM3D 19.2_CollidingBalls \
+20.0_Cloth
 
 .PHONY: examples
 examples:

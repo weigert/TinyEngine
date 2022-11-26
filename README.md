@@ -94,7 +94,7 @@ A rendering of a dynamic alpha-blended voxel scene which uses a technique called
 
 A simple implementation of a 2D Lattice Boltzmann Method, showcasing vortex shedding. See [my blog here](https://nickmcd.me/2022/10/01/procedural-wind-and-clouds-using-gpu-accelerated-lattice-boltzmann-method/)
 
-![Simple 3D Cloth Simulation Video](https://github.com/weigert/TinyEngine/blob/master/screenshots/cloth.mp4)
+![Simple 3D Cloth Simulation Animation](https://github.com/weigert/TinyEngine/blob/master/screenshots/cloth.gif)
 
 A 3D cloth simulation, implemented using compute shaders performing a time-integration over a set of particles connected using springs.
 

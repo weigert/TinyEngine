@@ -167,6 +167,7 @@ int main( int argc, char* args[] ) {
 
 		//Update Rendering Structures
 		construct(positions, normals, colors, indices);
+		treemesh.index(&indices);
 
 		models.fill<glm::mat4>(leaves);
 

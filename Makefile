@@ -19,6 +19,7 @@ TINYOS = -lX11 -lGL
 endif
 ifeq ($(UNAME), Darwin)			#Detext MacOS
 INCPATH = /opt/homebrew/include
+LIBPATH = /opt/homebrew/lib
 CC = g++-12 -std=c++17
 TINYOS = -framework OpenGL
 endif

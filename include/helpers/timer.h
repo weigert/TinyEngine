@@ -49,7 +49,7 @@ typedef std::chrono::milliseconds ms;
     template<typename F>
     void set_timeout(D duration, F function){
       active = true;
-      t = std::thread([=](){
+      t = std::thread([=, this](){
         std::this_thread::sleep_for(duration);
         if(!active) return; //Maybe the Thread was terminated before the execution of function
         function();
@@ -62,7 +62,7 @@ typedef std::chrono::milliseconds ms;
     template<typename F, typename... Args>
     void set_interval(D* duration, F function, Args&&... args){
       active = true;
-      t = std::thread([=](){
+      t = std::thread([=, this](){
         while(active){
           std::this_thread::sleep_for(*duration);
           function(args...);
@@ -76,7 +76,7 @@ typedef std::chrono::milliseconds ms;
     template<typename F, typename... Args>
     void set_const_interval(D* duration, F function, Args&&... args){
       active = true;
-      t = std::thread([=](){
+      t = std::thread([=, this](){
         while(active){
           std::this_thread::sleep_for(*duration-delayTime);
           curTime = std::chrono::high_resolution_clock::now();

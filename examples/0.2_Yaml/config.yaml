@@ -1,0 +1,7 @@
+t: 20
+
+root:
+  a: 20.0
+  b: "testcontent"
+# sometestingcontent 1. 2.4.4.5.5
+&

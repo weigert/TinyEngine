@@ -2,7 +2,7 @@
 # Compiler Configuration
 
 CC = g++ -std=c++17
-CF = -Wfatal-errors -O
+CF = -Wfatal-errors -O -g
 LF = -I/usr/local/include -L/usr/local/lib
 
 # General Linking
@@ -18,6 +18,8 @@ endif
 ifeq ($(UNAME), Darwin)			#Detext MacOS
 TINYOS = -framework OpenGL
 endif
+
+# Build Rules
 
 all: main.cpp
 			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main

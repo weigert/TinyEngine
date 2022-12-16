@@ -14,6 +14,8 @@ Utilizes pointer-magic to avoid an indexing struct.
 
 #include <iostream>
 #include <string>
+#include <set>
+#include "Yaml.cpp"
 
 namespace yaml {
 using namespace std;
@@ -35,8 +37,20 @@ inline bool err(int N, string err){
 
 // In-Place Parse Function
 
+void parse_null(void* p, string s){
+    cout<<"Can't parse \""<<s<<"\". Parser not implemented."<<endl;
+}
+
+void parse_char(void* p, string s){
+    *((char*)p) = s.c_str()[0];
+}
+
 void parse_int(void* p, string s){
     *((int*)p) = std::stoi(s);
+}
+
+void parse_float(void* p, string s){
+    *((float*)p) = std::stof(s);
 }
 
 void parse_double(void* p, string s){
@@ -47,12 +61,22 @@ void parse_double(void* p, string s){
 
 template<typename T>
 void (*parser(T))(void*, string){
-    return NULL;
+    return &parse_null;
+}
+
+template<>
+void (*parser(char))(void*, string){
+    return &parse_char;
 }
 
 template<>
 void (*parser(int))(void*, string){
     return &parse_int;
+}
+
+template<>
+void (*parser(float))(void*, string){
+    return &parse_float;
 }
 
 template<>
@@ -118,121 +142,93 @@ T& operator<<(T& var, const yaml::ind_key& n){
     return var;
 }
 
+bool extract(set<ind, ind_sort>::iterator& start, Yaml::Node& node){
+
+    // Dereference Start Node
+
+    yaml::ind start_v = *start;
+
+    // Find any Sub-Nodes (i.e.: struct!)
+
+    set<ind, ind_sort> subindex;
+    uint8_t* seek_end = (uint8_t*)(start_v.p) + start_v.s;
+
+    while((uint8_t*)(start->p) < seek_end){
+
+        if((++start) == index.end())      // Get Next Element
+            break;
+
+        if(start->p < seek_end)         // Element Fits Inside
+            subindex.insert(*start);
+    
+    }
+
+    bool found = false;
+
+    if(subindex.empty()){
+
+        for(auto it = node.Begin(); it != node.End(); it++){
+       
+            if((*it).first != start_v.n)
+                continue;
+
+            start_v.f(start_v.p, (*it).second.As<string>());    
+            return true;
+
+        }
+
+        cout<<"Failed to find node \""<<start_v.n<<"\""<<endl;
+        return false;
+
+    }
+
+    for(auto it = node.Begin(); it != node.End(); it++){
+       
+       if((*it).first != start_v.n)
+            continue;
+
+        found = true;
+
+        cout<<"subindex: "<<subindex.size()<<endl;
+        
+        
+        for(auto& sub: subindex){
+
+            for(start = index.begin(); start != index.end(); start++)
+            if((*start).p == sub.p && (*start).s == sub.s)
+                break;
+
+            if(start == index.end() && !OMITEMPTY)
+                continue;//return err(*((int*)(sub.p)), "value not found for key \"" + string(sub.n) + "\"");
+
+            cout<<"CALL "<<sub.n<<endl;
+            extract(start, (*it).second);
+
+        }
+
+        return true;
+
+    }
+
+    return false;
+
+}
+
 template<typename T>
 bool load(T* var, const char* filename){
 
-    // Find the Root Element
+    Yaml::Node root;
+    Yaml::Parse(root, filename);
 
-    yaml::ind* root = NULL;
+    set<ind, ind_sort>::iterator start;
+    for(start = index.begin(); start != index.end(); start++)
+    if((*start).p == (void*)var)
+        break;
 
-    for(yaml::ind i: yaml::index){
-        if(i.p == (void*)var){
-            root = &i;
-            break;
-        }
-    }
-
-    if(root == NULL)
+    if(start == index.end())
         return err(0, "key not assigned");
 
-    // Parse the File
-    size_t N = 0;
-    bool found = false;
-
-    parse::cstream ls(filename);
-    cout<<ls<<endl;
-    parse::tstream ts(ls);
-    cout<<ts<<endl;
-
-  //  parse::node::node* n = parse::node::parse(ts);
-  //  delete n;
-
-    /*
-
-
-    ifstream f(filename);
-    string line;
-    size_t pos;
-
-    while(getline(f, line)){
-
-        N++;
-
-        // Remove Comments
-        pos = line.find("#");
-        if(pos != string::npos)
-            line = line.substr(0, pos);
-
-        // Skip Empty Lines
-        if(line.size() == 0)
-            continue;
-
-        // Find the Token
-        pos = line.find(":");
-        if(pos == string::npos)
-            return err(N, "missing \":\" token");
-
-        // Find the Key, Value Pair
-        string key = line.substr(0, pos);
-        if(key.size() == 0)
-            return err(N, "missing key");
-
-        string val = line.substr(pos+1, line.size());
-        if(key.size() == 0)
-            return err(N, "missing value");
-
-        if(key == string(root->n)){
-
-            if(found == true){
-                return err(N, "duplicate token \""+key+"\"");
-            }
-
-            found = true;
-            root->f(root->p, val);
-        }
-
-    } 
-
-    // Check for OMITEMPTY
-
-    if(!OMITEMPTY && !found)
-        return err(N, "value not found for key \"" + string(root->n) + "\"");
-
-    */
-
-    /*
-        I can take the address of var,
-        and get the set of elements in its memory.
-
-        Then I utilize the pointer nesting to determine
-        which element gets loaded into where.
-
-        The problem is, I need a function to convert
-        a string to a specfic type as a callback,
-        so I can place the correct data at the pointer location.
-        The question is, can I utilize a function pointer?
-    */
-
-    // Find the Element in the set which is in range...
-    // or rather, the element at the set which has the EXACT pointer value.
-    // note that there could be multiple.
-
-    // Like what if I want to fill the element root.a?
-    // Then it should assume that the element a
-
-    // When do I have pointer collisions?
-    // ONLY if the element is a struct!!!!
-    // So I will have maximally nested structs.
-
-    // Trying to load STRUCTA.STRUCTB.VALUE
-    // I would have to somehow decide to use
-
-    // Note: I can not have the same struct type nested inside.
-    // So I can simply check the type for the correct value.
-
-
-
-    return true;
+    return extract(start, root);
 
 }
 

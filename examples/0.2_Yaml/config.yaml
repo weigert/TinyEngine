@@ -1,7 +1,15 @@
-t: 20
+i: 25
+f: 4
+d: 0.25
 
+# Test
 root:
-  a: 20.0
-  b: "testcontent"
-# sometestingcontent 1. 2.4.4.5.5
-&
+  a: 1
+  b: 2.6
+  c: 4
+  d: 6
+
+broot:
+  c: 'c'
+  A:
+    a: 15

@@ -10,9 +10,9 @@ struct StructA {
     double d;
 
     StructA(){
-        a << yaml::key("a");
         b << yaml::key("b");
         d << yaml::key("d");
+        a << yaml::key("a");
     }
 
 };
@@ -25,6 +25,18 @@ struct StructB {
     StructB(){
         c << yaml::key("c");
         A << yaml::key("A");
+    }
+
+};
+
+struct StructC {
+
+    StructB b;
+    char g;
+
+    StructC(){
+        g << yaml::key("g");
+        b << yaml::key("b");
     }
 
 };
@@ -93,6 +105,20 @@ int main( int argc, char* args[] ) {
 
 	std::cout<<"b.c = "<<b.c<<std::endl;
 	std::cout<<"b.A.a = "<<b.A.a<<std::endl;
+
+	// Double-Nested Struct
+
+	StructC c;
+	c << yaml::key("c");
+	std::cout<<"YAML KEY: "<<yaml::key(&c)<<std::endl;
+
+	if(!yaml::load(&c, "config.yaml")){
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+		exit(1);
+	}
+
+	std::cout<<"c.b.c = "<<c.b.c<<std::endl;
+	std::cout<<"c.g = "<<c.g<<std::endl;
 
 	return 0;
 

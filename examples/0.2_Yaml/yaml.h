@@ -131,6 +131,15 @@ ind_key key(const char* key){
 }
 
 template<typename T>
+const char* key(T* t){
+    for(auto& i: index){
+        if(i.p == (void*)t)
+            return i.n;
+    }
+    return "NO KEY";
+}
+
+template<typename T>
 T& operator<<(T& var, const yaml::ind_key& n){
     yaml::index.insert(yaml::ind{
         (void*)&var,
@@ -142,75 +151,53 @@ T& operator<<(T& var, const yaml::ind_key& n){
     return var;
 }
 
-bool extract(set<ind, ind_sort>::iterator& start, Yaml::Node& node){
+bool extract(set<ind, ind_sort>& subindex, set<ind, ind_sort>::iterator& start, Yaml::Node& node){
 
-    // Dereference Start Node
+    // Dereference Start Node, Get End-Point
 
     yaml::ind start_v = *start;
 
-    // Find any Sub-Nodes (i.e.: struct!)
+    // Find the YAML Node
 
-    set<ind, ind_sort> subindex;
-    uint8_t* seek_end = (uint8_t*)(start_v.p) + start_v.s;
-
-    while((uint8_t*)(start->p) < seek_end){
-
-        if((++start) == index.end())      // Get Next Element
-            break;
-
-        if(start->p < seek_end)         // Element Fits Inside
-            subindex.insert(*start);
-    
-    }
-
-    bool found = false;
-
-    if(subindex.empty()){
-
-        for(auto it = node.Begin(); it != node.End(); it++){
+    auto it = node.Begin();
+    while(it != node.End() && (*it).first != start_v.n)
+        it++;
        
-            if((*it).first != start_v.n)
-                continue;
-
-            start_v.f(start_v.p, (*it).second.As<string>());    
-            return true;
-
-        }
-
+    if(it == node.End()){
         cout<<"Failed to find node \""<<start_v.n<<"\""<<endl;
         return false;
-
     }
 
-    for(auto it = node.Begin(); it != node.End(); it++){
-       
-       if((*it).first != start_v.n)
-            continue;
+    // Search for Sub-Nodes
 
-        found = true;
+    set<ind, ind_sort> nsubindex;
+    uint8_t* seek_end = (uint8_t*)(start_v.p) + start_v.s;
+    while((uint8_t*)(start->p) < seek_end){
 
-        cout<<"subindex: "<<subindex.size()<<endl;
-        
-        
-        for(auto& sub: subindex){
+        if((++start) == index.end())        // Get Next Element
+            break;
 
-            for(start = index.begin(); start != index.end(); start++)
-            if((*start).p == sub.p && (*start).s == sub.s)
-                break;
-
-            if(start == index.end() && !OMITEMPTY)
-                continue;//return err(*((int*)(sub.p)), "value not found for key \"" + string(sub.n) + "\"");
-
-            cout<<"CALL "<<sub.n<<endl;
-            extract(start, (*it).second);
-
+        if(start->p < seek_end){            // Element Fits Inside
+            nsubindex.insert(*start);       // Add New Sub-Node
+            subindex.erase(*start);         // Remove Node from Parent
         }
 
-        return true;
+    }
+
+    if(nsubindex.empty())
+        start_v.f(start_v.p, (*it).second.As<string>()); 
+
+    else for(auto& sub: nsubindex){
+
+        for(start = index.begin(); start != index.end(); start++)
+        if((*start).p == sub.p && (*start).s == sub.s)
+            break;
+
+        extract(nsubindex, start, (*it).second);
 
     }
 
-    return false;
+    return true;
 
 }
 
@@ -218,7 +205,22 @@ template<typename T>
 bool load(T* var, const char* filename){
 
     Yaml::Node root;
-    Yaml::Parse(root, filename);
+
+    try{
+    
+        Yaml::Parse(root, filename); 
+    
+    } catch(const Yaml::Exception e){
+    
+        std::cout << "Exception " << e.Type() << ": " << e.what() << std::endl;
+        return false; 
+    
+    }
+
+    if(root.Size() == 0){        
+        cout<<"EMPTY YAML FILE"<<endl;
+        return false;
+    }
 
     set<ind, ind_sort>::iterator start;
     for(start = index.begin(); start != index.end(); start++)
@@ -228,7 +230,8 @@ bool load(T* var, const char* filename){
     if(start == index.end())
         return err(0, "key not assigned");
 
-    return extract(start, root);
+    set<ind, ind_sort> nindex = index;
+    return extract(nindex, start, root);
 
 }
 

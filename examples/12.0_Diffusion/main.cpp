@@ -14,7 +14,7 @@ int main( int argc, char* args[] ) {
 
 	setup();	//Setup Model Data
 
-	Texture tex();		//Load Texture with Image
+	Texture tex;		//Load Texture with Image
 
 /*
 	//Construct a billboard, using a texture generated from the raw data

@@ -18,7 +18,7 @@ void setup(){
   noise.SetFractalGain(0.6f);
   noise.SetFrequency(1.0);
 
-  float min, max = 0.0;
+  float min = 0.0, max = 0.0;
   for(int i = 0; i < dim.x; i++){
     for(int j = 0; j < dim.y; j++){
       heightmap[i][j] = noise.GetNoise((float)(i)*(1.0f/dim.x), (float)(j)*(1.0f/dim.y), (float)(SEED%1000));
@@ -75,14 +75,14 @@ void construct(Buffer& positions, Buffer& normals, Buffer& indices){
       for(int i = 0; i < 3; i++)
         add(norbuf, n1);
 
-        indbuf.push_back(posbuf.size()/3+0);
-        indbuf.push_back(posbuf.size()/3+1);
-        indbuf.push_back(posbuf.size()/3+2);
-        indbuf.push_back(posbuf.size()/3+0);
+      indbuf.push_back(posbuf.size()/3+0);
+      indbuf.push_back(posbuf.size()/3+1);
+      indbuf.push_back(posbuf.size()/3+2);
+      indbuf.push_back(posbuf.size()/3+0);
 
-        add(posbuf, d);
-        add(posbuf, c);
-        add(posbuf, b);
+      add(posbuf, d);
+      add(posbuf, c);
+      add(posbuf, b);
 
       glm::vec3 n2 = glm::cross(d-c, b-c);
 

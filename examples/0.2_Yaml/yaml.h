@@ -22,7 +22,7 @@ using namespace std;
 
 // Constants
 
-bool OMITEMPTY = false;
+bool OMITEMPTY = true;
 
 inline bool err(int N, string err){
     printf("(%d) YAML Error: %s\n", N, err.c_str());
@@ -37,50 +37,50 @@ inline bool err(int N, string err){
 
 // In-Place Parse Function
 
-void parse_null(void* p, string s){
+inline void parse_null(const void* p, string s){
     cout<<"Can't parse \""<<s<<"\". Parser not implemented."<<endl;
 }
 
-void parse_char(void* p, string s){
+inline void parse_char(const void* p, string s){
     *((char*)p) = s.c_str()[0];
 }
 
-void parse_int(void* p, string s){
+inline void parse_int(const void* p, string s){
     *((int*)p) = std::stoi(s);
 }
 
-void parse_float(void* p, string s){
+inline void parse_float(const void* p, string s){
     *((float*)p) = std::stof(s);
 }
 
-void parse_double(void* p, string s){
+inline void parse_double(const void* p, string s){
     *((double*)p) = std::stod(s);
 }
 
 // Templated Function Pointer Retriever
 
 template<typename T>
-void (*parser(T))(void*, string){
+constexpr void (*parser(T))(const void*, string){
     return &parse_null;
 }
 
 template<>
-void (*parser(char))(void*, string){
+constexpr void (*parser(char))(const void*, string){
     return &parse_char;
 }
 
 template<>
-void (*parser(int))(void*, string){
+constexpr void (*parser(int))(const void*, string){
     return &parse_int;
 }
 
 template<>
-void (*parser(float))(void*, string){
+constexpr void (*parser(float))(const void*, string){
     return &parse_float;
 }
 
 template<>
-void (*parser(double))(void*, string){
+constexpr void (*parser(double))(const void*, string){
     return &parse_double;
 }
 
@@ -93,11 +93,11 @@ void (*parser(double))(void*, string){
 // Index Struct and Set
 
 struct ind {
-    void* p;                    // Pointer to Memory
-    size_t s;                   // sizeof(value)
-    const char (*t);            // typeof(value)
-    const char (*n);            // Name of Key
-    void (*f)(void*, string);   // Parse Function Pointer
+    void* p;                            // Pointer to Memory
+    const size_t s;                     // sizeof(value)
+    const char (*t);                    // typeof(value)
+    const char (*n);                    // Name of Key
+    void (*f)(const void*, string);     // Parse Function Pointer
 };
 
 ostream& operator<<(ostream& os, const ind& i){
@@ -107,6 +107,8 @@ ostream& operator<<(ostream& os, const ind& i){
     os << i.n;
     return os; 
 }
+
+// Index Storage Set
 
 struct ind_sort {
     bool operator() (ind a, ind b) const {
@@ -118,7 +120,16 @@ struct ind_sort {
     }
 };
 
-set<ind, ind_sort> index;
+typedef set<ind, ind_sort> indset;
+indset index;
+
+template<typename T>
+const char* key(T* t){
+    for(auto& i: index)
+    if(i.p == (void*)t)
+        return i.n;
+    return "NO KEY";
+}
 
 // Index Construction Helper
 
@@ -128,15 +139,6 @@ struct ind_key {
 
 ind_key key(const char* key){
     return ind_key{key};
-}
-
-template<typename T>
-const char* key(T* t){
-    for(auto& i: index){
-        if(i.p == (void*)t)
-            return i.n;
-    }
-    return "NO KEY";
 }
 
 template<typename T>
@@ -150,6 +152,8 @@ T& operator<<(T& var, const yaml::ind_key& n){
     });
     return var;
 }
+
+// Load into Struct
 
 bool extract(set<ind, ind_sort>& subindex, set<ind, ind_sort>::iterator& start, Yaml::Node& node){
 
@@ -184,17 +188,46 @@ bool extract(set<ind, ind_sort>& subindex, set<ind, ind_sort>::iterator& start, 
 
     }
 
-    if(nsubindex.empty())
-        start_v.f(start_v.p, (*it).second.As<string>()); 
+    // Direct Extraction
 
-    else for(auto& sub: nsubindex){
+    if(nsubindex.empty()){
 
-        for(start = index.begin(); start != index.end(); start++)
-        if((*start).p == sub.p && (*start).s == sub.s)
-            break;
+        if((*it).second.IsScalar()){
+            start_v.f(start_v.p, (*it).second.As<string>()); 
+        } 
 
-        extract(nsubindex, start, (*it).second);
+        else {
+            cout<<"Node is not scalar type"<<endl;
+            return false;
+        }
+    
+    }
 
+    // Sub-Index Recursion
+
+    else if((*it).second.IsMap()){
+
+        for(auto& sub: nsubindex){
+
+            for(start = index.begin(); start != index.end(); start++)
+            if((*start).p == sub.p && (*start).s == sub.s)
+                break;
+
+            if(!extract(nsubindex, start, (*it).second) && !OMITEMPTY)
+                return false;
+
+        }
+
+    } 
+
+    // Non-Map Type Node
+
+    else {
+
+        cout<<"Failed to find node \""<<start_v.n<<"\""<<endl;
+        cout<<"Node is not map type"<<endl;
+        return false;
+    
     }
 
     return true;

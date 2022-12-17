@@ -70,6 +70,14 @@ public:
 
 };
 
+const char* type(Yaml::Node::eType t){
+    if(t == Yaml::Node::eType::None)            return "none";
+    if(t == Yaml::Node::eType::ScalarType)      return "scalar";
+    if(t == Yaml::Node::eType::SequenceType)    return "sequence";
+    if(t == Yaml::Node::eType::MapType)         return "map";
+    return "unknown";
+}
+
 /*
 ===================================================
         Templated In-Place Yaml-Node Parsing
@@ -152,10 +160,45 @@ constexpr void (*parser(T))(const void*, pair);
 template<typename T>
 constexpr void parser_atomic(const void* p, pair t){
 
+    if(!t.second.IsScalar())
+        throw exception("have (%s), want (scalar)", type(t.second.Type()));
+
     if(parse_atomic(T()) == NULL)
         throw exception( "no parser for type (\"%s\")", typeid(T()).name() );
-    
+
     parse_atomic(T())(p, t.second.As<string>());
+
+}
+
+// c++ array
+
+template<typename T, size_t N>
+inline void parse_array(const void* p, pair s){
+
+    if(!s.second.IsSequence())
+        throw exception("have (%s), want (sequence)", type(s.second.Type()));
+
+    if(parser(T()) == NULL)
+        throw exception( "no parser for type (\"%s\")", typeid(T()).name() );
+
+    int n = 0;
+    for(auto it = s.second.Begin(); it != s.second.End(); it++){
+
+        if(!(*it).second.IsScalar())
+            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
+        
+        try {
+            parser(T())((T*)p + n, (*it));
+        }
+        catch( exception& e ){
+            throw exception("can't parse sub-node. %s", e.what());
+        }
+
+        n++;
+        if(N < n)
+            throw exception("too many array elements");
+
+    }
 
 }
 
@@ -164,13 +207,28 @@ constexpr void parser_atomic(const void* p, pair t){
 template<typename T>
 inline void parse_vector(const void* p, pair s){
 
+    if(!s.second.IsSequence())
+        throw exception("have (%s), want (sequence)", type(s.second.Type()));
+
     T t;
     if(parser(t) == NULL)
         throw exception( "no parser for type (\"%s\")", typeid(t).name() );
-    parser(t)(&t, s);
 
     vector<T>* vt = (vector<T>*)p;
-    vt->push_back(t);
+    for(auto it = s.second.Begin(); it != s.second.End(); it++){
+        
+        if(!(*it).second.IsScalar())
+            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
+        
+        try {
+            parser(t)(&t, (*it));
+        }
+        catch( exception& e ){
+            throw exception("can't parse sub-node. %s", e.what());
+        }
+        vt->push_back(t);
+
+    }
 
 }
 
@@ -179,13 +237,28 @@ inline void parse_vector(const void* p, pair s){
 template<typename T>
 inline void parse_set(const void* p, pair s){
 
+    if(!s.second.IsSequence())
+        throw exception("have (%s), want (sequence)", type(s.second.Type()));
+
     T t;
     if(parser(t) == NULL)
         throw exception( "no parser for type (\"%s\")", typeid(t).name() );
-    parser(t)(&t, s);
 
     set<T>* st = (set<T>*)p;
-    st->insert(t);
+    for(auto it = s.second.Begin(); it != s.second.End(); it++){
+        
+        if(!(*it).second.IsScalar())
+            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
+        
+        try {
+            parser(t)(&t, (*it));
+        }
+        catch( exception& e ){
+            throw exception("can't parse sub-node. %s", e.what());
+        }
+        st->insert(t);
+
+    }
 
 }
 
@@ -193,6 +266,9 @@ inline void parse_set(const void* p, pair s){
 
 template<typename Tkey, typename Tval>
 inline void parse_map(const void* p, pair s){
+
+    if(!s.second.IsMap())
+        throw exception("have (%s), want (map)", type(s.second.Type()));
 
     Tkey key;
     if(parser(key) == NULL)
@@ -202,11 +278,29 @@ inline void parse_map(const void* p, pair s){
     if(parser(val) == NULL)
         throw exception( "no parser for type (\"%s\")", typeid(val).name() );
 
-    parse_atomic(key)(&key, s.first);
-    parse_atomic(val)(&val, s.second.As<string>());
-
     map<Tkey, Tval>* mkv = (map<Tkey, Tval>*)p;
-    (*mkv)[key] = val;
+    for(auto it = s.second.Begin(); it != s.second.End(); it++){
+        
+        if(!(*it).second.IsScalar())
+            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
+        
+        try {
+            parse_atomic(key)(&key, (*it).first);
+        }
+        catch( exception& e ){
+            throw exception("can't parse sub-node key. %s", e.what());
+        }
+
+        try {
+            parse_atomic(val)(&val, (*it).second.As<string>());
+        }
+        catch( exception& e ){
+            throw exception("can't parse sub-node value. %s", e.what());
+        }
+
+        (*mkv)[key] = val;
+
+    }
 
 }
 
@@ -214,7 +308,13 @@ inline void parse_map(const void* p, pair s){
 
 template<typename T>
 constexpr void (*parser(T))(const void*, pair){
+    if(parse_atomic(T()) == NULL) return NULL;
     return &parser_atomic<T>;
+}
+
+template<typename T, size_t N>
+constexpr void (*parser( T(&t)[N] ))(const void*, pair){
+    return &parse_array<T, N>;
 }
 
 template<typename T>
@@ -314,14 +414,6 @@ T& operator<<(T& var, const yaml::ind_key& n){
     return var;
 }
 
-const char* type(Yaml::Node::eType t){
-    if(t == Yaml::Node::eType::None)            return "none";
-    if(t == Yaml::Node::eType::ScalarType)      return "scalar";
-    if(t == Yaml::Node::eType::SequenceType)    return "sequence";
-    if(t == Yaml::Node::eType::MapType)         return "map";
-    return "unknown";
-}
-
 // Load into Struct
 
 void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
@@ -364,44 +456,10 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
         if(start_v.f == NULL)
             throw exception("can't parse variable (%s), type (%s) has no parser", start_v.n, start_v.t);
 
-        // Scalar Type Node: Success
-
-        if((*it).second.IsScalar()){
-
-            try {
-                start_v.f(start_v.p, (*it)); 
-            } catch( exception& e ){
-                throw exception("can't parse variable (%s), %s", start_v.n, e.what());
-            }
-
-        }
-
-        // Sequence Type Node: Direct Fill
-
-        else if((*it).second.IsSequence() || (*it).second.IsMap()){
-
-            auto snode = (*it).second;
-
-            for(auto itt = snode.Begin(); itt != snode.End(); itt++){
-
-                if(!(*itt).second.IsScalar()){
-                    throw exception("invalid sub-node for key (%s). have (%s), want (scalar)", start_v.n, type((*itt).second.Type()));
-                } else {
-                    try {
-                        start_v.f(start_v.p, (*itt)); 
-                    } catch( exception& e ){
-                        throw exception("can't parse sub-node for key (%s), %s", start_v.n, e.what());
-                    }
-                }
-
-            }
-
-        }
-
-        // Missing Sub-Index w.o. 
-
-        else {
-            throw exception("invalid node for key (%s). have (%s), want (scalar)", start_v.n, type((*it).second.Type()));
+        try {
+            start_v.f(start_v.p, (*it)); 
+        } catch( exception& e ){
+            throw exception("can't parse variable (%s), %s", start_v.n, e.what());
         }
     
     }

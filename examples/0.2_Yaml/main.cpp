@@ -120,6 +120,36 @@ int main( int argc, char* args[] ) {
 	std::cout<<"c.b.c = "<<c.b.c<<std::endl;
 	std::cout<<"c.g = "<<c.g<<std::endl;
 
+	// String
+
+	std::string s;
+	s << yaml::key("s");
+	std::cout<<"YAML KEY: "<<yaml::key(&s)<<std::endl;
+
+	if(!yaml::load(&s, "config.yaml")){
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+		exit(1);
+	}
+
+	std::cout<<"s = "<<s<<std::endl;
+
+	// Vector?
+
+	std::vector<int> v;
+	v << yaml::key("vector");
+	std::cout<<"YAML KEY: "<<yaml::key(&v)<<std::endl;
+
+	if(!yaml::load(&v, "config.yaml")){
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+		exit(1);
+	}
+
+	std::cout<<"vector:"<<std::endl;
+	for(auto& vec: v){
+		std::cout<<"  "<<vec<<std::endl;
+	}
+
+
 	return 0;
 
 }

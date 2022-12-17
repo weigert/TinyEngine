@@ -20,3 +20,13 @@ c:
     c: 'c'
     A: 2
   g: 7
+
+s: "test"
+
+vector: 
+  - 1
+  - 23
+  - a:
+      what: up
+  - 56
+  - 71

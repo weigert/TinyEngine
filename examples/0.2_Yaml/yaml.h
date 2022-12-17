@@ -15,6 +15,7 @@ Utilizes pointer-magic to avoid an indexing struct.
 #include <iostream>
 #include <string>
 #include <set>
+#include <vector>
 #include "Yaml.cpp"
 
 namespace yaml {
@@ -31,15 +32,11 @@ inline bool err(int N, string err){
 
 /*
 ===================================================
-            In-Place String Type Parsing
+        In-Place String Atomic Type Parsing
 ===================================================
 */
 
-// In-Place Parse Function
-
-inline void parse_null(const void* p, string s){
-    cout<<"Can't parse \""<<s<<"\". Parser not implemented."<<endl;
-}
+// In-Place Atomic Parse Function
 
 inline void parse_char(const void* p, string s){
     *((char*)p) = s.c_str()[0];
@@ -57,11 +54,18 @@ inline void parse_double(const void* p, string s){
     *((double*)p) = std::stod(s);
 }
 
-// Templated Function Pointer Retriever
+inline void parse_string(const void* p, string s){
+    *((string*)p) = s;
+}
 
+inline void parse_vector(const void* p, string s){
+    *((string*)p) = s;
+}
+
+// Templated Function Pointer Retriever
 template<typename T>
 constexpr void (*parser(T))(const void*, string){
-    return &parse_null;
+    return NULL;
 }
 
 template<>
@@ -82,6 +86,28 @@ constexpr void (*parser(float))(const void*, string){
 template<>
 constexpr void (*parser(double))(const void*, string){
     return &parse_double;
+}
+
+template<>
+void (*parser(string))(const void*, string){
+    return &parse_string;
+}
+
+template<typename T>
+void parse_vector(const void* p, string s){
+    auto pp = parser(T(0));
+    if(pp == NULL){
+        cout<<"CANT PARSE"<<endl;
+    }
+    else {
+        ((vector<T>*)p)->push_back(0);
+        pp(&(((vector<T>*)p)->back()), s);
+    }
+}
+
+template<typename T>
+void (*parser(vector<T>))(const void*, string){
+    return &parse_vector<T>;
 }
 
 /*
@@ -129,6 +155,23 @@ const char* key(T* t){
     if(i.p == (void*)t)
         return i.n;
     return "NO KEY";
+}
+
+template<typename T>
+const char* key(vector<T>* t){
+    for(auto& i: index)
+    if(i.p == (void*)t)
+        return i.n;
+    return "NO KEY";
+}
+
+template<typename T>
+indset::iterator find(T* t){
+    indset::iterator it = index.begin();
+    for(; it != index.end(); it++)
+    if((*it).p == (void*)t)
+        break;
+    return it;
 }
 
 // Index Construction Helper
@@ -192,9 +235,38 @@ bool extract(set<ind, ind_sort>& subindex, set<ind, ind_sort>::iterator& start, 
 
     if(nsubindex.empty()){
 
+        if(start_v.f == NULL){
+
+            cout<<"Node has no parser"<<endl;
+            return false;
+        
+        }
+
         if((*it).second.IsScalar()){
+
             start_v.f(start_v.p, (*it).second.As<string>()); 
-        } 
+            return true;
+
+        }
+
+        if((*it).second.IsSequence()){
+
+            auto snode = (*it).second;
+
+            for(auto itt = snode.Begin(); itt != snode.End(); itt++){
+
+                if(!(*itt).second.IsScalar()){
+                    cout<<"NOT SCALAR"<<endl;
+                } else {
+                    //cout<<(*itt).second.As<string>()<<endl;
+                    start_v.f(start_v.p, (*itt).second.As<string>()); 
+                }
+
+            }
+
+            return true;
+
+        }
 
         else {
             cout<<"Node is not scalar type"<<endl;
@@ -256,9 +328,7 @@ bool load(T* var, const char* filename){
     }
 
     set<ind, ind_sort>::iterator start;
-    for(start = index.begin(); start != index.end(); start++)
-    if((*start).p == (void*)var)
-        break;
+    start = yaml::find(var);
 
     if(start == index.end())
         return err(0, "key not assigned");

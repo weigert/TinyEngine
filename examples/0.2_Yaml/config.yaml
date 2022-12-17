@@ -1,32 +1,37 @@
-i: 25
-f: 4
-d: 0.25
+# TinyEngine .YAML Direct-To-Struct Test File
+# for Easy Configuration Loading
 
-# Test
-root:
+# Basic Types
+integer: 25
+float: 4
+double: 0.25
+char: 'z'
+string: "test string"
+
+# Structs and Nested Structs
+
+StructA:
   a: 1
   b: 2.6
   c: 4
-  d: 6
+  d: 2
 
-broot:
+StructB:
   c: 'c'
   A:
     a: 15
     g: 5
 
-c:
+StructC:
   b:
     c: 'c'
     A: 2
-  g: 7
-
-s: "test"
+  g:
+    g: 1
 
 vector: 
   - 1
-  - 23
-  - a:
-      what: up
+  - 54
+  - 2
   - 56
   - 71

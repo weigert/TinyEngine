@@ -52,6 +52,13 @@ struct StructC {
 
 } C;
 
+// C++ Arrays
+
+float farr[5]{0.5};
+int iarr[2]{0};
+
+StructA structarr[3];
+
 // STL Container Types
 
 std::vector<int> v;

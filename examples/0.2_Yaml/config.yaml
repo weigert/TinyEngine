@@ -20,14 +20,29 @@ StructB:
   c: 'c'
   A:
     a: 15
+    b: 5
+    d: 6
     g: 5
 
 StructC:
   b:
-    c: 'c'
-    A: 2
-  g:
-    g: 1
+    c: 1
+    A:
+      a: 1
+      b: 1
+      d: 1
+  g: 1
+
+# Arrays
+
+float_array:
+  - 0.5
+  - 0.25
+  - 0.75
+  - 1.0
+  - 2.0
+
+# STL Containers
 
 vector: 
   - 1

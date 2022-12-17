@@ -70,6 +70,16 @@ int main( int argc, char* args[] ) {
 	//std::cout<<"c.b.c = "<<C.b.c<<std::endl;
 	//std::cout<<"c.g = "<<C.g<<std::endl;
 
+	// Arrays
+
+	farr << yaml::key("float_array");
+	if(!yaml::load(&farr, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"farr:"<<std::endl;
+	for(size_t i = 0; i < 5; i++)
+		std::cout<<"  "<<farr[i]<<std::endl;
+
 	// Vector
 
 	v << yaml::key("vector");

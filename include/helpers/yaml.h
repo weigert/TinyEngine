@@ -106,10 +106,6 @@ inline void parse_string(const void* p, string s){
     *((string*)p) = s;
 }
 
-inline void parse_vector(const void* p, string s){
-    *((string*)p) = s;
-}
-
 // Templated Function Pointer Retriever
 
 template<typename T>
@@ -147,18 +143,39 @@ void (*parser(string))(const void*, string){
 template<typename T>
 inline void parse_vector(const void* p, string s){
 
-    if(parser(T()) == NULL)
+    T t;
+    if(parser(t) == NULL)
         throw exception( "no parser (\"%s\")", s );
+    parser(t)(&t, s);
 
-    vector<T>* v = (vector<T>*)p;
-    v->emplace_back();
-    parser(T())(&(v->back()), s);
+    vector<T>* vt = (vector<T>*)p;
+    vt->push_back(t);
 
 }
 
 template<typename T>
 constexpr void (*parser(vector<T>))(const void*, string){
     return &parse_vector<T>;
+}
+
+// Set Type
+
+template<typename T>
+inline void parse_set(const void* p, string s){
+
+    T t;
+    if(parser(t) == NULL)
+        throw exception( "no parser (\"%s\")", s );
+    parser(t)(&t, s);
+
+    set<T>* st = (set<T>*)p;
+    st->insert(t);
+
+}
+
+template<typename T>
+constexpr void (*parser(set<T>))(const void*, string){
+    return &parse_set<T>;
 }
 
 /*
@@ -349,8 +366,6 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
                 extract(nsubindex, start, (*it).second);
             } catch( exception& e ){
                 printf("YAML Extract Error: %s\n", e.what());
-                //if(!OMITEMPTY)
-            //    throw exception(e.what());
             }
 
         }

@@ -73,14 +73,32 @@ int main( int argc, char* args[] ) {
 	// Vector
 
 	v << yaml::key("vector");
-	if(!yaml::load(&v, "config.yaml")){
+	if(!yaml::load(&v, "config.yaml"))
 		std::cout<<"Failed to load config.yaml"<<std::endl;
-		exit(1);
-	}
 
 	std::cout<<"vector:"<<std::endl;
 	for(auto& vec: v){
 		std::cout<<"  "<<vec<<std::endl;
+	}
+
+	// Set
+
+	sset << yaml::key("sset");
+	if(!yaml::load(&sset, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"sset:"<<std::endl;
+	for(auto& s: sset){
+		std::cout<<"  "<<s<<std::endl;
+	}
+
+	iset << yaml::key("iset");
+	if(!yaml::load(&iset, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"iset:"<<std::endl;
+	for(auto& i: iset){
+		std::cout<<"  "<<i<<std::endl;
 	}
 
 	return 0;

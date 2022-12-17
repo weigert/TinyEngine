@@ -55,3 +55,5 @@ struct StructC {
 // STL Container Types
 
 std::vector<int> v;
+std::set<int> iset;
+std::set<std::string> sset;

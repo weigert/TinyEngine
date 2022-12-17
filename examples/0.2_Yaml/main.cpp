@@ -101,6 +101,35 @@ int main( int argc, char* args[] ) {
 		std::cout<<"  "<<i<<std::endl;
 	}
 
+	// Map
+
+	iimap << yaml::key("iimap");
+	if(!yaml::load(&iimap, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"iimap:"<<std::endl;
+	for(auto& ii: iimap){
+		std::cout<<"  "<<ii.first<<" "<<ii.second<<std::endl;
+	}
+
+	ismap << yaml::key("ismap");
+	if(!yaml::load(&ismap, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"ismap:"<<std::endl;
+	for(auto& ii: ismap){
+		std::cout<<"  "<<ii.first<<" "<<ii.second<<std::endl;
+	}
+
+	simap << yaml::key("simap");
+	if(!yaml::load(&simap, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"simap:"<<std::endl;
+	for(auto& ii: simap){
+		std::cout<<"  "<<ii.first<<" "<<ii.second<<std::endl;
+	}
+
 	return 0;
 
 }

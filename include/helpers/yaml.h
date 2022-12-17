@@ -22,6 +22,7 @@ ToDo:
 #include <string>
 #include <set>
 #include <vector>
+#include <map>
 #include "../external/mini-yaml.h"
 
 namespace yaml {
@@ -71,11 +72,11 @@ public:
 
 /*
 ===================================================
-        In-Place String Atomic Type Parsing
+        Templated In-Place Yaml-Node Parsing
 ===================================================
 */
 
-// In-Place Atomic Parse Function
+// In-Place Atomic String-Parse Functions
 
 inline void parse_char(const void* p, string s){
     *((char*)p) = s.c_str()[0];
@@ -106,46 +107,66 @@ inline void parse_string(const void* p, string s){
     *((string*)p) = s;
 }
 
-// Templated Function Pointer Retriever
+// Templated Atomic String-Parse Function Pointer Retriever
 
 template<typename T>
-constexpr void (*parser(T))(const void*, string){
+constexpr void (*parse_atomic(T))(const void*, string){
     return NULL;
 }
 
 template<>
-constexpr void (*parser(char))(const void*, string){
+constexpr void (*parse_atomic(char))(const void*, string){
     return &parse_char;
 }
 
 template<>
-constexpr void (*parser(int))(const void*, string){
+constexpr void (*parse_atomic(int))(const void*, string){
     return &parse_int;
 }
 
 template<>
-constexpr void (*parser(float))(const void*, string){
+constexpr void (*parse_atomic(float))(const void*, string){
     return &parse_float;
 }
 
 template<>
-constexpr void (*parser(double))(const void*, string){
+constexpr void (*parse_atomic(double))(const void*, string){
     return &parse_double;
 }
 
 template<>
-void (*parser(string))(const void*, string){
+void (*parse_atomic(string))(const void*, string){
     return &parse_string;
 }
 
-// Vector Type
+// Templated Pair-Parse Functions
+
+typedef std::pair<const string&, Yaml::Node&> pair;
+
+// Pass-Through Default Function: Interpret Node Value
+//      ...and retriever!
 
 template<typename T>
-inline void parse_vector(const void* p, string s){
+constexpr void (*parser(T))(const void*, pair);
+
+template<typename T>
+constexpr void parser_atomic(const void* p, pair t){
+
+    if(parse_atomic(T()) == NULL)
+        throw exception( "no parser for type (\"%s\")", typeid(T()).name() );
+    
+    parse_atomic(T())(p, t.second.As<string>());
+
+}
+
+// std::vector parser
+
+template<typename T>
+inline void parse_vector(const void* p, pair s){
 
     T t;
     if(parser(t) == NULL)
-        throw exception( "no parser (\"%s\")", s );
+        throw exception( "no parser for type (\"%s\")", typeid(t).name() );
     parser(t)(&t, s);
 
     vector<T>* vt = (vector<T>*)p;
@@ -153,19 +174,14 @@ inline void parse_vector(const void* p, string s){
 
 }
 
-template<typename T>
-constexpr void (*parser(vector<T>))(const void*, string){
-    return &parse_vector<T>;
-}
-
-// Set Type
+// std::set parser
 
 template<typename T>
-inline void parse_set(const void* p, string s){
+inline void parse_set(const void* p, pair s){
 
     T t;
     if(parser(t) == NULL)
-        throw exception( "no parser (\"%s\")", s );
+        throw exception( "no parser for type (\"%s\")", typeid(t).name() );
     parser(t)(&t, s);
 
     set<T>* st = (set<T>*)p;
@@ -173,9 +189,47 @@ inline void parse_set(const void* p, string s){
 
 }
 
+// std::map type
+
+template<typename Tkey, typename Tval>
+inline void parse_map(const void* p, pair s){
+
+    Tkey key;
+    if(parser(key) == NULL)
+        throw exception( "no parser for type (\"%s\")", typeid(key).name() );
+
+    Tval val;
+    if(parser(val) == NULL)
+        throw exception( "no parser for type (\"%s\")", typeid(val).name() );
+
+    parse_atomic(key)(&key, s.first);
+    parse_atomic(val)(&val, s.second.As<string>());
+
+    map<Tkey, Tval>* mkv = (map<Tkey, Tval>*)p;
+    (*mkv)[key] = val;
+
+}
+
+// Templated Pair-Parse Function Pointer Retriever
+
 template<typename T>
-constexpr void (*parser(set<T>))(const void*, string){
+constexpr void (*parser(T))(const void*, pair){
+    return &parser_atomic<T>;
+}
+
+template<typename T>
+constexpr void (*parser(vector<T>))(const void*, pair){
+    return &parse_vector<T>;
+}
+
+template<typename T>
+constexpr void (*parser(set<T>))(const void*, pair){
     return &parse_set<T>;
+}
+
+template<typename Tkey, typename Tval>
+constexpr void (*parser(map<Tkey, Tval>))(const void*, pair){
+    return &parse_map<Tkey, Tval>;
 }
 
 /*
@@ -191,7 +245,7 @@ struct ind {
     const size_t s;                     // sizeof(value)
     const char (*t);                    // typeof(value)
     const char (*n);                    // Name of Key
-    void (*f)(const void*, string);     // Parse Function Pointer
+    void (*f)(const void*, pair);       // Parse Function Pointer
 };
 
 ostream& operator<<(ostream& os, const ind& i){
@@ -315,7 +369,7 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
         if((*it).second.IsScalar()){
 
             try {
-                start_v.f(start_v.p, (*it).second.As<string>()); 
+                start_v.f(start_v.p, (*it)); 
             } catch( exception& e ){
                 throw exception("can't parse variable (%s), %s", start_v.n, e.what());
             }
@@ -324,7 +378,7 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
 
         // Sequence Type Node: Direct Fill
 
-        else if((*it).second.IsSequence()){
+        else if((*it).second.IsSequence() || (*it).second.IsMap()){
 
             auto snode = (*it).second;
 
@@ -334,7 +388,7 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
                     throw exception("invalid sub-node for key (%s). have (%s), want (scalar)", start_v.n, type((*itt).second.Type()));
                 } else {
                     try {
-                        start_v.f(start_v.p, (*itt).second.As<string>()); 
+                        start_v.f(start_v.p, (*itt)); 
                     } catch( exception& e ){
                         throw exception("can't parse sub-node for key (%s), %s", start_v.n, e.what());
                     }

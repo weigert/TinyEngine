@@ -55,5 +55,10 @@ struct StructC {
 // STL Container Types
 
 std::vector<int> v;
+
 std::set<int> iset;
 std::set<std::string> sset;
+
+std::map<int, int> iimap;
+std::map<std::string, int> simap;
+std::map<int, std::string> ismap;

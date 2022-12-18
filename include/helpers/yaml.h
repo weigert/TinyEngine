@@ -26,7 +26,7 @@ Features:
 ToDo:
 - More Atomic Types
 - Only throw a warning without failure?
-- 
+- STL Container of Struct
 
 */
 
@@ -148,7 +148,39 @@ typedef std::pair<const string&, Yaml::Node&> pair;
 //      ...and retriever!
 
 template<typename T>
-constexpr inline void (*parser(T))(const void*, pair);
+constexpr inline void (*parser( T ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( glm::tvec2<T> ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( glm::tvec3<T> ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( glm::tvec4<T> ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( glm::tmat2x2<T> ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( glm::tmat3x3<T> ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( glm::tmat4x4<T> ))(const void*, pair);
+
+template<typename T, size_t N>
+constexpr inline void (*parser( T(&t)[N] ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( vector<T> ))(const void*, pair);
+
+template<typename T>
+constexpr inline void (*parser( set<T> ))(const void*, pair);
+
+template<typename Tkey, typename Tval>
+constexpr inline void (*parser( map<Tkey, Tval> ))(const void*, pair);
+
+// Implementations
 
 template<typename T>
 inline void parse_atomic(const void* p, pair s){
@@ -171,9 +203,6 @@ inline void parse_array(const void* p, pair s){
     int n = 0;
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
 
-        if(!(*it).second.IsScalar())
-            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
-        
         try {
             parser(T())((T*)p + n, (*it));
         }
@@ -187,6 +216,9 @@ inline void parse_array(const void* p, pair s){
 
     }
 
+    if(n < N)
+        throw exception("too few array elements");
+
 }
 
 // std::vector parser
@@ -197,14 +229,12 @@ inline void parse_vector(const void* p, pair s){
     if(!s.second.IsSequence())
         throw exception("have (%s), want (sequence)", type(s.second.Type()));
 
-    T t;
     vector<T>* vt = (vector<T>*)p;
     
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
-        
-        if(!(*it).second.IsScalar())
-            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
-        
+
+        T t;
+
         try {
             parser(t)(&t, (*it));
         }
@@ -225,16 +255,14 @@ inline void parse_set(const void* p, pair s){
     if(!s.second.IsSequence())
         throw exception("have (%s), want (sequence)", type(s.second.Type()));
 
-    T t;
     set<T>* st = (set<T>*)p;
     
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
-        
-        if(!(*it).second.IsScalar())
-            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
-        
+
+        T t;
+
         try {
-            parser(t)(&t, (*it));
+            parser(T())(&t, (*it));
         }
         catch( exception& e ){
             throw exception("can't parse sub-node. %s", e.what());
@@ -253,14 +281,12 @@ inline void parse_map(const void* p, pair s){
     if(!s.second.IsMap())
         throw exception("have (%s), want (map)", type(s.second.Type()));
 
-    Tkey key;
-    Tval val;
     map<Tkey, Tval>* mkv = (map<Tkey, Tval>*)p;
     
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
         
-        if(!(*it).second.IsScalar())
-            throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
+        Tkey key;
+        Tval val;
 
         try {
             parse<Tkey>(&key, (*it).first);
@@ -270,7 +296,7 @@ inline void parse_map(const void* p, pair s){
         }
 
         try {
-            parse<Tval>(&val, (*it).second.As<string>());
+            parser(Tval())(&val, (*it));
         }
         catch( exception& e ){
             throw exception("can't parse sub-node value. %s", e.what());
@@ -285,27 +311,57 @@ inline void parse_map(const void* p, pair s){
 // Templated Pair-Parse Function Pointer Retriever
 
 template<typename T>
-constexpr void (*parser(T))(const void*, pair){
+constexpr inline void (*parser( T ))(const void*, pair){
     return &parse_atomic<T>;
 }
 
 template<typename T, size_t N>
-constexpr void (*parser( T(&t)[N] ))(const void*, pair){
+constexpr inline void (*parser( T(&t)[N] ))(const void*, pair){
     return &parse_array<T, N>;
 }
 
 template<typename T>
-constexpr void (*parser(vector<T>))(const void*, pair){
+constexpr inline void (*parser( glm::tvec2<T> ))(const void*, pair){
+    return &parse_array<T, 2>;
+}
+
+template<typename T>
+constexpr inline void (*parser( glm::tvec3<T> ))(const void*, pair){
+    return &parse_array<T, 3>;
+}
+
+template<typename T>
+constexpr inline void (*parser( glm::tvec4<T> ))(const void*, pair){
+    return &parse_array<T, 4>;
+}
+
+template<typename T>
+constexpr inline void (*parser( glm::tmat2x2<T> ))(const void*, pair){
+    return &parse_array<glm::tvec2<T>, 2>;
+}
+
+template<typename T>
+constexpr inline void (*parser( glm::tmat3x3<T> ))(const void*, pair){
+    return &parse_array<glm::tvec3<T>, 3>;
+}
+
+template<typename T>
+constexpr inline void (*parser( glm::tmat4x4<T> ))(const void*, pair){
+    return &parse_array<glm::tvec4<T>, 4>;
+}
+
+template<typename T>
+constexpr inline void (*parser(vector<T>))(const void*, pair){
     return &parse_vector<T>;
 }
 
 template<typename T>
-constexpr void (*parser(set<T>))(const void*, pair){
+constexpr inline void (*parser(set<T>))(const void*, pair){
     return &parse_set<T>;
 }
 
 template<typename Tkey, typename Tval>
-constexpr void (*parser(map<Tkey, Tval>))(const void*, pair){
+constexpr inline void (*parser(map<Tkey, Tval>))(const void*, pair){
     return &parse_map<Tkey, Tval>;
 }
 

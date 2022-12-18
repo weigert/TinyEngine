@@ -42,6 +42,36 @@ int main( int argc, char* args[] ) {
 		std::cout<<"Failed to load config.yaml"<<std::endl;
 	//std::cout<<yaml::find(&s)<<" = "<<s<<std::endl;
 
+	// GLM Vectors
+
+	glm::ivec3 vec3;
+	vec3 << yaml::key("vec3");
+	if(!yaml::load(&vec3, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	// GLM Matrices
+
+	glm::mat2 mat2;
+	mat2 << yaml::key("mat2");
+	if(!yaml::load(&mat2, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+	std::cout<<"mat2"<<std::endl;
+	std::cout<<"  "<<mat2[0][0]<<std::endl;
+	std::cout<<"  "<<mat2[0][1]<<std::endl;
+	std::cout<<"  "<<mat2[1][0]<<std::endl;
+	std::cout<<"  "<<mat2[1][1]<<std::endl;
+
+
+	glm::mat3 mat3;
+	mat3 << yaml::key("mat3");
+	if(!yaml::load(&mat3, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+	std::cout<<"mat3"<<std::endl;
+	std::cout<<"  "<<mat3[0][0]<<std::endl;
+	std::cout<<"  "<<mat3[0][1]<<std::endl;
+	std::cout<<"  "<<mat3[1][0]<<std::endl;
+	std::cout<<"  "<<mat3[1][1]<<std::endl;
+
 	// Structs / Nested Structs
 
 	// Struct Loading
@@ -159,6 +189,35 @@ int main( int argc, char* args[] ) {
 	std::cout<<"vector_struct:"<<std::endl;
 	for(auto& ii: vecstruct.v){
 		std::cout<<"  "<<ii<<std::endl;
+	}
+	
+	// Vector of Vector
+
+	vv << yaml::key("vv");
+	if(!yaml::load(&vv, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"vector:"<<std::endl;
+	for(auto& v: vv){
+		for(auto& vec: v){
+			std::cout<<"  "<<vec<<std::endl;
+		}
+		std::cout<<std::endl;
+	}
+
+	// Map of Vector
+
+	miv << yaml::key("miv");
+	if(!yaml::load(&miv, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"map of vector:"<<std::endl;
+	for(auto& m: miv){
+		std::cout<<m.first<<std::endl;
+		for(auto& vec: m.second){
+			std::cout<<"  "<<vec<<std::endl;
+		}
+		std::cout<<std::endl;
 	}
 
 	return 0;

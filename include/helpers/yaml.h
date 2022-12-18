@@ -55,12 +55,9 @@ public:
     template<typename... Types>
     string format(const char* f, Types... t){
 
-        char* tmp = new char[2*strlen(f)];
+        static char tmp[4096];
         size_t n = sprintf(tmp, f, t...);
-
-        string s(tmp);
-        delete[] tmp;
-        return s;
+        return string(tmp);
 
     }
 
@@ -416,20 +413,11 @@ T& operator<<(T& var, const yaml::ind_key& n){
 
 // Load into Struct
 
-void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
+void extract(indset& subindex, indset::iterator& start, pair node){
 
     // Dereference Start Node, Get End-Point
 
     yaml::ind start_v = *start;
-
-    // Find the YAML Node
-
-    auto it = node.Begin();
-    while(it != node.End() && (*it).first != start_v.n)
-        it++;
-       
-    if(it == node.End())
-        throw exception("can't find node for key (%s)", start_v.n);
 
     // Search for Sub-Nodes
 
@@ -442,9 +430,8 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
 
         if(start->p < seek_end){            // Element Fits Inside
             nsubindex.insert(*start);       // Add New Sub-Node
-            subindex.erase(*start);         // Remove Node from Parent
+            subindex.erase(*start);
         }
-
     }
 
     // Direct Extraction
@@ -457,16 +444,16 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
             throw exception("can't parse variable (%s), type (%s) has no parser", start_v.n, start_v.t);
 
         try {
-            start_v.f(start_v.p, (*it)); 
+            start_v.f(start_v.p, node); 
         } catch( exception& e ){
             throw exception("can't parse variable (%s), %s", start_v.n, e.what());
         }
     
     }
 
-    // Sub-Index Recursion
+    // Sub-Index Recursion: Struct
 
-    else if((*it).second.IsMap()){
+    else if(node.second.IsMap()){
 
         for(auto& sub: nsubindex){
 
@@ -474,11 +461,48 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
             if((*start).p == sub.p && (*start).s == sub.s)
                 break;
 
+            // Find the YAML Node
+
+            auto it = node.second.Begin();
+            while(it != node.second.End() && (*it).first != (*start).n)
+                it++;
+
+            if(it == node.second.End())
+                throw exception("can't find node for key (%s)", (*start).n);
+
             try {
-                extract(nsubindex, start, (*it).second);
+                extract(nsubindex, start, (*it));
             } catch( exception& e ){
-                printf("YAML Extract Error: %s\n", e.what());
+                throw exception("can't parse variable (%s), %s", start_v.n, e.what());
             }
+
+        }
+
+    }
+
+    // Sub-Index Recursion: Array of Struct
+
+    else if(node.second.IsSequence()){
+
+        auto it = node.second.Begin();
+
+        for(auto& sub: nsubindex){
+
+            for(start = index.begin(); start != index.end(); start++)
+            if((*start).p == sub.p && (*start).s == sub.s)
+                break;
+
+            auto itt = (*it).second.Begin();
+            while(itt != (*it).second.End() && (*itt).first != (*start).n)
+                itt++;
+
+            try {
+                extract(nsubindex, start, (*itt));
+            } catch( exception& e ){   
+                throw exception("can't parse variable (%s), %s", start_v.n, e.what());
+            }
+
+            it++;
 
         }
 
@@ -486,7 +510,7 @@ void extract(indset& subindex, indset::iterator& start, Yaml::Node& node){
 
     // Non-Map Type Node
 
-    else throw exception("invalid node for key (%s). have (%s), want (map)", start_v.n, type((*it).second.Type()));
+    else throw exception("invalid node for key (%s). have (%s), want (!none)", start_v.n, type(node.second.Type()));
 
 }
 
@@ -513,10 +537,19 @@ bool load(T* var, const char* filename){
         return false;
     }
 
+    // Find the YAML Node
+
+    auto it = root.Begin();
+    while(it != root.End() && (*it).first != (*start).n)
+        it++;
+       
+    if(it == root.End())
+        throw exception("can't find node for key (%s)", (*start).n);
+
     indset nindex = index;
     
     try {
-        extract(nindex, start, root);
+        extract(nindex, start, (*it));
     } catch( exception& e ){
         printf("YAML Extract Error: %s\n", e.what());
         return false;

@@ -11,10 +11,22 @@ defined structs. Inspired by golang semantic tags.
 Utilizes pointer-magic to avoid an indexing struct.
 ===================================================
 
+Features:
+- Basic Types
+    (char, int, float, double, string)
+- Struct Types
+    (any user-defined, tagged struct)
+- STL Containers (Templated w. Basic Type)
+    (Vector, Set, Map)
+- Nestings of STL Containers and Structs
+    - Struct of Struct (of Struct...)
+    - Struct of STL Containers (Arbitrary)
+    - 
+
 ToDo:
-- STL Containers (Map, Set, Array)
-- Vector of Struct
 - More Atomic Types
+- Only throw a warning without failure?
+- 
 
 */
 
@@ -81,67 +93,51 @@ const char* type(Yaml::Node::eType t){
 ===================================================
 */
 
-// In-Place Atomic String-Parse Functions
+// In-Place Atomic String->Template Parse Functions
 
-inline void parse_char(const void* p, string s){
-    *((char*)p) = s.c_str()[0];
+template<typename T>
+inline void parse(const void* p, string s){
+    throw exception( "no parser for type (\"%s\")", typeid(T).name() );
 }
 
-inline void parse_int(const void* p, string s){
-    try { *((int*)p) = std::stoi(s); } 
-    catch(const invalid_argument& e){
+template<>
+inline void parse<char>(const void* p, string s){
+    try{ new ((char*)p) char(s.c_str()[0]); }
+    catch(...) { 
+        throw exception( "not char (\"%s\")", s.c_str() );
+    }
+}
+
+template<>
+inline void parse<int>(const void* p, string s){
+    try{ new ((int*)p) int(std::stoi(s)); }
+    catch(...) { 
         throw exception( "not integer (\"%s\")", s.c_str() );
     }
 }
 
-inline void parse_float(const void* p, string s){
-    try { *((float*)p) = std::stof(s); } 
+template<>
+inline void parse<float>(const void* p, string s){
+    try { new ((float*)p) float(std::stof(s)); } 
     catch(const invalid_argument& e){
         throw exception( "not float (\"%s\")", s.c_str() );
     }
 }
 
-inline void parse_double(const void* p, string s){
-    try { *((double*)p) = std::stod(s); } 
+template<>
+inline void parse<double>(const void* p, string s){
+    try { new ((double*)p) double(std::stod(s)); } 
     catch(const invalid_argument& e){
         throw exception( "not double (\"%s\")", s.c_str() );
     }
 }
 
-inline void parse_string(const void* p, string s){
-    *((string*)p) = s;
-}
-
-// Templated Atomic String-Parse Function Pointer Retriever
-
-template<typename T>
-constexpr void (*parse_atomic(T))(const void*, string){
-    return NULL;
-}
-
 template<>
-constexpr void (*parse_atomic(char))(const void*, string){
-    return &parse_char;
-}
-
-template<>
-constexpr void (*parse_atomic(int))(const void*, string){
-    return &parse_int;
-}
-
-template<>
-constexpr void (*parse_atomic(float))(const void*, string){
-    return &parse_float;
-}
-
-template<>
-constexpr void (*parse_atomic(double))(const void*, string){
-    return &parse_double;
-}
-
-template<>
-void (*parse_atomic(string))(const void*, string){
-    return &parse_string;
+inline void parse<string>(const void* p, string s){
+    try { new ((string*)p) string(s); } 
+    catch(const invalid_argument& e){
+        throw exception( "not double (\"%s\")", s.c_str() );
+    }
 }
 
 // Templated Pair-Parse Functions
@@ -152,18 +148,15 @@ typedef std::pair<const string&, Yaml::Node&> pair;
 //      ...and retriever!
 
 template<typename T>
-constexpr void (*parser(T))(const void*, pair);
+constexpr inline void (*parser(T))(const void*, pair);
 
 template<typename T>
-constexpr void parser_atomic(const void* p, pair t){
+inline void parse_atomic(const void* p, pair s){
 
-    if(!t.second.IsScalar())
-        throw exception("have (%s), want (scalar)", type(t.second.Type()));
+    if(!s.second.IsScalar())
+        throw exception("have (%s), want (scalar)", type(s.second.Type()));
 
-    if(parse_atomic(T()) == NULL)
-        throw exception( "no parser for type (\"%s\")", typeid(T()).name() );
-
-    parse_atomic(T())(p, t.second.As<string>());
+    parse<T>(p, s.second.As<string>());
 
 }
 
@@ -174,9 +167,6 @@ inline void parse_array(const void* p, pair s){
 
     if(!s.second.IsSequence())
         throw exception("have (%s), want (sequence)", type(s.second.Type()));
-
-    if(parser(T()) == NULL)
-        throw exception( "no parser for type (\"%s\")", typeid(T()).name() );
 
     int n = 0;
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
@@ -208,10 +198,8 @@ inline void parse_vector(const void* p, pair s){
         throw exception("have (%s), want (sequence)", type(s.second.Type()));
 
     T t;
-    if(parser(t) == NULL)
-        throw exception( "no parser for type (\"%s\")", typeid(t).name() );
-
     vector<T>* vt = (vector<T>*)p;
+    
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
         
         if(!(*it).second.IsScalar())
@@ -238,10 +226,8 @@ inline void parse_set(const void* p, pair s){
         throw exception("have (%s), want (sequence)", type(s.second.Type()));
 
     T t;
-    if(parser(t) == NULL)
-        throw exception( "no parser for type (\"%s\")", typeid(t).name() );
-
     set<T>* st = (set<T>*)p;
+    
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
         
         if(!(*it).second.IsScalar())
@@ -268,28 +254,23 @@ inline void parse_map(const void* p, pair s){
         throw exception("have (%s), want (map)", type(s.second.Type()));
 
     Tkey key;
-    if(parser(key) == NULL)
-        throw exception( "no parser for type (\"%s\")", typeid(key).name() );
-
     Tval val;
-    if(parser(val) == NULL)
-        throw exception( "no parser for type (\"%s\")", typeid(val).name() );
-
     map<Tkey, Tval>* mkv = (map<Tkey, Tval>*)p;
+    
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
         
         if(!(*it).second.IsScalar())
             throw exception("invalid sub-node. have (%s), want (scalar)", type((*it).second.Type()));
-        
+
         try {
-            parse_atomic(key)(&key, (*it).first);
+            parse<Tkey>(&key, (*it).first);
         }
         catch( exception& e ){
             throw exception("can't parse sub-node key. %s", e.what());
         }
 
         try {
-            parse_atomic(val)(&val, (*it).second.As<string>());
+            parse<Tval>(&val, (*it).second.As<string>());
         }
         catch( exception& e ){
             throw exception("can't parse sub-node value. %s", e.what());
@@ -305,8 +286,7 @@ inline void parse_map(const void* p, pair s){
 
 template<typename T>
 constexpr void (*parser(T))(const void*, pair){
-    if(parse_atomic(T()) == NULL) return NULL;
-    return &parser_atomic<T>;
+    return &parse_atomic<T>;
 }
 
 template<typename T, size_t N>
@@ -395,7 +375,7 @@ struct ind_key {
     const char* key;
 };
 
-ind_key key(const char* key){
+constexpr ind_key key(const char* key){
     return ind_key{key};
 }
 
@@ -410,6 +390,12 @@ T& operator<<(T& var, const yaml::ind_key& n){
     });
     return var;
 }
+
+/*
+===================================================
+        Recursive YAML Loading Functions
+===================================================
+*/
 
 // Load into Struct
 
@@ -432,16 +418,12 @@ void extract(indset& subindex, indset::iterator& start, pair node){
             nsubindex.insert(*start);       // Add New Sub-Node
             subindex.erase(*start);
         }
+
     }
 
     // Direct Extraction
 
     if(nsubindex.empty()){
-
-        // Non-Parsable Variable
-
-        if(start_v.f == NULL)
-            throw exception("can't parse variable (%s), type (%s) has no parser", start_v.n, start_v.t);
 
         try {
             start_v.f(start_v.p, node); 

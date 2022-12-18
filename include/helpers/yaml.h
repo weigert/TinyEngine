@@ -540,11 +540,19 @@ bool load(T* var, const char* filename){
     // Find the YAML Node
 
     auto it = root.Begin();
-    while(it != root.End() && (*it).first != (*start).n)
-        it++;
-       
-    if(it == root.End())
-        throw exception("can't find node for key (%s)", (*start).n);
+
+    try {
+
+        while(it != root.End() && (*it).first != (*start).n)
+            it++;
+           
+        if(it == root.End())
+            throw exception("can't find node for key (%s)", (*start).n);
+
+    } catch( exception& e ){
+        printf("YAML Extract Error: %s\n", e.what());
+        return false;
+    }
 
     indset nindex = index;
     

@@ -88,3 +88,11 @@ simap:
   "a": 2
   "b": 4
   "test": 6
+
+vector_struct:
+  v: 
+    - 1
+    - 54
+    - 2
+    - 56
+    - 73

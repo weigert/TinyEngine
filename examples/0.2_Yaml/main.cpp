@@ -150,6 +150,17 @@ int main( int argc, char* args[] ) {
 		std::cout<<"  "<<ii.first<<" "<<ii.second<<std::endl;
 	}
 
+	// Struct of Vector
+
+	vecstruct << yaml::key("vector_struct");
+	if(!yaml::load(&vecstruct, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"vector_struct:"<<std::endl;
+	for(auto& ii: vecstruct.v){
+		std::cout<<"  "<<ii<<std::endl;
+	}
+
 	return 0;
 
 }

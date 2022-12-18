@@ -77,3 +77,12 @@ std::set<std::string> sset;
 std::map<int, int> iimap;
 std::map<std::string, int> simap;
 std::map<int, std::string> ismap;
+
+struct VecStruct {
+    std::vector<int> v;
+    int a;
+    VecStruct(){
+        v << yaml::key("v");
+    }
+} vecstruct;
+

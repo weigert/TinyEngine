@@ -30,24 +30,24 @@ struct StructA {
 
 struct StructB {
 
-    char c;
     StructA A;
+    char c;
 
     StructB(){
-        c << yaml::key("c");
         A << yaml::key("A");
+        c << yaml::key("c");
     }
 
 } B;
 
 struct StructC {
 
-    StructB b;
+    StructB B;
     char g;
 
     StructC(){
+        B << yaml::key("B");
         g << yaml::key("g");
-        b << yaml::key("b");
     }
 
 } C;

@@ -79,13 +79,14 @@ StructB:
     g: 5
 
 StructC:
-  b:
-    c: 1
+  g: 5
+  B:
+    c: z
     A:
       a: 1
       b: 1
+      c: 1
       d: 1
-  g: 1
 
 # Arrays
 

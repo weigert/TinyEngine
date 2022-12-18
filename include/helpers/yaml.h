@@ -414,7 +414,15 @@ template<typename T>
 indset::iterator find(T* t){
     indset::iterator it = index.begin();
     for(; it != index.end(); it++)
-    if((*it).p == (void*)t)
+    if((*it).p == (void*)t && (*it).s == sizeof(T))
+        break;
+    return it;
+}
+
+indset::iterator find(const yaml::ind& i){
+    indset::iterator it = index.begin();
+    for(; it != index.end(); it++)
+    if((*it).p == (void*)(i.p) && (*it).s == i.s)
         break;
     return it;
 }
@@ -453,9 +461,60 @@ T& operator<<(T& var, const yaml::ind_key& n){
 ===================================================
 */
 
+indset suball(const yaml::ind& start){
+
+    indset subindex;
+
+    uint8_t* seek_end = (uint8_t*)(start.p) + start.s;
+    if((uint8_t*)(start.p) >= seek_end)
+        return subindex;
+
+    indset::iterator it = find(start);
+    if(it == index.end())
+        return subindex;
+
+    while((++it) != index.end() && (uint8_t*)it->p < seek_end)
+        subindex.insert((*it));       // Add New Sub-Node  
+
+    return subindex;
+
+}
+
+indset sub(const yaml::ind& start){
+
+    indset subindex;
+
+    uint8_t* seek_end = (uint8_t*)(start.p) + start.s;
+    if((uint8_t*)(start.p) >= seek_end)
+        return subindex;
+
+    subindex = suball(start);
+    if(subindex.empty())
+        return subindex;
+
+    // Remove Redundant Sub-Elements
+
+    indset::iterator it = find(start);
+    if(it == index.end())
+        return subindex;
+
+    while((++it) != index.end() && (uint8_t*)(it->p) < seek_end){
+        indset nsubindex = suball((*it));
+        for(auto& ns: nsubindex)
+            subindex.erase(ns);
+    }
+
+    cout<<start.n<<endl;
+    for(auto& ns: subindex)
+            cout<<"  "<<ns.n<<endl;
+
+    return subindex;
+
+}
+
 // Load into Struct
 
-void extract(indset& subindex, indset::iterator& start, pair node){
+void extract(indset::iterator& start, pair node){
 
     // Dereference Start Node, Get End-Point
 
@@ -463,23 +522,11 @@ void extract(indset& subindex, indset::iterator& start, pair node){
 
     // Search for Sub-Nodes
 
-    indset nsubindex;
-    uint8_t* seek_end = (uint8_t*)(start_v.p) + start_v.s;
-    while((uint8_t*)(start->p) < seek_end){
-
-        if((++start) == index.end())        // Get Next Element
-            break;
-
-        if(start->p < seek_end){            // Element Fits Inside
-            nsubindex.insert(*start);       // Add New Sub-Node
-            subindex.erase(*start);
-        }
-
-    }
+    indset subindex = sub(start_v);
 
     // Direct Extraction
 
-    if(nsubindex.empty()){
+    if(subindex.empty()){
 
         try {
             start_v.f(start_v.p, node); 
@@ -493,13 +540,9 @@ void extract(indset& subindex, indset::iterator& start, pair node){
 
     else if(node.second.IsMap()){
 
-        for(auto& sub: nsubindex){
+        for(auto& sub: subindex){
 
-            for(start = index.begin(); start != index.end(); start++)
-            if((*start).p == sub.p && (*start).s == sub.s)
-                break;
-
-            // Find the YAML Node
+            start = find(sub);
 
             auto it = node.second.Begin();
             while(it != node.second.End() && (*it).first != (*start).n)
@@ -509,7 +552,7 @@ void extract(indset& subindex, indset::iterator& start, pair node){
                 throw exception("can't find node for key (%s)", (*start).n);
 
             try {
-                extract(nsubindex, start, (*it));
+                extract(start, (*it));
             } catch( exception& e ){
                 throw exception("can't parse variable (%s), %s", start_v.n, e.what());
             }
@@ -524,18 +567,16 @@ void extract(indset& subindex, indset::iterator& start, pair node){
 
         auto it = node.second.Begin();
 
-        for(auto& sub: nsubindex){
+        for(auto& sub: subindex){
 
-            for(start = index.begin(); start != index.end(); start++)
-            if((*start).p == sub.p && (*start).s == sub.s)
-                break;
+            start = find(sub);
 
             auto itt = (*it).second.Begin();
             while(itt != (*it).second.End() && (*itt).first != (*start).n)
                 itt++;
 
             try {
-                extract(nsubindex, start, (*itt));
+                extract(start, (*itt));
             } catch( exception& e ){   
                 throw exception("can't parse variable (%s), %s", start_v.n, e.what());
             }
@@ -591,11 +632,9 @@ bool load(T* var, const char* filename){
         printf("YAML Extract Error: %s\n", e.what());
         return false;
     }
-
-    indset nindex = index;
     
     try {
-        extract(nindex, start, (*it));
+        extract(start, (*it));
     } catch( exception& e ){
         printf("YAML Extract Error: %s\n", e.what());
         return false;

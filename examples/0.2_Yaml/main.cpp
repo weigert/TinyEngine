@@ -5,6 +5,8 @@
 
 int main( int argc, char* args[] ) {
 
+	/*
+
 	// Basic Types
 
 	// Integer Loading
@@ -91,14 +93,18 @@ int main( int argc, char* args[] ) {
 	std::cout<<"b.c = "<<B.c<<std::endl;
 	std::cout<<"b.A.a = "<<B.A.a<<std::endl;
 
+	*/
+
 	// Double-Nested Struct
 
 	C << yaml::key("StructC");
 	if(!yaml::load(&C, "config.yaml"))
 		std::cout<<"Failed to load config.yaml"<<std::endl;
 
-	std::cout<<"c.b.c = "<<C.b.c<<std::endl;
+	std::cout<<"c.B.c = "<<C.B.c<<std::endl;
 	std::cout<<"c.g = "<<C.g<<std::endl;
+
+	/*
 
 	// Arrays
 
@@ -197,7 +203,7 @@ int main( int argc, char* args[] ) {
 	if(!yaml::load(&vv, "config.yaml"))
 		std::cout<<"Failed to load config.yaml"<<std::endl;
 
-	std::cout<<"vector:"<<std::endl;
+	std::cout<<"vector of vector:"<<std::endl;
 	for(auto& v: vv){
 		for(auto& vec: v){
 			std::cout<<"  "<<vec<<std::endl;
@@ -217,8 +223,9 @@ int main( int argc, char* args[] ) {
 		for(auto& vec: m.second){
 			std::cout<<"  "<<vec<<std::endl;
 		}
-		std::cout<<std::endl;
 	}
+
+	*/
 
 	return 0;
 

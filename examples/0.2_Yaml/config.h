@@ -8,7 +8,7 @@
 int i = 0;
 float f = 0.0;
 double d = 0.0; 
-char c;
+char c = 'a';
 std::string s = "";
 
 // Structs / Nested Structs

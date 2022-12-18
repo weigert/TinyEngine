@@ -20,7 +20,7 @@ StructB:
   c: 'c'
   A:
     a: 15
-    b: 5
+    b: stes
     d: 6
     g: 5
 
@@ -41,6 +41,14 @@ float_array:
   - 0.75
   - 1.0
   - 2.0
+
+struct_array:
+  - 
+    a: 'a'
+  - 
+    a: 'b'
+  - 
+    a: 'c'
 
 # STL Containers
 

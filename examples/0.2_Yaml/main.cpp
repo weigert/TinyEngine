@@ -49,17 +49,17 @@ int main( int argc, char* args[] ) {
 	A << yaml::key("StructA");
 	if(!yaml::load(&A, "config.yaml"))
 		std::cout<<"Failed to load config.yaml"<<std::endl;
-	//std::cout<<"a.a = "<<A.a<<std::endl;
-	//std::cout<<"a.b = "<<A.b<<std::endl;
-	//std::cout<<"a.d = "<<A.d<<std::endl;
+	std::cout<<"a.a = "<<A.a<<std::endl;
+	std::cout<<"a.b = "<<A.b<<std::endl;
+	std::cout<<"a.d = "<<A.d<<std::endl;
 
 	// Nested Struct Loading
 
 	B << yaml::key("StructB");
 	if(!yaml::load(&B, "config.yaml"))
 		std::cout<<"Failed to load config.yaml"<<std::endl;
-	//std::cout<<"b.c = "<<B.c<<std::endl;
-	//std::cout<<"b.A.a = "<<B.A.a<<std::endl;
+	std::cout<<"b.c = "<<B.c<<std::endl;
+	std::cout<<"b.A.a = "<<B.A.a<<std::endl;
 
 	// Double-Nested Struct
 
@@ -67,8 +67,8 @@ int main( int argc, char* args[] ) {
 	if(!yaml::load(&C, "config.yaml"))
 		std::cout<<"Failed to load config.yaml"<<std::endl;
 
-	//std::cout<<"c.b.c = "<<C.b.c<<std::endl;
-	//std::cout<<"c.g = "<<C.g<<std::endl;
+	std::cout<<"c.b.c = "<<C.b.c<<std::endl;
+	std::cout<<"c.g = "<<C.g<<std::endl;
 
 	// Arrays
 
@@ -79,6 +79,16 @@ int main( int argc, char* args[] ) {
 	std::cout<<"farr:"<<std::endl;
 	for(size_t i = 0; i < 5; i++)
 		std::cout<<"  "<<farr[i]<<std::endl;
+
+	// Array of Struct
+
+	structarr << yaml::key("struct_array");
+	if(!yaml::load(&structarr, "config.yaml"))
+		std::cout<<"Failed to load config.yaml"<<std::endl;
+
+	std::cout<<"structarr:"<<std::endl;
+	for(size_t i = 0; i < 3; i++)
+		std::cout<<"  "<<structarr[i].a<<std::endl;
 
 	// Vector
 

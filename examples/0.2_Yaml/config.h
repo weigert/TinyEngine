@@ -30,8 +30,8 @@ struct StructA {
 
 struct StructB {
 
-    StructA A;
     char c;
+    StructA A;
 
     StructB(){
         c << yaml::key("c");
@@ -57,7 +57,15 @@ struct StructC {
 float farr[5]{0.5};
 int iarr[2]{0};
 
-StructA structarr[3];
+struct StructArr {
+    char a;
+    StructArr(){
+        a << yaml::key("a");
+    }
+
+};
+
+StructArr structarr[3];
 
 // STL Container Types
 

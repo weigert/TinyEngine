@@ -1,0 +1,47 @@
+# Structs and Nested Structs
+
+StructA:
+  a: 1
+  b: 2.6
+
+StructB:
+  c: 'c'
+  A:
+    a: 15
+    b: stes
+    d: 6
+    g: 5
+
+StructC:
+  g: 5
+  B:
+    c: z
+    A:
+      a: 1
+      b: 1
+      c: 1
+      d: 1
+
+struct_array:
+  - 
+    a: 'a0'
+    b: 'b0'
+    c: 'c0'
+  - 
+    a: 'a1'
+    b: 'b1'
+    c: 'c1'
+  - 
+    a: 'a2'
+    b: 'b2'
+    c: 'c2'
+
+# STL Containers
+
+vector_struct:
+  v: 
+    - 1
+    - 54
+    - 2
+    - 56
+    - 73

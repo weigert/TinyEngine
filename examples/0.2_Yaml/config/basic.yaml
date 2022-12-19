@@ -1,0 +1,11 @@
+# Basic Types
+
+integer: 1
+
+float: 4
+
+double: 0.25
+
+char: 'z'
+
+string: "test string"

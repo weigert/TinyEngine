@@ -28,6 +28,27 @@ ToDo:
 - Only throw a warning without failure?
 - STL Container of Struct
 
+- Broken: Array of Struct
+    Broken because the beginning of the struct has no key,
+    Making it non-extractable.
+    When I register an array of structs, I have to register
+    all structs as sub-nodes as well.
+- Broken: STL Container of Struct
+
+- Direct, Non-Struct Arrays are also not broken.
+- This is because they only register a single key and
+ use their atomic parser.
+- BROKEN: BASIC STRUCT BUT MIS-DEFINED IN CONFIG.YAML AS ARRAY!
+    CURRENTLY, THERE IS NO MECHANISM FOR RECOGNIZING THAT WE WANT A MAP!!!
+Note that for vectors, this works fine because it uses its atomic parser.
+Note that the same is valid for simple arrays, because it can check that it wants a sequence.
+
+THEREFORE, IN ORDER TO FIX STRUCTS, THEY HAVE TO CALL TYPE CHECKING ATOMIC FUNCTIONS!!!!!!!!!
+
+Something like:
+- Array type variable calls its atomic parser, which will then call atomic parser for a struct-type,
+which will then correctly parse itself, potentially calling array type, and so on.
+
 */
 
 #include <iostream>
@@ -182,13 +203,125 @@ constexpr inline void (*parser( map<Tkey, Tval> ))(const void*, pair);
 
 // Implementations
 
+ /*
+
+    // Search for Sub-Nodes
+
+
+    // Direct Extraction
+
+    if(subindex.empty()){
+
+        
+    
+    }
+
+    if(start_v.f == &parse_array<float, 5>)
+        cout<<"IS ATOMIC"<<endl;
+
+    // Sub-Index Recursion: Struct
+
+    else if(node.second.IsMap()){
+
+        for(auto& sub: subindex){
+
+            start = find(sub);
+
+            auto it = node.second.Begin();
+            while(it != node.second.End() && (*it).first != (*start).n)
+                it++;
+
+            if(it == node.second.End())
+                throw exception("can't find node for key (%s)", (*start).n);
+
+            try {
+                extract(start, (*it));
+            } catch( exception& e ){
+                throw exception("can't parse variable (%s), %s", start_v.n, e.what());
+            }
+
+        }
+
+    }
+
+    // Sub-Index Recursion: Array of Struct
+
+    else if(node.second.IsSequence()){
+
+        cout<<"ARRAY OF STRUCT"<<endl;
+
+        auto it = node.second.Begin();
+
+        for(auto& sub: subindex){
+
+            start = find(sub);
+
+        //    cout<<(*start).n<<endl;
+
+            auto itt = (*it).second.Begin();
+
+            while(itt != (*it).second.End() && (*itt).first != (*start).n)
+                itt++;
+
+            try {
+                extract(start, (*itt));
+            } catch( exception& e ){   
+                throw exception("can't parse variable (%s), %s", start_v.n, e.what());
+            }
+
+            itt++;
+            if(itt == (*it).second.End()){
+                it++;
+            }
+
+
+        }
+
+    }
+
+    // Non-Map Type Node
+
+    else throw exception("invalid node for key (%s). have (%s), want (!none)", start_v.n, type(node.second.Type()));
+
+    */
+
 template<typename T>
 inline void parse_atomic(const void* p, pair s){
 
-    if(!s.second.IsScalar())
-        throw exception("have (%s), want (scalar)", type(s.second.Type()));
 
-    parse<T>(p, s.second.As<string>());
+    /*
+        Here I need to make sure that
+        I have something which actually IS a scalar.
+    */
+
+    //    indset subindex = sub(start_v);
+
+    // The Map is Scalar: 
+
+    if(s.second.IsScalar()){
+        parse<T>(p, s.second.As<string>());
+        return;
+    }
+
+        /*
+        The question is:
+        - Do we have a struct?
+        - An array of structs (this initializes a subindex)
+        - A struct of structs?
+    
+        Then I can effectively decide what to do with nodes.
+        But note that I actually need access to the ind for this to work...
+        What is stopping this?
+
+    */
+
+
+    cout<<"ATTEMPTING ATOMIC PARSE ON"<<endl;
+    T t;
+    cout<<typeid(t).name()<<endl;
+
+
+    throw exception("have (%s), want (scalar)", type(s.second.Type()));
 
 }
 
@@ -203,16 +336,18 @@ inline void parse_array(const void* p, pair s){
     int n = 0;
     for(auto it = s.second.Begin(); it != s.second.End(); it++){
 
+        if(N <= n)
+            throw exception("too many array elements");
+
+        T t;
         try {
-            parser(T())((T*)p + n, (*it));
+            parser(t)((T*)p + n, (*it));
         }
         catch( exception& e ){
-            throw exception("can't parse sub-node. %s", e.what());
+            throw exception("can't parse sub-node (%d). %s", n, e.what());
         }
 
         n++;
-        if(N < n)
-            throw exception("too many array elements");
 
     }
 
@@ -465,14 +600,11 @@ indset suball(const yaml::ind& start){
 
     indset subindex;
 
-    uint8_t* seek_end = (uint8_t*)(start.p) + start.s;
-    if((uint8_t*)(start.p) >= seek_end)
-        return subindex;
-
     indset::iterator it = find(start);
     if(it == index.end())
         return subindex;
 
+    uint8_t* seek_end = (uint8_t*)(start.p) + start.s;
     while((++it) != index.end() && (uint8_t*)it->p < seek_end)
         subindex.insert((*it));       // Add New Sub-Node  
 
@@ -484,10 +616,6 @@ indset sub(const yaml::ind& start){
 
     indset subindex;
 
-    uint8_t* seek_end = (uint8_t*)(start.p) + start.s;
-    if((uint8_t*)(start.p) >= seek_end)
-        return subindex;
-
     subindex = suball(start);
     if(subindex.empty())
         return subindex;
@@ -498,15 +626,16 @@ indset sub(const yaml::ind& start){
     if(it == index.end())
         return subindex;
 
+    uint8_t* seek_end = (uint8_t*)(start.p) + start.s;
     while((++it) != index.end() && (uint8_t*)(it->p) < seek_end){
         indset nsubindex = suball((*it));
         for(auto& ns: nsubindex)
             subindex.erase(ns);
     }
 
-    cout<<start.n<<endl;
-    for(auto& ns: subindex)
-            cout<<"  "<<ns.n<<endl;
+    //cout<<start.n<<endl;
+    //for(auto& ns: subindex)
+    //        cout<<"  "<<ns.n<<endl;
 
     return subindex;
 
@@ -520,21 +649,30 @@ void extract(indset::iterator& start, pair node){
 
     yaml::ind start_v = *start;
 
+    try {
+        start_v.f(start_v.p, node); 
+    } catch( exception& e ){
+        throw exception("can't parse variable (%s), %s", start_v.n, e.what());
+    }
+
+    /*
+
     // Search for Sub-Nodes
 
     indset subindex = sub(start_v);
+
+    cout<<subindex.size()<<endl;
 
     // Direct Extraction
 
     if(subindex.empty()){
 
-        try {
-            start_v.f(start_v.p, node); 
-        } catch( exception& e ){
-            throw exception("can't parse variable (%s), %s", start_v.n, e.what());
-        }
+        
     
     }
+
+    if(start_v.f == &parse_array<float, 5>)
+        cout<<"IS ATOMIC"<<endl;
 
     // Sub-Index Recursion: Struct
 
@@ -565,13 +703,18 @@ void extract(indset::iterator& start, pair node){
 
     else if(node.second.IsSequence()){
 
+        cout<<"ARRAY OF STRUCT"<<endl;
+
         auto it = node.second.Begin();
 
         for(auto& sub: subindex){
 
             start = find(sub);
 
+        //    cout<<(*start).n<<endl;
+
             auto itt = (*it).second.Begin();
+
             while(itt != (*it).second.End() && (*itt).first != (*start).n)
                 itt++;
 
@@ -581,7 +724,11 @@ void extract(indset::iterator& start, pair node){
                 throw exception("can't parse variable (%s), %s", start_v.n, e.what());
             }
 
-            it++;
+            itt++;
+            if(itt == (*it).second.End()){
+                it++;
+            }
+
 
         }
 
@@ -590,6 +737,8 @@ void extract(indset::iterator& start, pair node){
     // Non-Map Type Node
 
     else throw exception("invalid node for key (%s). have (%s), want (!none)", start_v.n, type(node.second.Type()));
+
+    */
 
 }
 

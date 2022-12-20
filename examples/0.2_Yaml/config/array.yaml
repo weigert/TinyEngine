@@ -21,12 +21,13 @@ multi_array:
     - 5
     - 6
 
-multi_array_2:
+multi_array_single:
   -
     -
       - 1
       - 2
       - 3
+  -
     -
       - 4
       - 5

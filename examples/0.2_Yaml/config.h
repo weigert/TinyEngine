@@ -15,31 +15,31 @@ void parse_basic(){
     i << yaml::key("integer");
     if(!yaml::load(&i, "config/basic.yaml"))
         std::cout<<"Failed to load config/basic.yaml"<<std::endl;
-    std::cout<<yaml::find(&i)<<" = "<<i<<std::endl;
+    std::cout<<yaml::find(i)<<" = "<<i<<std::endl;
 
     float f = 0.0;
     f << yaml::key("float");
     if(!yaml::load(&f, "config/basic.yaml"))
         std::cout<<"Failed to load config/basic.yaml"<<std::endl;
-    std::cout<<yaml::find(&f)<<" = "<<f<<std::endl;
+    std::cout<<yaml::find(f)<<" = "<<f<<std::endl;
 
     double d = 0.0; 
     d << yaml::key("double");
     if(!yaml::load(&d, "config/basic.yaml"))
         std::cout<<"Failed to load config/basic.yaml"<<std::endl;
-    std::cout<<yaml::find(&d)<<" = "<<d<<std::endl;
+    std::cout<<yaml::find(d)<<" = "<<d<<std::endl;
 
     char c = 'a';
     c << yaml::key("char");
     if(!yaml::load(&c, "config/basic.yaml"))
         std::cout<<"Failed to load config/basic.yaml"<<std::endl;
-    std::cout<<yaml::find(&c)<<" = "<<c<<std::endl;
+    std::cout<<yaml::find(c)<<" = "<<c<<std::endl;
 
     std::string s = "";
     s << yaml::key("string");
     if(!yaml::load(&s, "config/basic.yaml"))
         std::cout<<"Failed to load config/basic.yaml"<<std::endl;
-    std::cout<<yaml::find(&s)<<" = "<<s<<std::endl;
+    std::cout<<yaml::find(s)<<" = "<<s<<std::endl;
 
 }
 
@@ -217,8 +217,8 @@ void parse_array(){
 
     float farr[5];
     farr << yaml::key("float_array");
-    if(!yaml::load(&farr, "config/struct.yaml"))
-        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+    if(!yaml::load(&farr, "config/array.yaml"))
+        std::cout<<"Failed to load config/array.yaml"<<std::endl;
 
     std::cout<<"array of float [5]:"<<std::endl;
     for(size_t i = 0; i < 5; i++)
@@ -226,8 +226,8 @@ void parse_array(){
 
     int iarr[2];
     iarr << yaml::key("integer_array");
-    if(!yaml::load(&iarr, "config/struct.yaml"))
-        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+    if(!yaml::load(&iarr, "config/array.yaml"))
+        std::cout<<"Failed to load config/array.yaml"<<std::endl;
 
     std::cout<<"array of integer[2]:"<<std::endl;
     for(size_t i = 0; i < 2; i++)
@@ -237,23 +237,60 @@ void parse_array(){
 
     float multi_arr[2][3];
     multi_arr << yaml::key("multi_array");
-    if(!yaml::load(&multi_arr, "config/struct.yaml"))
-        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+    if(!yaml::load(&multi_arr, "config/array.yaml"))
+        std::cout<<"Failed to load config/array.yaml"<<std::endl;
     std::cout<<"array of float[2][3]:"<<std::endl;
     for(size_t i = 0; i < 2; i++)
     for(size_t j = 0; j < 3; j++)
         std::cout<<"  "<<multi_arr[i][j]<<std::endl;
 
-    int multi_arr_2[1][2][3];
-    multi_arr_2 << yaml::key("multi_array_2");
-    if(!yaml::load(&multi_arr_2, "config/struct.yaml"))
-        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
-    std::cout<<"array of int[1][2][3]:"<<std::endl;
+    int multi_arr_single[2][1][3];
+    multi_arr_single << yaml::key("multi_array_single");
+    if(!yaml::load(&multi_arr_single, "config/array.yaml"))
+        std::cout<<"Failed to load config/array.yaml"<<std::endl;
+    std::cout<<"array of int[2][1][3]:"<<std::endl;
     for(size_t i = 0; i < 2; i++)
-    for(size_t j = 0; j < 3; j++)
-        std::cout<<"  "<<multi_arr_2[0][i][j]<<std::endl;
+    for(size_t j = 0; j < 1; j++)
+    for(size_t k = 0; k < 3; k++)
+        std::cout<<"  "<<multi_arr_single[i][j][k]<<std::endl;
 
 }
+
+void parse_struct(){
+
+    // C++ Structs
+
+    struct StructS {
+        int s;
+        StructS(){
+        }
+    } S;
+    
+                S.s << yaml::key("s");
+    S << yaml::key("StructS");
+
+    if(!yaml::load(&S, "config/struct.yaml"))
+        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+    std::cout<<"S"<<std::endl;
+    std::cout<<"    s = "<<S.s<<std::endl;
+
+    struct StructSS {
+        StructS S;
+        StructSS(){
+        }
+    } SS;
+    
+    SS.S.s << yaml::key("s");
+    SS.S << yaml::key("StructS");
+    SS << yaml::key("StructSS");
+
+    if(!yaml::load(&SS, "config/struct.yaml"))
+        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+    std::cout<<"SS"<<std::endl;
+    std::cout<<"    SS.S"<<std::endl;
+    std::cout<<"        SS.S.s = "<<SS.S.s<<std::endl;
+
+    // Array of Struct
 
 
     struct StructA {
@@ -265,10 +302,17 @@ void parse_array(){
         }
     } A;
 
-void parse_struct(){
+    StructA StructA_arr[1];
+    StructA_arr << yaml::key("StructA_arr");
+    if(!yaml::load(&StructA_arr, "config/struct.yaml"))
+        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+    for(int i = 0; i < 1; i++){
+        std::cout<<"A["<<i<<"]"<<std::endl;
+            std::cout<<"    a = "<<StructA_arr[i].a<<std::endl;
+            std::cout<<"    b = "<<StructA_arr[i].b<<std::endl;
+    }
 
-    // C++ Structs
-
+    return;
 
     A << yaml::key("StructA");
     if(!yaml::load(&A, "config/struct.yaml"))
@@ -277,87 +321,66 @@ void parse_struct(){
     std::cout<<"    a = "<<A.a<<std::endl;
     std::cout<<"    b = "<<A.b<<std::endl;
 
-    /*
+    struct StructB {
 
-// Structs / Nested Structs
+        StructA A;
+        char c;
 
-struct StructB {
+        StructB(){
+            A << yaml::key("A");
+            c << yaml::key("c");
+        }
 
-    StructA A;
-    char c;
-
-    StructB(){
-        A << yaml::key("A");
-        c << yaml::key("c");
-    }
-
-} B;
-
-struct StructC {
-
-    StructB B;
-    char g;
-
-    StructC(){
-        B << yaml::key("B");
-        g << yaml::key("g");
-    }
-
-} C;
-
-struct StructArr {
-    std::string a;
-    std::string b;
-    std::string c;
-    StructArr(){
-        a << yaml::key("a");
-        b << yaml::key("b");
-        c << yaml::key("c");
-    }
-};
-
-StructArr structarr[3];
-
-// STL Container Types
-
-
-struct VecStruct {
-    std::vector<int> v;
-    int a;
-    VecStruct(){
-        v << yaml::key("v");
-    }
-} vecstruct;
-
-
-
-    // Structs / Nested Structs
-
-    // Struct Loading
-
-    A << yaml::key("StructA");
-    if(!yaml::load(&A, "config/struct.yaml"))
-        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
-    std::cout<<"a.a = "<<A.a<<std::endl;
-    std::cout<<"a.b = "<<A.b<<std::endl;
-    std::cout<<"a.d = "<<A.d<<std::endl;
-
-    // Nested Struct Loading
+    } B;
 
     B << yaml::key("StructB");
     if(!yaml::load(&B, "config/struct.yaml"))
         std::cout<<"Failed to load config/struct.yaml"<<std::endl;
-    std::cout<<"b.c = "<<B.c<<std::endl;
-    std::cout<<"b.A.a = "<<B.A.a<<std::endl;
+    std::cout<<"B"<<std::endl;
+    std::cout<<"    A"<<std::endl;
+    std::cout<<"        a = "<<B.A.a<<std::endl;
+    std::cout<<"        b = "<<B.A.b<<std::endl;
+    std::cout<<"    c = "<<B.c<<std::endl;
 
-    // Double-Nested Struct
+    struct StructC {
+
+        StructB B;
+        char d;
+
+        StructC(){
+            B << yaml::key("B");
+            d << yaml::key("d");
+        }
+
+    } C;
 
     C << yaml::key("StructC");
     if(!yaml::load(&C, "config/struct.yaml"))
         std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+    std::cout<<"C"<<std::endl;
+    std::cout<<"    B"<<std::endl;
+    std::cout<<"        A"<<std::endl;
+    std::cout<<"            a = "<<C.B.A.a<<std::endl;
+    std::cout<<"            b = "<<C.B.A.b<<std::endl;
+    std::cout<<"        c = "<<C.B.c<<std::endl;
+    std::cout<<"    d = "<<C.d<<std::endl;
 
-    std::cout<<"c.B.c = "<<C.B.c<<std::endl;
-    std::cout<<"c.g = "<<C.g<<std::endl;
+
+
+}
+
+    /*
+
+// Structs / Nested Structs
+
+
+
+// STL Container Types
+
+
+
+
+    // Structs / Nested Structs
 
 
     // Array of Struct
@@ -375,7 +398,36 @@ struct VecStruct {
         std::cout<<"  "<<structarr[i].c<<std::endl;
     }
 
-    // Struct of Vector
+    */
+
+void parse_struct_array(){
+
+    // Struct of Array
+
+    struct ArrStruct {
+        int a[4];
+        ArrStruct(){
+            a << yaml::key("a");
+        }
+    } arrstruct;
+
+    arrstruct << yaml::key("array_struct");
+    if(!yaml::load(&arrstruct, "config/struct.yaml"))
+        std::cout<<"Failed to load config/struct.yaml"<<std::endl;
+
+    std::cout<<"array of struct:"<<std::endl;
+    for(int i = 0; i < 4; i++)
+        std::cout<<"  "<<arrstruct.a[i]<<std::endl;
+
+    // Struct of STL Container
+
+    struct VecStruct {
+        std::vector<int> v;
+        int a;
+        VecStruct(){
+            v << yaml::key("v");
+        }
+    } vecstruct;
 
     vecstruct << yaml::key("vector_struct");
     if(!yaml::load(&vecstruct, "config/struct.yaml"))
@@ -385,7 +437,5 @@ struct VecStruct {
     for(auto& ii: vecstruct.v){
         std::cout<<"  "<<ii<<std::endl;
     }
-
-    */
 
 }

@@ -10,6 +10,7 @@ int main( int argc, char* args[] ) {
 	//parse_stl();			// STL Containers
 	//parse_array();	// Arrays
 	parse_struct();	// Arrays
+	//parse_struct_array();	// Struct of Arrays
 
 	return 0;
 

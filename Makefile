@@ -45,10 +45,10 @@ setup:
 			@cp include/utility/shader.cpp $(INCPATH)/TinyEngine/Shader
 			@cp include/utility/texture.cpp $(INCPATH)/TinyEngine/Texture
 			@cp include/utility/target.cpp $(INCPATH)/TinyEngine/Target
-			@cp include/imgui/imgui.h $(INCPATH)/TinyEngine/imgui
-			@cp include/imgui/imgui_impl_opengl3.h $(INCPATH)/TinyEngine/imgui_impl_opengl3
-			@cp include/imgui/imgui_impl_sdl.h $(INCPATH)/TinyEngine/imgui_impl_sdl
-			@cp include/imgui/imconfig.h $(INCPATH)/TinyEngine/imconfig.h
+			@cp include/external/imgui/imgui.h $(INCPATH)/TinyEngine/imgui
+			@cp include/external/imgui/imgui_impl_opengl3.h $(INCPATH)/TinyEngine/imgui_impl_opengl3
+			@cp include/external/imgui/imgui_impl_sdl.h $(INCPATH)/TinyEngine/imgui_impl_sdl
+			@cp include/external/imgui/imconfig.h $(INCPATH)/TinyEngine/imconfig.h
 			@echo "Done";
 
 #######################
@@ -62,7 +62,7 @@ install:
 			@echo "Compiling TinyEngine ...";
 			@if [ ! -d "tmp" ]; then mkdir tmp; fi;
 			@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC TinyEngine.cpp -o tmp/TinyEngine.o
-			@$(foreach i,$(IMGUI), $(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/imgui/$(i).cpp -o tmp/$(i).o;)
+			@$(foreach i,$(IMGUI), $(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/external/imgui/$(i).cpp -o tmp/$(i).o;)
 			@echo "Generating Static Library Archive ...";
 			@ar cr tmp/libTinyEngine.a tmp/TinyEngine.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
 			@echo "Placing Compiled TinyEngine Library ...";

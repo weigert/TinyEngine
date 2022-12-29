@@ -262,8 +262,7 @@ void parse_struct(){
 
     struct StructS {
         int s;
-        StructS(){
-        }
+   
     } S;
     
                 S.s << yaml::key("s");
@@ -276,8 +275,6 @@ void parse_struct(){
 
     struct StructSS {
         StructS S;
-        StructSS(){
-        }
     } SS;
     
     SS.S.s << yaml::key("s");

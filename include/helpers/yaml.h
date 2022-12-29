@@ -12,98 +12,32 @@ Utilizes pointer-magic to avoid an indexing struct.
 ===================================================
 
 Features:
-- Basic Types
-    (char, int, float, double, string)
-- Struct Types
-    (any user-defined, tagged struct)
+- Basic Types (char, int, float, double, string)
+- Struct Types (any user-defined, tagged struct)
 - STL Containers (Templated w. Basic Type)
-    (Vector, Set, Map)
-- Nestings of STL Containers and Structs
-    - Struct of Struct (of Struct...)
-    - Struct of STL Containers (Arbitrary)
-    - 
+- Nestings of the above
 
 ToDo:
 - More Atomic Types
 - Only throw a warning without failure?
 - STL Container of Struct
 
-- Broken: Array of Struct
-    Broken because the beginning of the struct has no key,
-    Making it non-extractable.
-    When I register an array of structs, I have to register
-    all structs as sub-nodes as well.
-- Broken: STL Container of Struct
+- Broken: STL Container of Struct?
+- Broken: Memory Ambiguous Struct Layouts
+    The nesting is messed up!!!
 
-- Direct, Non-Struct Arrays are also not broken.
-- This is because they only register a single key and
- use their atomic parser.
-- BROKEN: BASIC STRUCT BUT MIS-DEFINED IN CONFIG.YAML AS ARRAY!
-    CURRENTLY, THERE IS NO MECHANISM FOR RECOGNIZING THAT WE WANT A MAP!!!
-Note that for vectors, this works fine because it uses its atomic parser.
-Note that the same is valid for simple arrays, because it can check that it wants a sequence.
+Last ditch effort:
+    instead of using the set,
+    somehow store the variable / object itself
+    and see if you can use is_member_pointer to sort the order.
+    This requires doing some weird stuff though.
+    If that works, then it would be great.
 
-THEREFORE, IN ORDER TO FIX STRUCTS, THEY HAVE TO CALL TYPE CHECKING ATOMIC FUNCTIONS!!!!!!!!!
+It is not possible to take any variable and see if it is a member pointer of another type.
+Because it always takes the identifier as literal, which must therefore be known.
+Therefore, macros would be necessary which I don't want.
 
-Something like:
-- Array type variable calls its atomic parser, which will then call atomic parser for a struct-type,
-which will then correctly parse itself, potentially calling array type, and so on.
-
-
-I believe the only way to solve the struct problem is to correctly assign the nesting depth.
-
-struct {
-    struct {
-        int;
-    }
-}
-
-1. All have the same position
-2. All have the same size
-3. only difference is: WHAT?
-
-independent of the order they are registered in...
-
-and if i re-register.
-
-*/
-
-
-/*
-    what happens when I register a key twice?
-    once inside an initializer, once outside?
-
-    e.g.:
-    int i[5] << yaml::key("i"); // registers 6 keys WITH order
-    i[0] << yaml::key("i")      // registers a key with a base order.
-
-
-    I belie
-
-    my problem is, I need to identify the depth of each component.
-    then i can order the nodes correctly.
-
-    identically named nodes at same position, size and depth
-    should not be allowed? I think I can constrain more
-    one of either size or depth seems redundant
-
-    if the depth is given, I can insert with depth
-    then the entrypoint always find the correct variable
-    which is my current issue
-
-    write a catch for cant parse empty struct
-
-    OR I JUST DEFINE A STRUCT AS A TEMPLATED THING
-    WITH ONE OR MULTIPLE ARGUMENTS
-
-    AND THEN I CAN SIMPLY USE THAT TEMPLATE...
-    ...nope doesn't work
-
-    so instead:
-        generate the correct depth,
-        utilize the ordering to my advantage.
-        then I can sort stuff by nesting depth
-        the order will always be correct
+There is no way of solving the struct nesting problem.
 */
 
 #include <iostream>
@@ -121,68 +55,6 @@ using namespace std;
 
 bool OMITEMPTY = true;
 
-/*
-    templated object depth...
-    how to do it?
-*/
-
-template <class T> // concept
-concept is_class = std::is_class<T>::value;
-
-template <class T> // concept
-concept is_member = std::is_member_object_pointer<T>::value;
-
-template<typename T>
-struct mystruct {
-    mystruct(T){}
-    // struct of anything...
-    // can be constructed by anything?
-};
-
-// I need to find a way to find its member?
-// or determine whether it is a member functoin?
-
-template<typename T>
-struct depth_v : std::integral_constant<std::size_t, 0> {};
-
-template<typename T>
-struct depth_v<mystruct<T>> : std::integral_constant<std::size_t, 1 + depth_v<T>::value> {};
-
-template<is_member T>
-struct depth_v<T> : std::integral_constant<std::size_t, 1> {};
-
-template<typename T>
-inline constexpr std::size_t depth = depth_v<T>::value; // (C++17)
-
-/*
-template<typename T>
-struct dimensions : std::integral_constant<std::size_t, 0> {};
-
-template<typename T>
-struct dimensions<std::vector<T>> : std::integral_constant<std::size_t, 1 + dimensions<T>::value> {};
-
-template<typename T>
-inline constexpr std::size_t dimensions_v = dimensions<T>::value; // (C++17)
-*/
-
-/*
-
-
-template<typename T>
-constexpr int depth(T t);
-
-template<typename T>
-constexpr int depth(T t){
-    return 0;
-}
-
-template<is_class T>
-constexpr int depth(T t){
-    return 1;
-}
-
-*/
-
 // Formatted YAML Exception
 
 class exception : public std::exception {
@@ -190,13 +62,9 @@ public:
 
     string msg;
 
-    // Basic Constructor
-
     exception(){}
     exception(string f):msg{f}{}
     exception(const char* f):msg{string(f)}{}
-
-    // Variadic Formatted Constructor
 
     template <typename... Types>
     exception(const char* f, Types... r){
@@ -205,11 +73,9 @@ public:
 
     template<typename... Types>
     string format(const char* f, Types... t){
-
         static char tmp[4096];
         size_t n = sprintf(tmp, f, t...);
         return string(tmp);
-
     }
 
     const char* what(){
@@ -217,6 +83,8 @@ public:
     }
 
 };
+
+// YAML Type Print Helper
 
 const char* type(Yaml::Node::eType t){
     if(t == Yaml::Node::eType::None)            return "none";
@@ -228,13 +96,9 @@ const char* type(Yaml::Node::eType t){
 
 /*
 ===================================================
-        Templated In-Place Yaml-Node Parsing
+            Global Indexing Structure
 ===================================================
 */
-
-
-
-// In-Place Atomic String->Template Parse Functions
 
 typedef std::pair<const string&, Yaml::Node&> pair;
 
@@ -244,33 +108,33 @@ struct ind {
     const char (*t);                    // typeof(value)
     const char (*n);                    // Name of Key
     void (*f)(const yaml::ind&, pair);  // Parse Function Pointer
-    const int o = 0;                    // Order / Depth
+    const int o = 0;                    // Nesting Level
 };
 
 ostream& operator<<(ostream& os, const ind& i){
     os << "\"" << i.n << "\" (";
     os << i.p << ", ";
     os << i.s << ", ";
+    os << i.o << ", ";
     os << i.t << ")";
-    return os; 
+    return os;
 }
+
+// Index Struct and Set
 
 struct ind_sort {
     bool operator() (ind a, ind b) const {
-        if(a.p < b.p) return true;
+        if(a.p < b.p) return true;  // Memory Position
         if(a.p > b.p) return false;
-        if(a.s > b.s) return true;
+        if(a.s > b.s) return true;  // Variable / Object Size
         if(a.s < b.s) return false;
-        if(a.o < b.o) return true;
-        if(a.o > b.o) return false;
+        if(a.o > b.o) return true;  // Nesting Level
+        if(a.o < b.o) return false;
         return false;
     }
 };
 
 typedef set<ind, ind_sort> indset;
-
-// Index Struct and Set
-
 indset index;
 
 ostream& operator<<(ostream& os, const indset::iterator& i){
@@ -319,7 +183,6 @@ indset sameall(const yaml::ind& start){
 
 }
 
-
 indset suball(const yaml::ind& start){
 
     indset subindex;
@@ -361,6 +224,14 @@ indset sub(const yaml::ind& start){
 
 }
 
+/*
+===================================================
+        Templated In-Place Yaml-Node Parsing
+===================================================
+*/
+
+// Templated Base-Type In-Place Constructors
+
 template<typename T>
 inline void parse(const yaml::ind& p, string s){
     throw exception( "no parser for type (\"%s\")", typeid(T).name() );
@@ -369,7 +240,7 @@ inline void parse(const yaml::ind& p, string s){
 template<>
 inline void parse<char>(const yaml::ind& p, string s){
     try{ new ((char*)(p.p)) char(s.c_str()[0]); }
-    catch(...) { 
+    catch(...) {
         throw exception( "not char (\"%s\")", s.c_str() );
     }
 }
@@ -384,32 +255,29 @@ inline void parse<int>(const yaml::ind& p, string s){
 
 template<>
 inline void parse<float>(const yaml::ind& p, string s){
-    try { new ((float*)(p.p)) float(std::stof(s)); } 
-    catch(const invalid_argument& e){
+    try { new ((float*)(p.p)) float(std::stof(s)); }
+    catch(...){
         throw exception( "not float (\"%s\")", s.c_str() );
     }
 }
 
 template<>
 inline void parse<double>(const yaml::ind& p, string s){
-    try { new ((double*)(p.p)) double(std::stod(s)); } 
-    catch(const invalid_argument& e){
+    try { new ((double*)(p.p)) double(std::stod(s)); }
+    catch(...){
         throw exception( "not double (\"%s\")", s.c_str() );
     }
 }
 
 template<>
 inline void parse<string>(const yaml::ind& p, string s){
-    try { new ((string*)(p.p)) string(s); } 
-    catch(const invalid_argument& e){
-        throw exception( "not double (\"%s\")", s.c_str() );
+    try { new ((string*)(p.p)) string(s); }
+    catch(...){
+        throw exception( "not string (\"%s\")", s.c_str() );
     }
 }
 
 // Templated Pair-Parse Functions
-
-// Pass-Through Default Function: Interpret Node Value
-//      ...and retriever!
 
 template<typename T>
 constexpr inline void (*parser( T ))(const yaml::ind&, pair);
@@ -432,9 +300,6 @@ constexpr inline void (*parser( glm::tmat3x3<T> ))(const yaml::ind&, pair);
 template<typename T>
 constexpr inline void (*parser( glm::tmat4x4<T> ))(const yaml::ind&, pair);
 
-//template<typename T, size_t N>
-//constexpr inline void (*parser( T(&t)[N] ))(const yaml::ind&, pair);
-
 template<typename T>
 constexpr inline void (*parser( vector<T> ))(const yaml::ind&, pair);
 
@@ -444,15 +309,9 @@ constexpr inline void (*parser( set<T> ))(const yaml::ind&, pair);
 template<typename Tkey, typename Tval>
 constexpr inline void (*parser( map<Tkey, Tval> ))(const yaml::ind&, pair);
 
-// Implementations
+// Hierarchical Parse Functions for Complex Types
 
-/* Atomic Parse Means:
-    Non-Default Atomic Function Call.
-    We can assume that all types in here are either
-    structs, arrays of structs, or scalars.
-    Therefore, if the sub-index is empty, we
-    can assume that something was done incorrectly.
-*/
+// Atomic Type
 
 template<typename T>
 inline void parse_atomic(const yaml::ind& p, pair s){
@@ -723,14 +582,10 @@ constexpr ind_key key(const char* key){
 // Scalar
 
 template<typename T>
-void insert(T& var, const yaml::ind_key& n, int order = 0){
+constexpr inline void insert(T& var, const yaml::ind_key& n, int order = 0){
 
     indset::iterator i = find(var);
     indset subindex = sameall((*i));   // Search Memory Subindex
-
-    cout<<n.key<<endl;
-    cout<<depth<T><<endl;
-    cout<<subindex.size()<<endl;
 
     yaml::index.insert(yaml::ind{
         (void*)&var,
@@ -743,15 +598,14 @@ void insert(T& var, const yaml::ind_key& n, int order = 0){
 
 }
 
+template <class T> // concept
+concept is_class = std::is_class<T>::value;
+
 template<is_class T>
-void insert(T& var, const yaml::ind_key& n, int order = 0){
+constexpr inline void insert(T& var, const yaml::ind_key& n, int order = 0){
 
     indset::iterator i = find(var);
     indset subindex = sameall((*i));   // Search Memory Subindex
-
-    cout<<"class "<<n.key<<endl;
-    cout<<depth<T><<endl;
-    cout<<subindex.size()<<endl;
 
     yaml::index.insert(yaml::ind{
         (void*)&var,
@@ -762,12 +616,20 @@ void insert(T& var, const yaml::ind_key& n, int order = 0){
         order
     });
 
+}
+
+template <class T> // concept
+concept is_empty = std::is_empty<T>::value;
+
+template<is_empty T>
+constexpr inline void insert(T& var, const yaml::ind_key& n, int order = 0){
+    cout<<"CANT ASSIGN TO EMPTY STRUCT"<<endl;
 }
 
 // Array
 
 template<typename T, size_t N>
-void insert(T(&var)[N], const yaml::ind_key& k, int order = 0){
+constexpr inline void insert(T(&var)[N], const yaml::ind_key& k, int order = 0){
 
     yaml::index.insert(yaml::ind{
         (void*)&var,
@@ -779,7 +641,7 @@ void insert(T(&var)[N], const yaml::ind_key& k, int order = 0){
     });
 
     for(size_t n = 0; n < N; n++)
-        insert(var[n], key(std::to_string(n).c_str()), order + 1);
+        insert(var[n], key(std::to_string(n).c_str()), order - 1);
 
 }
 
@@ -807,91 +669,6 @@ void extract(indset::iterator& start, pair node){
         throw exception("can't parse variable (%s), %s", (*start).n, e.what());
     }
 
-    /*
-
-    // Search for Sub-Nodes
-
-    indset subindex = sub(start_v);
-
-    cout<<subindex.size()<<endl;
-
-    // Direct Extraction
-
-    if(subindex.empty()){
-
-        
-    
-    }
-
-    if(start_v.f == &parse_array<float, 5>)
-        cout<<"IS ATOMIC"<<endl;
-
-    // Sub-Index Recursion: Struct
-
-    else if(node.second.IsMap()){
-
-        for(auto& sub: subindex){
-
-            start = find(sub);
-
-            auto it = node.second.Begin();
-            while(it != node.second.End() && (*it).first != (*start).n)
-                it++;
-
-            if(it == node.second.End())
-                throw exception("can't find node for key (%s)", (*start).n);
-
-            try {
-                extract(start, (*it));
-            } catch( exception& e ){
-                throw exception("can't parse variable (%s), %s", start_v.n, e.what());
-            }
-
-        }
-
-    }
-
-    // Sub-Index Recursion: Array of Struct
-
-    else if(node.second.IsSequence()){
-
-        cout<<"ARRAY OF STRUCT"<<endl;
-
-        auto it = node.second.Begin();
-
-        for(auto& sub: subindex){
-
-            start = find(sub);
-
-        //    cout<<(*start).n<<endl;
-
-            auto itt = (*it).second.Begin();
-
-            while(itt != (*it).second.End() && (*itt).first != (*start).n)
-                itt++;
-
-            try {
-                extract(start, (*itt));
-            } catch( exception& e ){   
-                throw exception("can't parse variable (%s), %s", start_v.n, e.what());
-            }
-
-            itt++;
-            if(itt == (*it).second.End()){
-                it++;
-            }
-
-
-        }
-
-    }
-
-    // Non-Map Type Node
-
-    else throw exception("invalid node for key (%s). have (%s), want (!none)", start_v.n, type(node.second.Type()));
-
-    */
-
 }
 
 template<typename T>
@@ -912,7 +689,6 @@ bool load(T* var, const char* filename){
     }
 
     indset::iterator start = yaml::find(*var);
-    cout<<"START "<<(*start).n<<endl;
     if(start == index.end()){
         printf("YAML Extract Error: no key assigned (%p)\n", var);
         return false;
@@ -943,6 +719,7 @@ bool load(T* var, const char* filename){
     }
 
     return true;
+
 }
 
 };

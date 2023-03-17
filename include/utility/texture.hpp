@@ -42,14 +42,9 @@ void Texture::raw(SDL_Surface* s){  //Generate a texture from raw surface data
   SDL_FreeSurface(s);
 }
 
-class Cubetexture: public Texture{  //Cubetexture specialization.
-public:                             //Same thing, 6 times
+class Cubetexture: public Texture {
+public:
   Cubetexture():Texture(){ type = GL_TEXTURE_CUBE_MAP; };
-
-  Cubetexture(int W, int H, bool d = false):Cubetexture(){  //Create empty texture of defined size
-    if(!d) empty(W, H);
-    else   depth(W, H);
-  };
   Cubetexture(int _W, int _H):Cubetexture(){ W = _W; H = _H; };
   Cubetexture(int _W, int _H, TextureConfig TC, void* data = NULL):Cubetexture(_W, _H){
     setup(TC, data);

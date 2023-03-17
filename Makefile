@@ -39,12 +39,12 @@ setup:
 			@cp include/audio.h $(INCPATH)/TinyEngine/Audio
 			@cp include/event.h $(INCPATH)/TinyEngine/Event
 			@cp include/view.h $(INCPATH)/TinyEngine/View
-			@cp include/utility/buffer.cpp $(INCPATH)/TinyEngine/Buffer
-			@cp include/utility/instance.cpp $(INCPATH)/TinyEngine/Instance
-			@cp include/utility/model.cpp $(INCPATH)/TinyEngine/Model
-			@cp include/utility/shader.cpp $(INCPATH)/TinyEngine/Shader
-			@cp include/utility/texture.cpp $(INCPATH)/TinyEngine/Texture
-			@cp include/utility/target.cpp $(INCPATH)/TinyEngine/Target
+			@cp include/utility/buffer.hpp $(INCPATH)/TinyEngine/Buffer
+			@cp include/utility/instance.hpp $(INCPATH)/TinyEngine/Instance
+			@cp include/utility/model.hpp $(INCPATH)/TinyEngine/Model
+			@cp include/utility/shader.hpp $(INCPATH)/TinyEngine/Shader
+			@cp include/utility/texture.hpp $(INCPATH)/TinyEngine/Texture
+			@cp include/utility/target.hpp $(INCPATH)/TinyEngine/Target
 			@cp include/imgui/imgui.h $(INCPATH)/TinyEngine/imgui
 			@cp include/imgui/imgui_impl_opengl3.h $(INCPATH)/TinyEngine/imgui_impl_opengl3
 			@cp include/imgui/imgui_impl_sdl.h $(INCPATH)/TinyEngine/imgui_impl_sdl

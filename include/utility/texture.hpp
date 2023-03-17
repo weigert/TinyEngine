@@ -42,6 +42,16 @@ void Texture::raw(SDL_Surface* s){  //Generate a texture from raw surface data
   SDL_FreeSurface(s);
 }
 
+//Default parameter setting function!
+//Note that you can pass your own to the texture building functions above!z
+tfunc Texture::parameter = [](Texture* t){
+  glTexParameteri(t->type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(t->type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//  glTexParameteri(t->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//  glTexParameteri(t->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//  glTexParameteri(t->type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+};
+
 class Cubetexture: public Texture {
 public:
   Cubetexture():Texture(){ type = GL_TEXTURE_CUBE_MAP; };
@@ -52,14 +62,11 @@ public:
   void setup(TextureConfig TC, void* data = NULL);
 };
 
-//Default parameter setting function!
-//Note that you can pass your own to the texture building functions above!z
-tfunc Texture::parameter = [](Texture* t){
-  glTexParameteri(t->type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(t->type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(t->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(t->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(t->type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-};
+void Cubetexture::setup(TextureConfig TC, void* data){
+  glBindTexture( type, texture );
+  for(unsigned int i = 0; i < 6; i++)
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, TC.internal, W, H, 0, TC.format, TC.type, data);
+  Texture::parameter(this);
+}
 
 #endif

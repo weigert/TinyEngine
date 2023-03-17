@@ -1,5 +1,7 @@
 #ifndef TINYENGINE_UTILITY_SHADER
 #define TINYENGINE_UTILITY_SHADER
+#include <TinyEngine/Buffer>
+#include <TinyEngine/Texture>
 
 class ShaderBase {
 public:

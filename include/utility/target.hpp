@@ -43,7 +43,7 @@ public:
   void target(bool t = true){          //This FBO as a render target (no clearing)
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glViewport(0, 0, WIDTH, HEIGHT);
-    if(t && hasdepth) glClear( GL_DEPTH_BUFFER_BIT );
+    if(t) glClear( GL_DEPTH_BUFFER_BIT );
     if(t) glClear( GL_COLOR_BUFFER_BIT );
   }
 

@@ -4,8 +4,8 @@
 # Tested on GNU/Linux
 
 # Install Location Configuration
-LIBPATH = ~/.local/lib
-INCPATH = /usr/local/include
+LIBPATH = $(HOME)/.local/lib
+INCPATH = $(HOME)/.local/include
 
 # Compilation Settings
 CC = g++ -std=c++17
@@ -33,8 +33,8 @@ all: setup helpers install
 .PHONY: setup
 setup:
 			@echo "Copying Core Header Files ...";
-			@if [ ! -d "$(INCPATH)" ]; then mkdir $(INCPATH); fi;
-			@if [ ! -d "$(INCPATH)/TinyEngine" ]; then mkdir $(INCPATH)/TinyEngine; fi;
+			@if [ ! -d $(INCPATH) ]; then mkdir $(INCPATH); fi;
+			@if [ ! -d $(INCPATH)/TinyEngine ]; then mkdir $(INCPATH)/TinyEngine; fi;
 			@cp TinyEngine.hpp $(INCPATH)/TinyEngine/TinyEngine
 			@cp include/audio.h $(INCPATH)/TinyEngine/Audio
 			@cp include/event.h $(INCPATH)/TinyEngine/Event

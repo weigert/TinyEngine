@@ -29,7 +29,6 @@ public:
       if(attached.empty())      // Optimization: Attach depth buffer, but no color
         glDrawBuffer(GL_NONE);  // Don't Output Fragment Shader Stuff
     }
-    TargetMap[this].bound[attach] = &t;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 

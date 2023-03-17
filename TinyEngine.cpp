@@ -1,6 +1,6 @@
 #define TINYENGINE_NAMESPACE
 #define TINYENGINE_UTILITIES
-#include "TinyEngine.h"
+#include "TinyEngine.hpp"
 
 #include "include/audio.cpp"
 #include "include/view.cpp"

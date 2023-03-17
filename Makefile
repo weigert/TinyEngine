@@ -35,7 +35,7 @@ setup:
 			@echo "Copying Core Header Files ...";
 			@if [ ! -d "$(INCPATH)" ]; then mkdir $(INCPATH); fi;
 			@if [ ! -d "$(INCPATH)/TinyEngine" ]; then mkdir $(INCPATH)/TinyEngine; fi;
-			@cp TinyEngine.h $(INCPATH)/TinyEngine/TinyEngine
+			@cp TinyEngine.hpp $(INCPATH)/TinyEngine/TinyEngine
 			@cp include/audio.h $(INCPATH)/TinyEngine/Audio
 			@cp include/event.h $(INCPATH)/TinyEngine/Event
 			@cp include/view.h $(INCPATH)/TinyEngine/View

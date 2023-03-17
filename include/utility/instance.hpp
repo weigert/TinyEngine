@@ -36,15 +36,6 @@ void Instance::config(Buffer* buf){
   glVertexAttribDivisor(model->bindings.size()+instances.size(), 1);
 }
 
-template<> //For Matrices - Special Procedure
-void Instance::config<glm::mat4>(Buffer* buf){
-  for(int i = 0; i < 4; i++){
-    glEnableVertexAttribArray(model->bindings.size()+instances.size()+i);
-    glVertexAttribPointer(model->bindings.size()+instances.size()+i, 4, GL_FLOAT, GL_FALSE, 4*sizeof(glm::vec4), (void*)(i*sizeof(glm::vec4)));
-    glVertexAttribDivisor(model->bindings.size()+instances.size()+i, 1);
-  }
-}
-
 void Instance::render(GLenum mode, int size){
   glBindVertexArray(model->vao);
   if(model->indexed){
@@ -52,6 +43,15 @@ void Instance::render(GLenum mode, int size){
     glDrawElementsInstanced(mode, model->SIZE, GL_UNSIGNED_INT, 0, size);
   }
   else glDrawArraysInstanced(mode, 0, model->SIZE, size);
+}
+
+template<> //For Matrices - Special Procedure
+void Instance::config<glm::mat4>(Buffer* buf){
+  for(int i = 0; i < 4; i++){
+    glEnableVertexAttribArray(model->bindings.size()+instances.size()+i);
+    glVertexAttribPointer(model->bindings.size()+instances.size()+i, 4, GL_FLOAT, GL_FALSE, 4*sizeof(glm::vec4), (void*)(i*sizeof(glm::vec4)));
+    glVertexAttribDivisor(model->bindings.size()+instances.size()+i, 1);
+  }
 }
 
 void Instance::render(GLenum mode){

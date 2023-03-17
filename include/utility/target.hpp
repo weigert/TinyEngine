@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_TARGET
-#define TINYENGINE_TARGET
+#ifndef TINYENGINE_UTILITY_TARGET
+#define TINYENGINE_UTILITY_TARGET
 #include <TinyEngine/Texture>
 
 class Target {

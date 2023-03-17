@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_IMAGE
-#define TINYENGINE_IMAGE
+#ifndef TINYENGINE_HELPER_IMAGE
+#define TINYENGINE_HELPER_IMAGE
 
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
@@ -28,26 +28,27 @@ using Handle = function<void()>;
 
   void save(Target target, string path){
 
-    SDL_Surface *s = SDL_CreateRGBSurface(0, target.WIDTH, target.HEIGHT, 32, 0, 0, 0, 0);
-    SDL_LockSurface(s);
-    target.sample(s->pixels, vec2(0), vec2(target.WIDTH, target.HEIGHT));
-    SDL_UnlockSurface(s);
-    save(s, path);
-    delete s;
+  //  SDL_Surface *s = SDL_CreateRGBSurface(0, target.WIDTH, target.HEIGHT, 32, 0x0000ff, 0x00ff00, 0xff0000, 0);
+  //  SDL_LockSurface(s);
+  //  target.sample(s->pixels, vec2(0), vec2(target.WIDTH, target.HEIGHT));
+  //  SDL_UnlockSurface(s);
+  //  save(s, path);
+  //  delete s;
   }
 
-  SDL_Surface* make(function<vec4(int)> handle, vec2 size = vec2(Tiny::view.WIDTH, Tiny::view.HEIGHT)){
+  SDL_Surface* make(function<vec4(const ivec2)> handle, ivec2 size = ivec2(Tiny::view.WIDTH, Tiny::view.HEIGHT)){
     SDL_Surface *s = SDL_CreateRGBSurface(0, size.x, size.y, 32, 0, 0, 0, 0);
     SDL_LockSurface(s);
 
     unsigned char* img_raw = (unsigned char*)s->pixels; //Raw Data
 
-    for(int i = 0; i < size.x*size.y; i++){
-      vec4 color = (handle)(i);  //Construct from Algorithm
-      *(img_raw+4*i)    = (unsigned char)(255*color.x);
-      *(img_raw+4*i+1)  = (unsigned char)(255*color.y);
-      *(img_raw+4*i+2)  = (unsigned char)(255*color.z);
-      *(img_raw+4*i+3)  = (unsigned char)(255*color.w);
+    for(int i = 0; i < size.x; i++)
+    for(int j = 0; j < size.y; j++){
+      vec4 color = (handle)(ivec2(i, j));  //Construct from Algorithm
+      *(img_raw+4*(j*size.x+i))    = (unsigned char)(255*color.x);
+      *(img_raw+4*(j*size.x+i)+1)  = (unsigned char)(255*color.y);
+      *(img_raw+4*(j*size.x+i)+2)  = (unsigned char)(255*color.z);
+      *(img_raw+4*(j*size.x+i)+3)  = (unsigned char)(255*color.w);
     }
 
     SDL_UnlockSurface(s);
@@ -56,18 +57,19 @@ using Handle = function<void()>;
 
   #else
 
-  SDL_Surface* make(function<vec4(int)> handle, vec2 size){
+  SDL_Surface* make(function<vec4(const ivec2)> handle, ivec2 size){
     SDL_Surface *s = SDL_CreateRGBSurface(0, size.x, size.y, 32, 0, 0, 0, 0);
     SDL_LockSurface(s);
 
     unsigned char* img_raw = (unsigned char*)s->pixels; //Raw Data
 
-    for(int i = 0; i < size.x*size.y; i++){
-      vec4 color = (handle)(i);  //Construct from Algorithm
-      *(img_raw+4*i)    = (unsigned char)(255*color.x);
-      *(img_raw+4*i+1)  = (unsigned char)(255*color.y);
-      *(img_raw+4*i+2)  = (unsigned char)(255*color.z);
-      *(img_raw+4*i+3)  = (unsigned char)(255*color.w);
+    for(int i = 0; i < size.x; i++)
+    for(int j = 0; j < size.y; j++){
+      vec4 color = (handle)(ivec2(i, j));  //Construct from Algorithm
+      *(img_raw+4*(j*size.x+i))    = (unsigned char)(255*color.x);
+      *(img_raw+4*(j*size.x+i)+1)  = (unsigned char)(255*color.y);
+      *(img_raw+4*(j*size.x+i)+2)  = (unsigned char)(255*color.z);
+      *(img_raw+4*(j*size.x+i)+3)  = (unsigned char)(255*color.w);
     }
 
     SDL_UnlockSurface(s);

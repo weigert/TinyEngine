@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_SHADER
-#define TINYENGINE_SHADER
+#ifndef TINYENGINE_UTILITY_SHADER
+#define TINYENGINE_UTILITY_SHADER
 
 class ShaderBase {
 public:

@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_INSTANCE
-#define TINYENGINE_INSTANCE
+#ifndef TINYENGINE_UTILITY_INSTANCE
+#define TINYENGINE_UTILITY_INSTANCE
 #include <TinyEngine/Model>
 
 class Instance{

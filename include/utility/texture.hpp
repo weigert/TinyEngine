@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_TEXTURE
-#define TINYENGINE_TEXTURE
+#ifndef TINYENGINE_UTILITY_TEXTURE
+#define TINYENGINE_UTILITY_TEXTURE
 
 class Texture;
 using tfunc = std::function<void(Texture*)>; //Arbitrary function operating on texture pointer

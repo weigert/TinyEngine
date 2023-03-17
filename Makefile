@@ -4,7 +4,7 @@
 # Tested on GNU/Linux
 
 # Install Location Configuration
-LIBPATH = /usr/local/lib
+LIBPATH = ~/.local/lib
 INCPATH = /usr/local/include
 
 # Compilation Settings
@@ -66,7 +66,7 @@ install:
 			@echo "Generating Static Library Archive ...";
 			@ar cr tmp/libTinyEngine.a tmp/TinyEngine.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
 			@echo "Placing Compiled TinyEngine Library ...";
-			@if [ ! -d "$(LIBPATH)" ]; then mkdir $(LIBPATH); fi;
+			@if [ ! -d $(LIBPATH) ]; then mkdir $(LIBPATH); fi;
 			@cp tmp/libTinyEngine.a $(LIBPATH)/libTinyEngine.a
 			@rm -rf tmp
 			@echo "Done";

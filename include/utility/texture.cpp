@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_TEXTURE
+#define TINYENGINE_TEXTURE
+
 class Texture;
 using tfunc = std::function<void(Texture*)>; //Arbitrary function operating on texture pointer
 
@@ -47,14 +50,14 @@ void Texture::depth(int W, int H, tfunc param){
 }
 
 void Texture::raw(SDL_Surface* s, tfunc param){  //Generate a texture from raw surface data
-  
+
   glBindTexture( type, texture );
 
   /*
   //   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glActiveTexture(GL_TEXTURE0 + boundtextures);
 
-  
+
           {
       GLenum err = glGetError();
       if(err != GL_NO_ERROR){
@@ -65,7 +68,7 @@ void Texture::raw(SDL_Surface* s, tfunc param){  //Generate a texture from raw s
     */
 
   glTexImage2D(type, 0, GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-  
+
 
 
   (param)(this); //Call the parameter setting function!
@@ -95,3 +98,5 @@ void Cubetexture::empty(int W, int H, tfunc param, GLenum F){
 void Cubetexture::depth(int W, int H, tfunc param){
   empty(W, H, param, GL_DEPTH_COMPONENT);
 };
+
+#endif

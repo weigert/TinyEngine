@@ -1,3 +1,7 @@
+#ifndef TINYENGINE_INSTANCE
+#define TINYENGINE_INSTANCE
+#include <TinyEngine/Model>
+
 class Instance{
 private:
 
@@ -53,3 +57,5 @@ void Instance::render(GLenum mode, int size){
 void Instance::render(GLenum mode){
   render(mode, SIZE);
 }
+
+#endif

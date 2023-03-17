@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_MODEL
+#define TINYENGINE_MODEL
+
 struct Model {
 
   GLuint vao;                                       //Vertex Array Object
@@ -133,3 +136,5 @@ struct Triangle : Model {
 		SIZE = 4;
 	}
 };
+
+#endif

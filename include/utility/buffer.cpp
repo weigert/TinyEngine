@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_BUFFER
+#define TINYENGINE_BUFFER
+
 struct Buffer {
 
   GLuint index;
@@ -69,3 +72,5 @@ template<typename T>
 void Buffer::retrieve(T& val){
   retrieve(1, &val);
 }
+
+#endif

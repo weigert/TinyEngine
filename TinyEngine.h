@@ -1,10 +1,22 @@
+#ifndef TINYENGINE
+#define TINYENGINE
+
+/*
+* TinyEngine
+* by Nicholas McDonald
+* https://github.com/weigert/TinyEngine
+*/
+
+#define TINYENGINE_VERSION "1.7"
+
 #include <iostream>
 #include <functional>
 #include <initializer_list>
 #include <string>
 #include <csignal>
-using Handle = std::function<void()>;
-using slist = std::initializer_list<std::string>;
+#include <deque>
+#include <boost/filesystem.hpp>
+#include <sstream>
 
 #include <GL/glew.h>                                //Rendering Dependencies
 #include <SDL2/SDL.h>
@@ -14,35 +26,31 @@ using slist = std::initializer_list<std::string>;
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
-#include <sstream>                                  //File / Console IO
-#include <iostream>
-#include <fstream>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-
-#include <deque>
-#include <unordered_map>
-
+// Include Utility Headers
 #ifndef TINYENGINE_UTILITIES
 #define TINYENGINE_UTILITIES
 
 #include <TinyEngine/Buffer>
-#include <TinyEngine/Texture>
+#include <TinyEngine/Instance>
+#include <TinyEngine/Model>
 #include <TinyEngine/Shader>
 #include <TinyEngine/Target>
-#include <TinyEngine/Model>
-#include <TinyEngine/Instance>
+#include <TinyEngine/Texture>
 
 #endif
 
-#include <TinyEngine/timer>
+using slist = std::initializer_list<std::string>;
+using Handle = std::function<void()>;
 
+// TinyEngine Namespace / Entrypoint
 #ifndef TINYENGINE_NAMESPACE
 #define TINYENGINE_NAMESPACE
 
 #include <TinyEngine/Audio>
 #include <TinyEngine/View>
 #include <TinyEngine/Event>
+
+#include <TinyEngine/timer>
 
 namespace Tiny{
 
@@ -179,4 +187,5 @@ void loop(F function, Args&&... args){
 
 }
 
+#endif
 #endif

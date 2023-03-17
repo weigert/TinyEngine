@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_SHADER
+#define TINYENGINE_SHADER
+
 class ShaderBase {
 public:
 
@@ -287,3 +290,5 @@ public:
   }
 
 };
+
+#endif

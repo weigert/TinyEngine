@@ -1,3 +1,4 @@
 main
 imgui.ini
 *.dSYM
+.idea

@@ -1,3 +1,7 @@
+#ifndef TINYENGINE_TARGET
+#define TINYENGINE_TARGET
+#include <TinyEngine/Texture>
+
 class Target {
 public:
   Target(int W, int H, bool c = false, bool d = true){
@@ -81,3 +85,5 @@ public:
     setup(texture, depth);
   }
 };
+
+#endif

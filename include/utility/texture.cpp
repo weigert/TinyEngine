@@ -4,41 +4,48 @@
 class Texture;
 using tfunc = std::function<void(Texture*)>; //Arbitrary function operating on texture pointer
 
+struct TextureConfig {
+  GLenum internal = GL_RGBA;
+  GLenum format = GL_RGBA;
+  GLenum type = GL_UNSIGNED_BYTE;
+};
+
 class Texture{
 public:
   Texture(){ glGenTextures( 1, &texture ); };       //Default constructor
-  Texture(SDL_Surface* s):Texture(){ raw(s); };     //Load raw surface data into texture
-  Texture(int W, int H, bool d = false):Texture(){  //Create empty texture of defined size
-    if(!d) empty(W, H);
-    else   depth(W, H);
-  };
+  Texture(int _W, int _H):Texture(){ W = _W; H = _H; };   //Construct w. Size
+  Texture(SDL_Surface* s):Texture(s->w, s->h){ raw(s); }; //Load raw surface data into texture
+  Texture(int _W, int _H, TextureConfig TC, void* data = NULL):Texture(_W, _H){
+    setup(TC, data);
+  }
 
   ~Texture(){ glDeleteTextures(1, &texture); }
 
-  static tfunc parameter;       //Texture Parameter Setter!
   GLuint texture;               //Texture int (OpenGL: everything is an int!)
   GLenum type = GL_TEXTURE_2D;  //Texture type (default is this)
+  int W, H;                     //Texture Width, Height
+  static tfunc parameter;       //Texture Parameter Setter!
 
-  void empty(int W, int H, tfunc param = parameter, GLenum F = GL_RGBA);
-  void depth(int W, int H, tfunc param = parameter);
-  void raw(SDL_Surface* s, tfunc param = parameter);
+  void setup(TextureConfig TC, void* data = NULL);
+  void raw(SDL_Surface* s);
 
 };
 
 class Cubetexture: public Texture{  //Cubetexture specialization.
 public:                             //Same thing, 6 times
-  Cubetexture():Texture(){
-    type = GL_TEXTURE_CUBE_MAP;
-  };
+  Cubetexture():Texture(){ type = GL_TEXTURE_CUBE_MAP; };
 
   Cubetexture(int W, int H, bool d = false):Cubetexture(){  //Create empty texture of defined size
     if(!d) empty(W, H);
     else   depth(W, H);
   };
-
-  void empty(int W, int H, tfunc param = parameter, GLenum F = GL_RGBA);
-  void depth(int W, int H, tfunc param = parameter);
+  Cubetexture(int _W, int _H):Cubetexture(){ W = _W; H = _H; };
+  Cubetexture(int _W, int _H, TextureConfig TC, void* data = NULL):Cubetexture(_W, _H){
+    setup(TC, data);
+  }
+  void setup(TextureConfig TC, void* data = NULL);
 };
+
 void Texture::empty(int W, int H, tfunc param, GLenum F){
   glBindTexture( type, texture );
   glTexImage2D(type, 0, F, W, H, 0, F, GL_UNSIGNED_BYTE, NULL);

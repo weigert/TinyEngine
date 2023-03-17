@@ -33,12 +33,21 @@ public:
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
+  bool check(){
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+      return false;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return true;
+  }
+
   void target(bool t = true){          //This FBO as a render target (no clearing)
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glViewport(0, 0, WIDTH, HEIGHT);
     if(t && hasdepth) glClear( GL_DEPTH_BUFFER_BIT );
     if(t) glClear( GL_COLOR_BUFFER_BIT );
   }
+
   template<typename T> void target(T a){
     glClearColor(a[0], a[1], a[2], 1.0f);
     target();

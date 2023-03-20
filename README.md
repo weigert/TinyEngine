@@ -9,12 +9,12 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 
 	LINES OF CODE (without unreasonable compression):
 
-		Main File: 189
-		Main Classes: 302
-		Utility Classes: 730
-		Helpers Namespaces: 707
-		Core Total: 1221
-		Total: 1928
+		Main File: 198
+		Main Classes: 313
+		Utility Classes: 743
+		Helpers Namespaces: 733
+		Core Total: 1254
+		Total: 1987
 
 	History:
 		12. Apr 2020: 885
@@ -26,6 +26,8 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 		27. Jul 2021: 1943
 		26. Jan 2022: 1969
 		26. Nov 2022: 1928
+		20. Mar 2023: 1987
+
 
 `Note`: If you are using TinyEngine for any projects, please let me know!
 
@@ -58,7 +60,7 @@ A number of utility classes wrap typical OpenGL features into easily useable str
 	- Compute:      Derived from Shader, allows for compute shader dispatching
 	- Buffer:	OpenGL Buffer Object wrapper. Allows for easy templated loading and data retrieval for the GPU.
 	- Model:        OpengL VAO/VBO wrapper. Construct from user-defined algorithm. Handles loading, updating, rendering.
-	- Target:       OpenGL FBO wrapper. Bind a texture for render targeting. Handles 2D (billboards) and 3D (cubemaps).
+	- Target:       OpenGL FBO wrapper. Bind one or multiple textures for render targeting. Handles 2D (billboards) and 3D (cubemaps).
 	- Instance:     OpenGL instanced rendering wrapper (any Model object, any data). Simply add model buffers and render model instanced.
 
 More information can be found on the wiki: [Utility Classes](https://github.com/weigert/TinyEngine/wiki/Utility-Classes)
@@ -142,14 +144,14 @@ As of 2021, TinyEngine is built as a statically linked library for easier inclus
 The installation process occurs in the makefile (valid for all operating systems):
 
 ```bash
-sudo make setup     #Copy Core Header Files to Install Location
-sudo make helpers   #Copy Helper Headers
-sudo make install   #Compile TinyEngine and Copy to Install Location
-sudo make all       #All of the above! Run this for easy install.
+make setup     #Copy Core Header Files to Install Location
+make helpers   #Copy Helper Headers
+make install   #Compile TinyEngine and Copy to Install Location
+make all       #All of the above! Run this for easy install.
 make examples
 ```
 
-The default install locations are `/usr/local/lib` for the compiled library and `/usr/local/include` for the header files.
+The default install locations are `$(HOME)/.local/lib` for the compiled library and `$(HOME)/.local/include` for the header files.
 
 Check the (brief!) makefile for options (e.g. install location, compiler flags).
 

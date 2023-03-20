@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_HELPER_CAMERA
+#define TINYENGINE_HELPER_CAMERA
+
 namespace cam {
 enum camtype {ORTHO, PROJ};
 
@@ -161,3 +164,5 @@ using namespace glm;
   };
 
 }
+
+#endif

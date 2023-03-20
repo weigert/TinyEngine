@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_HELPER_COLOR
+#define TINYENGINE_HELPER_COLOR
+
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -58,3 +61,5 @@ double hashrand(int i){
 }
 
 }
+
+#endif

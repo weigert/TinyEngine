@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_PARSE
-#define TINYENGINE_PARSE
+#ifndef TINYENGINE_HELPER_PARSE
+#define TINYENGINE_HELPER_PARSE
 
 #include <map>
 #include <unordered_set>

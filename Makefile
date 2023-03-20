@@ -36,9 +36,9 @@ setup:
 			@if [ ! -d $(INCPATH) ]; then mkdir $(INCPATH); fi;
 			@if [ ! -d $(INCPATH)/TinyEngine ]; then mkdir $(INCPATH)/TinyEngine; fi;
 			@cp TinyEngine.hpp $(INCPATH)/TinyEngine/TinyEngine
-			@cp include/audio.h $(INCPATH)/TinyEngine/Audio
-			@cp include/event.h $(INCPATH)/TinyEngine/Event
-			@cp include/view.h $(INCPATH)/TinyEngine/View
+			@cp include/audio.hpp $(INCPATH)/TinyEngine/Audio
+			@cp include/event.hpp $(INCPATH)/TinyEngine/Event
+			@cp include/view.hpp $(INCPATH)/TinyEngine/View
 			@cp include/utility/buffer.hpp $(INCPATH)/TinyEngine/Buffer
 			@cp include/utility/instance.hpp $(INCPATH)/TinyEngine/Instance
 			@cp include/utility/model.hpp $(INCPATH)/TinyEngine/Model

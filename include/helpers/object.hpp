@@ -1,3 +1,6 @@
+#ifndef TINYENGINE_HELPER_OBJECT
+#define TINYENGINE_HELPER_OBJECT
+
 namespace obj {
 using namespace std;
 
@@ -143,3 +146,5 @@ using namespace std;
   }
 
 }
+
+#endif

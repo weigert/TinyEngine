@@ -29,6 +29,7 @@ class View {
     bool fullscreen = false;    //Settings
     bool vsync = true;
     bool ccw = true;
+    bool blend = true;
     unsigned int antialias = 16;
     float lineWidth = 1.0f;
     float pointSize = 1.0f;

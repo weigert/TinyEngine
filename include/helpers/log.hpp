@@ -1,3 +1,5 @@
+#ifndef TINYENGINE_HELPER_LOG
+#define TINYENGINE_HELPER_LOG
 #include <cstdarg>
 #include <string>
 
@@ -63,3 +65,5 @@ void progress(T d, T D){
 }
 
 };
+
+#endif

@@ -1,4 +1,4 @@
-#include "view.h"
+#include "view.hpp"
 
 bool View::init(std::string _name, int W, int H){
   enabled = windowed;
@@ -19,13 +19,13 @@ bool View::init(std::string _name, int W, int H){
     return false;
   }
   SDL_SetWindowResizable(gWindow, SDL_TRUE);
-	
+
   gContext = SDL_GL_CreateContext(gWindow);
   if( gContext == NULL ){
     printf( "Context could not be created! SDL_Error: %s\n", SDL_GetError() );
     return false;
   }
-	
+
   SDL_GL_SetSwapInterval(vsync);
   glewExperimental = GL_TRUE;     //Launch GLEW
   glewInit();
@@ -48,8 +48,12 @@ bool View::init(std::string _name, int W, int H){
 
   glEnable(GL_DEPTH_TEST);        //Setup Global OpenGL State!
   glDepthFunc(GL_LEQUAL);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  if(blend){
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  }
+
   glEnable(GL_CULL_FACE);
   if(ccw) glFrontFace(GL_CCW);
   else glFrontFace(GL_CW);

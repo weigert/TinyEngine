@@ -12,6 +12,7 @@ float D = 0.1;
 //Conways Game of Life
 vec3 rule(){
   vec2 p = ex_Tex*(1.0, 1.0); //Scale
+  p.y = 1.0f-p.y;
   vec3 c = texture(imageTexture, p).xyz; //Self
 
   vec3 dx = -1.0/12.0*textureOffset(imageTexture, p, ivec2( 2, 0)).xyz;

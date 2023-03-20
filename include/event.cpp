@@ -1,4 +1,4 @@
-#include "event.h"
+#include "event.hpp"
 
 void Event::input(){
 while(SDL_PollEvent(&in)){

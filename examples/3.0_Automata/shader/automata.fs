@@ -10,6 +10,7 @@ vec3 dead = vec3(1.0, 1.0, 1.0);
 //Conways Game of Life
 vec3 rule(){
   vec2 p = ex_Tex*(1.0, 1.0); //Scale
+  p.y = 1.0f-p.y;
   bool s = (texture(imageTexture, p).xyz == live); //Self
 
   int n = 0; //Neighbors

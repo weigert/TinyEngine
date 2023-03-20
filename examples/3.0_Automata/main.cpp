@@ -15,12 +15,20 @@ int main( int argc, char* args[] ) {
 	};
 	Tiny::view.interface = [](){ /* ... */ }; 						//No Interface
 
-	//Construct a billboard, using a texture generated from the raw data
-	Billboard targetA(image::make([&](int i){
-		if(rand()%2) return glm::vec4(1.0, 1.0, 1.0, 1.0);
-		else return glm::vec4(0.0, 0.0, 0.0, 1.0);
-	}));
-	Billboard targetB(1200, 800, true, false); //color, no depth
+	SDL_Surface* s = image::make([&](glm::ivec2 p){
+			if(rand()%2) return glm::vec4(1.0, 1.0, 1.0, 1.0);
+			else return glm::vec4(0.0, 0.0, 0.0, 1.0);
+		}, glm::ivec2(1200, 800));
+
+	Texture textureA(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE}, s->pixels);
+	Texture textureB(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
+
+	Target targetA(1200, 800);
+	targetA.bind(textureA, GL_COLOR_ATTACHMENT0);
+
+	Target targetB(1200, 800);
+	targetB.bind(textureB, GL_COLOR_ATTACHMENT0);
+
 	bool flip = true;
 
 	Square2D flat;	//Flat square primitive for drawing billboard to screen
@@ -35,14 +43,14 @@ int main( int argc, char* args[] ) {
 			if(flip){
 				targetB.target(false);		//Use target as the render target (no clearing)!
 				automata.use();																				//Use the Automata Shader
-				automata.texture("imageTexture", targetA.texture);		//Target texture!
+				automata.texture("imageTexture", textureA);		//Target texture!
 				automata.uniform("model", flat.model);
 				flat.render();			//Render target texture to itself using primitive and automata shader
 			}
 			else{
 				targetA.target(false);		//Use target as the render target (no clearing)!
 				automata.use();																				//Use the Automata Shader
-				automata.texture("imageTexture", targetB.texture);		//Target texture!
+				automata.texture("imageTexture", textureB);		//Target texture!
 				automata.uniform("model", flat.model);
 				flat.render();			//Render target texture to itself using primitive and automata shader
 			}
@@ -51,7 +59,8 @@ int main( int argc, char* args[] ) {
 
 		Tiny::view.target(color::black);									//Target screen
 		shader.use(); 																		//Setup Shader
-		shader.texture("imageTexture", targetA.texture);
+		if(flip) shader.texture("imageTexture", textureA);
+		else 		 shader.texture("imageTexture", textureB);
 		shader.uniform("model", flat.model);
 		flat.render();																		//Render Objects
 

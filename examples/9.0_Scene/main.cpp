@@ -36,7 +36,7 @@ int main( int argc, char* args[] ) {
 	room->model = glm::scale(glm::mat4(1.0f), glm::vec3(25));
 
 	//Shadow Map
-	Cubemap pointshadow(1000, 1000, false); //No Color Buffer
+	Cubemap pointshadow(1000, 1000);
 
 	Tiny::view.pipeline = [&](){
 

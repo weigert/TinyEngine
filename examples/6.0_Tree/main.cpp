@@ -66,7 +66,10 @@ int main( int argc, char* args[] ) {
 	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 	Shader depth({"shader/depth.vs", "shader/depth.fs"}, {"in_Position"});
 	Shader particledepth({"shader/particledepth.vs", "shader/particledepth.fs"}, {"in_Quad", "in_Tex", "in_Model"});
-	Billboard shadow(1600, 1600, false); 						//No Color Buffer
+
+	Target shadow(1600, 1600);
+	Texture depthtex(1600, 1600, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE});
+	shadow.bind(depthtex, GL_DEPTH_ATTACHMENT);
 
 	Square3D floor;
 	floor.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1,0,0));
@@ -105,7 +108,7 @@ int main( int argc, char* args[] ) {
 			defaultShader.uniform("drawshadow", drawshadow);
 			if(drawshadow){
 				defaultShader.uniform("dbvp", bias*lproj*lview);
-				defaultShader.texture("shadowMap", shadow.depth);
+				defaultShader.texture("shadowMap", depthtex);
 				defaultShader.uniform("light", lightpos);
 			}
 
@@ -142,7 +145,7 @@ int main( int argc, char* args[] ) {
 			particleShader.uniform("selfshadow", selfshadow);
 			if(selfshadow){
 				particleShader.uniform("dbvp", bias*lproj*lview);
-				particleShader.texture("shadowMap", shadow.depth);
+				particleShader.texture("shadowMap", depthtex);
 				particleShader.uniform("light", lightpos);
 			}
 

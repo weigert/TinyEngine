@@ -11,7 +11,7 @@ layout (std430, binding = 2) buffer velocity {
 uniform float R;
 
 void main() {
-  vec3 color = vec3(1.0-0.002*length(v[index].xyz));
+  vec3 color = vec3(0);
   if(length(pos) > R) discard;
   else fragColor = vec4(color, 1.0f);
 }

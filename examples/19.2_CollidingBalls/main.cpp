@@ -12,7 +12,7 @@ int main( int argc, char* args[] ) {
 
   //Initialize the Compute Shader System
 //	Tiny::benchmark = true;
-//	Tiny::view.vsync = false;
+	Tiny::view.vsync = false;
 	Tiny::view.antialias = 0;
 	Tiny::window("N-Ball Collisions", 800, 400);
   cam::near = -200.0f;

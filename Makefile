@@ -1,6 +1,6 @@
 # TinyEngine Build Recipe
 # Author: Nicholas McDonald
-# Version 1.0
+# Version 1.7
 # Tested on GNU/Linux
 
 # Install Location Configuration
@@ -82,7 +82,7 @@ helpers:
 			@echo "Copying Helper Header Files ...";
 			@if [ ! -d "$(INCPATH)" ]; then mkdir $(INCPATH); fi;
 			@if [ ! -d "$(INCPATH)/TinyEngine" ]; then mkdir $(INCPATH)/TinyEngine; fi;
-			@$(foreach var,$(HELPERS), cp include/helpers/$(var).h $(INCPATH)/TinyEngine/$(var);)
+			@$(foreach var,$(HELPERS), cp include/helpers/$(var).hpp $(INCPATH)/TinyEngine/$(var);)
 			@echo "Done";
 
 #######################

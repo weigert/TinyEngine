@@ -13,6 +13,8 @@ that is all.
 */
 
 #include <type_traits>
+#include <iomanip>
+#include <array>
 
 namespace yaml {
 
@@ -50,11 +52,16 @@ template<unsigned N> constexpr_string(char const (&)[N]) ->constexpr_string<N-1>
 
 // basic yaml key
 
+
+static size_t shift = 0;
+
 template<constexpr_string T>
 struct key {
 
   static constexpr char const* _key = T;
   key(){
+    for(size_t i = 0; i < shift; i++)
+      std::cout<<"  ";
     std::cout<<_key<<std::endl;
   }
 
@@ -62,54 +69,96 @@ struct key {
 
 };
 
+/*
+================================================================================
+                                Yaml Nodes
+================================================================================
+*/
+
 // Nodes
 
-struct base{};
+struct node{};
 
-template<constexpr_string T>
-struct node;
+// Node-Type: Value
+
+struct val_base: node{};
 
 template<typename T>
-concept is_node = std::derived_from<T,base>;
+concept is_val = std::derived_from<T, val_base>;
 
-template<constexpr_string T>
-struct node : base {
+template<typename V>
+concept value_type =
+    std::is_same_v<V, bool>
+||  std::is_same_v<V, char>
+||  std::is_same_v<V, int>
+||  std::is_same_v<V, long>
+||  std::is_same_v<V, size_t>
+||  std::is_same_v<V, float>
+||  std::is_same_v<V, double>;
 
-  key<T> _key;
-  node(){}
+template<constexpr_string Key, value_type V>
+struct val: val_base {
 
-  // We can't assign to classes derived from base!
+  key<Key> _key;
+  V value;
 
-  template<typename K> requires(!is_node<K>)
-  constexpr operator K() const { return K{}; }
-
-  // But we can assign to guys who are identical!
-
-  template<typename K> requires(std::derived_from<K, node<T>>)
-  constexpr operator K() const { return K{}; }
+  val(const V& v){}
+  constexpr operator V() const { return std::move(value); }
 
 };
 
-// Value Type
+// Node-Type: Object
+
+struct obj_base{
+
+  std::vector<node> sub;
+  
+  template<constexpr_string SubKey, value_type V>
+  constexpr V val(const V& v){
+    yaml::val<SubKey, V> _subval(v);
+    sub.push_back(_subval);
+    return _subval;
+  }
+
+};
 
 template<typename T>
-concept value_type =
-    std::is_same_v<T,bool>
-||  std::is_same_v<T,char>
-||  std::is_same_v<T,int>
-||  std::is_same_v<T,long>
-||  std::is_same_v<T,size_t>
-||  std::is_same_v<T,float>
-||  std::is_same_v<T,double>;
+concept is_obj = std::derived_from<T, obj_base>;
 
-template<constexpr_string T, value_type K>
-constexpr K val(const K k){
-    std::cout<<T.value<<std::endl;
-    return std::move(k);
-}
+template<constexpr_string Key>
+struct obj: obj_base {
+
+  key<Key> _key;
+
+  obj(){
+    shift++;
+  }
+
+  // Runtime Assignment:
+  //  Possible for non-node types or identical node types
+
+  template<typename V> requires(!is_obj<V> && !value_type<V>)
+  constexpr operator V() const { return V{}; }
+
+  template<typename V> requires(std::derived_from<V, obj<Key>>)
+  constexpr operator V() const { return V{}; }
+
+  static void done(){
+//    std::cout<<"DONE"<<std::endl;
+    shift--;
+  }
+
+  // Sub-Node Constructors
+
+};
+
+
+
+
 
 static void done(){
-  std::cout<<"DONE"<<std::endl;
+//  std::cout<<"DONE"<<std::endl;
+  shift--;
 }
 
 // Print the Abstract Syntax Tree

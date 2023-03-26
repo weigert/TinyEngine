@@ -1,29 +1,27 @@
-/*
-ctom.hpp
-
-compile-time object model
-
-minimal yaml parser
-idea: what if instead of doing it yaml -> object model -> into struct,
-we instead do struct -> object model -> yaml regex?
-
-just an idea.
-either way, we need a method to create structs in an easy way and load stuff in.
-
-basically a compile-time yaml parser.
-the struct is constructed first, then it can parse something.
-that is all.
-*/
-
 #include <type_traits>
 #include <iomanip>
 #include <array>
 
 namespace ctom {
 
-// constant expression string,
-//  allows us to use this as a template parameter with
-//  constexpr member values
+/*
+ctom.hpp
+compile-time object model
+author: Nicholas McDonald 2023
+
+this namespace lets you define a compile-time object model using template
+meta-programming techniques. The object-model allows for fast (un)marshalling
+of various data formats, and is similar to semantic tags in golang.
+
+the original intent was a type-safe compile-time yaml parser.
+
+================================================================================
+                        Implementation Details
+================================================================================
+*/
+
+// Constant Expression String
+//  Lets us use a string-literal as a template parameter
 
 template<size_t N> struct constexpr_string {
 
@@ -49,12 +47,6 @@ template<size_t N> struct constexpr_string {
 
 };
 template<unsigned N> constexpr_string(char const (&)[N]) ->constexpr_string<N-1>;
-
-/*
-================================================================================
-                                Helper Stuff
-================================================================================
-*/
 
 // Object in Set
 
@@ -113,11 +105,19 @@ struct tuple_index<T, N, U, Args...> {
 // Basic Ref-Types
 
 struct ref_base{};
-struct val_base{};
-struct arr_base{};
-struct obj_base{};
+struct val_base{
+  static constexpr const char * type = "val";
+};
+struct arr_base{
+  static constexpr const char * type = "arr";
+};
+struct obj_base{
+  static constexpr const char * type = "obj";
+};
 
 // Base-Type Concepts
+//  Lets us defined templated derived types
+//  and still easily restrict parameters
 
 template<typename T>
 concept ref_type = std::derived_from<T, ref_base>;
@@ -129,6 +129,8 @@ template<typename T>
 concept obj_type = std::derived_from<T, obj_base>;
 
 // References to Base-Type Implementations
+//  Acts as an identifier for a ref to
+//  specific type implementations
 
 template<constexpr_string ref, val_type V>
 struct ref_val_impl: ref_base {};
@@ -140,19 +142,10 @@ template<constexpr_string Key, obj_type T>
 struct ref_obj_impl: ref_base {};
 
 // Node-Type Declarations
+//  Structs which are templated by a specific ref type
+//  give us specific node types (with a required ref)
 
 template<ref_type ref> struct node {};
-
-template<constexpr_string ref, val_type T>
-using node_val = node<ref_val_impl<ref, T>>;
-
-template<constexpr_string ref, arr_type T>
-using node_arr = node<ref_arr_impl<ref, T>>;
-
-template<constexpr_string ref, obj_type T>
-using node_obj = node<ref_obj_impl<ref, T>>;
-
-// Node Type Implementations
 
 template<constexpr_string ref, val_type T>
 struct node<ref_val_impl<ref, T>> {
@@ -189,6 +182,17 @@ struct node<ref_obj_impl<ref, T>> {
     obj.print();
   }
 };
+
+// Node Type Aliases
+
+template<constexpr_string ref, val_type T>
+using node_val = node<ref_val_impl<ref, T>>;
+
+template<constexpr_string ref, arr_type T>
+using node_arr = node<ref_arr_impl<ref, T>>;
+
+template<constexpr_string ref, obj_type T>
+using node_obj = node<ref_obj_impl<ref, T>>;
 
 /*
 ================================================================================
@@ -240,12 +244,48 @@ using ref_arr = ref_arr_impl<ref, arr_impl<T>>;
 template<constexpr_string Key, obj_type T>
 using ref_obj = ref_obj_impl<Key, T>;
 
+
+
+
+// Reference Forwarding
+
+template<ref_type... refs>
+struct ref_forward {
+  static void dof();
+};
+
+template<ref_type... refs>
+void ref_forward<refs...>::dof(){
+  std::cout<<std::tuple_element_t<0, std::tuple<node<refs>...>>::key<<std::endl;
+  std::cout<<std::tuple_element_t<1, std::tuple<node<refs>...>>::key<<std::endl;
+}
+
+
+
+
+
+
+
+
 template<ref_type... refs>
 struct obj_impl: obj_base {
 
   //static_assert(unique_key_set<refs...>::value)
 
   std::tuple<node<refs>...> nodes;
+
+  // Somehow I need to get the arguments of the tuple?
+
+//
+  //
+  //static void for_refs(T& t);
+
+  //static void for_args(refs const&... args){
+
+  //}
+
+  static ref_forward<refs...> _ref_forward;
+
 
   template<ref_type ref> struct index {
     static constexpr size_t value = tuple_index<ref, 0, refs...>::value;
@@ -277,7 +317,6 @@ struct obj_impl: obj_base {
 
   void print(){
 
-
     std::apply([](auto&&... args){
       (args.print(), ...);
     //
@@ -287,5 +326,131 @@ struct obj_impl: obj_base {
   }
 
 };
+
+template<ref_type... refs>
+ref_forward<refs...> obj_impl<refs...>::_ref_forward;
+
+/*
+================================================================================
+                          Marshalling / Unmarshalling
+================================================================================
+*/
+
+// Regular Object-Model Dump
+//  Note: This is compile-time static, meaning that values don't matter.
+
+
+template<constexpr_string ref, val_type T>
+void print(node<ref_val_impl<ref, T>>& node, size_t shift){
+  for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+  std::cout<<val_base::type<<": ";
+  std::cout<<ref<<"\n";
+}
+
+template<constexpr_string ref, arr_type T>
+void print(node<ref_arr_impl<ref, T>>& node, size_t shift){
+  for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+  std::cout<<arr_base::type<<": ";
+  std::cout<<ref<<"\n";
+}
+
+template<constexpr_string ref, obj_type T>
+void print(node<ref_obj_impl<ref, T>>& node, size_t shift){
+  for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+  std::cout<<obj_base::type<<": ";
+  std::cout<<ref<<"\n";
+
+  std::apply([&](auto&&... args){
+    (ctom::print(args, shift+1), ...);
+  }, node.obj.nodes);
+}
+
+template<obj_type T>
+void print(T& obj){
+  std::apply([](auto&&... args){
+    (ctom::print(args, 0), ...);
+  }, obj.nodes);
+}
+
+
+// Fully Static Version!
+//  Not possible because partial specialization is not allowed. great.
+
+template<typename T>
+struct printer {
+  static void print(size_t shift = 0);
+};
+
+template<constexpr_string ref, val_type T>
+struct printer<node<ref_val_impl<ref, T>>>{
+  static void print(size_t shift = 0){
+    for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+    std::cout<<val_base::type<<": ";
+    std::cout<<ref<<"\n";
+  }
+};
+
+template<constexpr_string ref, arr_type T>
+struct printer<node<ref_arr_impl<ref, T>>>{
+  static void print(size_t shift = 0){
+    for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+    std::cout<<arr_base::type<<": ";
+    std::cout<<ref<<"\n";
+  }
+};
+
+template<constexpr_string ref, obj_type T>
+struct printer<node<ref_obj_impl<ref, T>>>{
+  static void print(size_t shift = 0){
+    for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+    std::cout<<obj_base::type<<": ";
+    std::cout<<ref<<"\n";
+
+  //  T::for_refs();
+  //  T obj;
+  //  std::apply([&](auto&&... args){
+  //    (ctom::print(args, shift+1), ...);
+  //  }, obj.nodes);
+
+  }
+};
+
+//template<ref_type... refs>
+//struct obj_impl: obj_base
+
+template<obj_type T>
+struct printer<T>{
+  static void print(size_t shift = 0){
+    for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+    T obj;
+
+    T::_ref_forward.dof();
+
+  //  T::for_refs();
+  //  std::apply([&](auto&&... args){
+  //    (ctom::print(args, shift), ...);
+  //  }, obj.nodes);
+
+  }
+};
+
+/*
+template<obj_type T>
+struct printer<T>{
+  static void print(size_t shift = 0){
+    for(size_t s = 0; s < shift; s++) std::cout<<"  ";
+    T obj;
+    std::apply([&](auto&&... args){
+      (ctom::print(args, shift), ...);
+    }, obj.nodes);
+
+  }
+};
+*/
+
+template<typename T>
+void print(){
+  printer<T>::print();
+}
 
 }

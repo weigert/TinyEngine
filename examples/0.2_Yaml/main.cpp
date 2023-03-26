@@ -3,94 +3,40 @@
 
 int main( int argc, char* args[] ) {
 
-	// Basic Key-Value Yaml Node:
-	// 	We need the template parameter,
-	//	so that we can deduce the parser.
+	// Abstract Object Models
 
-/*
-	int t = yaml::val<int>(10);
-	std::cout<<t<<std::endl;
-
-	// Nested Struct-Type Yaml Node:
-
-	struct B: yaml::obj {
-		int t 		= B::_val<"t">(3);
-	} _B, _C;
-	std::cout<<_B;
-	std::cout<<_C;
-
-	//
-
-	struct A: yaml::obj {
-		float b 	= A::_val<"b">(1.5);
-		B bc 			= A::_obj<"bc">(B{});
-	} _A, _D;
-	std::cout<<_A;
-	std::cout<<_D;
-*/
-
-	/*
-		note: this implies that there is a value type with key other
-
-		I now need to make a function which generates the corresponding type,
-		or rather assigns the corresponding type, casts and stores in the tuple
-		appropriately using the correct parameter.
-
-		now I need to make the object printable somehow.
-		which is equivalent to marshalling the data, actually.
-		so I should simply write a yaml::marshall function
-	*/
-
-	struct B: ctom::obj_impl<
-		ctom::ref_val<"sub-int", int>
+	struct A: ctom::obj_impl<
+		ctom::ref_val<"sub-sub-int", int>,
+		ctom::ref_val<"sub-sub-float", float>,
+		ctom::ref_val<"sub-sub-double", double>
 	>{};
 
-	struct T:
-	ctom::obj_impl <
-		ctom::ref_val<"other", int>,
-		ctom::ref_val<"other2", int>,
-		ctom::ref_obj<"test", B>
-	> {
-		int t = T::val<"other2">(10);
-	//	int a;
-		//B b = T::obj<"test">(B{});
-	} T;
+	struct B: ctom::obj_impl<
+		ctom::ref_obj<"sub-obj", A>
+	>{};
 
-	T.print();
+	struct T: ctom::obj_impl <
+		ctom::ref_val<"valA", int>,
+		ctom::ref_arr<"array", int>,
+		ctom::ref_obj<"object", B>,
+		ctom::ref_val<"valB", int>
+	>{};
 
-/*	int t = T::val<"other">(1);
-		int b = T::obj<"test">();
-	} T;
+	// Concrete Model Translation
 
-/*	int t = T::val<"other">(1);
-		int b = T::obj<"test">();
-	} T;
+	struct T_derived: T {
+		int t = T::val<"valA">(10);
+		int a;
+		B b = T::obj<"object">(B{});
+	} Tval;
 
-/*
-	// Full Compile Time Resolution
-
-	struct D: yaml::obj<"struct D"> {
-		size_t n = D::val<"n">(1);
-		char c = D::val<"c">('b');
-	//	C c0 = yaml::obj<"C0">{};
-};
-
-	D d0;
-	D d1;
-
-//	std::cout<<"SUBSIZE "<<D.sub.size()<<std::endl;
-
-	// Other stuff
-
-
-*/
-
-	//
-
-	//yaml::key<"A"> midkey_a;
-	//yaml::key<"B"> midkey_b;
-	//yaml::key<"C"> midkey_c;
-	//yaml::key<"D"> midkey_d;
+	/*
+			Now I need to write an actual proper printer...
+			And arrays need to work too...
+			And I need to get the type copying to also work,
+			i.e. a parser thingy.
+	*/
+	ctom::print<T>();
 
 	return 0;
 

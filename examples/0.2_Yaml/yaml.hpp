@@ -104,10 +104,101 @@ struct tuple_index<T, N, U, Args...> {
     static constexpr size_t value = tuple_index<T, N + 1, Args...>::value;
 };
 
-// Basic Type Constraints
+/*
+================================================================================
+                        Template Meta Object Model
+================================================================================
+*/
+
+// Basic Ref-Types
+
+struct ref_base{};
+struct val_base{};
+struct arr_base{};
+struct obj_base{};
+
+template<typename T>
+concept ref_type = std::derived_from<T, ref_base>;
+
+template<typename T>
+concept val_type = std::derived_from<T, val_base>;
+
+template<typename T>
+concept arr_type = std::derived_from<T, arr_base>;
+
+template<typename T>
+concept obj_type = std::derived_from<T, obj_base>;
+
+// Specific, Distinct Types of Keys!
+
+template<constexpr_string Key, typename V>
+struct ref_val: ref_base {};
+
+template<constexpr_string Key, typename T>
+struct ref_arr: ref_base {};
+
+template<constexpr_string Key, obj_type T>
+struct ref_obj: ref_base {};
+
+// Specific Types derived from specific keys
+
+template<ref_type ref>
+struct node {};
+
+template<constexpr_string ref, typename T>
+using node_val = node<ref_val<ref, T>>;
+
+template<constexpr_string ref, typename T>
+struct node<ref_val<ref, T>> {
+  static constexpr const char* type = "val";
+  static constexpr char const* key = ref;
+  T val;
+
+  void print(){
+    std::cout<<key<<": "<<val<<std::endl;
+//    val.print();
+  }
+};
+
+template<constexpr_string ref, typename T>
+using node_arr = node<ref_arr<ref, T>>;
+
+template<constexpr_string ref, typename T>
+struct node<ref_arr<ref, T>> {
+  static constexpr const char* type = "arr";
+  static constexpr char const* key = ref;
+  // std::vector<T> values;
+
+  void print(){
+    std::cout<<key<<": "<<std::endl;
+  }
+};
+
+template<constexpr_string ref, obj_type T>
+using node_obj = node<ref_obj<ref, T>>;
+
+template<constexpr_string ref, obj_type T>
+struct node<ref_obj<ref, T>> {
+  static constexpr const char* type = "obj";
+  static constexpr char const* key = ref;
+  T obj;
+
+  void print(){
+    std::cout<<key<<": "<<std::endl;
+    obj.print();
+  }
+};
+
+/*
+================================================================================
+                              Type Implementations
+================================================================================
+*/
+
+// Value
 
 template<typename V>
-concept value_type =
+concept is_value =
     std::is_same_v<V, bool>
 ||  std::is_same_v<V, char>
 ||  std::is_same_v<V, int>
@@ -116,142 +207,60 @@ concept value_type =
 ||  std::is_same_v<V, float>
 ||  std::is_same_v<V, double>;
 
-// Let's try something new
-
-struct key_base{};
-
 template<typename T>
-concept is_key = std::derived_from<T, key_base>;
+struct val_impl: val_base {
+  static_assert(is_value<T>, "type is not value type");
 
-// Note: Statically Assert if Two Template Arguments are the same!
-//  Not allowed!
-
-//template<constexpr_string... Keys>
-//struct unique_key_set{
-//  static constexpr bool value = is_unique<new_key<Keys>...>::value;
-//};
-
-// Specific, Distinct Types of Keys!
-
-template<constexpr_string Key, typename V>
-struct val_key: key_base {};
-
-template<constexpr_string Key, typename T>
-struct arr_key: key_base {};
-
-// Specific Types derived from specific keys
-
-template<is_key key>
-struct node {};
-
-template<constexpr_string Key, typename V>
-using node_val = node<val_key<Key, V>>;
-
-template<constexpr_string Key, typename V>
-struct node<val_key<Key, V>> {
-  static constexpr const char* type = "val";
-  static constexpr char const* key = Key;
-  V value;
+  T value;
 
   void print(){
-    std::cout<<key<<": "<<value<<std::endl;
-  }
-};
-
-template<constexpr_string Key, typename T>
-using node_arr = node<arr_key<Key, T>>;
-
-template<constexpr_string Key, typename T>
-struct node<arr_key<Key, T>> {
-  static constexpr const char* type = "arr";
-  static constexpr char const* key = Key;
-  // std::vector<T> values;
-
-  void print(){
-    std::cout<<key<<": "<<std::endl;
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct obj_base{};
-
-template<typename T>
-concept is_obj = std::derived_from<T, obj_base>;
-
-// This is the basic object type,
-// meaning that it is templated by a bunch of keys.
-
-template<constexpr_string Key, is_obj T>
-struct obj_key: key_base {};
-
-//template<is_key... Keys>
-//struct new_obj;
-
-template<constexpr_string Key, is_obj T>
-struct node<obj_key<Key, T>> {
-  static constexpr const char* type = "obj";
-  static constexpr char const* key = Key;
-  T obj;
-
-  void print(){
-    std::cout<<key<<": "<<std::endl;
-    obj.print();
+    std::cout<<value<<std::endl;
   }
 
 };
 
-template<constexpr_string Key, typename T>
-using node_obj = node<obj_key<Key, T>>;
+// Array
 
-template<is_key... Keys>
-struct new_obj: obj_base {
+// ...
 
-  //static_assert(unique_key_set<Keys...>::value)
+// Object
 
-  std::tuple<node<Keys>...> nodes;
+template<ref_type... refs>
+struct obj_impl: obj_base {
 
-  template<is_key Key> struct index {
-    static constexpr size_t value = tuple_index<Key, 0, Keys...>::value;
+  //static_assert(unique_key_set<refs...>::value)
+
+  std::tuple<node<refs>...> nodes;
+
+  template<ref_type ref> struct index {
+    static constexpr size_t value = tuple_index<ref, 0, refs...>::value;
   };
 
-  template<is_key Key>
-  node<Key>& get() {
-    return std::get<index<Key>::value>(nodes);
+  template<ref_type ref>
+  node<ref>& get() {
+    return std::get<index<ref>::value>(nodes);
   }
 
   // Assign a value!
-  template<constexpr_string Key, typename V>
+  template<constexpr_string ref, typename V>
   V val(const V& v){
-    static_assert(value_type<V>, "type is not a value type");
-    static_assert(is_contained<val_key<Key, V>, Keys...>::value, "key for yaml::val does not exist in yaml::obj");
+    static_assert(is_value<V>, "type is not a value type");
+    static_assert(is_contained<ref_val<ref, V>, refs...>::value, "key for yaml::val does not exist in yaml::obj");
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
-    node_val<Key, V>& node = get<val_key<Key, V>>();
-    node.value = v;
+    node_val<ref, V>& node = get<ref_val<ref, V>>();
+    node.val = v;
     return std::move(v);
   }
 
-  template<constexpr_string Key, typename T>
+  template<constexpr_string ref, typename T>
   T obj(const T& v){
-    static_assert(is_obj<T>, "type is not a derived type of yaml::obj");
-    static_assert(is_contained<obj_key<Key, T>, Keys...>::value, "key for yaml::obj does not exist in yaml::obj");
+    static_assert(obj_type<T>, "type is not a derived type of yaml::obj");
+    static_assert(is_contained<ref_obj<ref, T>, refs...>::value, "key for yaml::obj does not exist in yaml::obj");
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
 //    node<val_key<Key>> node = get<val_key<Key>>();
 //    node<val_key<Key>> t = std::get<>(nodes);
 
-    node<obj_key<Key, T>>& node = get<obj_key<Key, T>>();
+    node<ref_obj<ref, T>>& node = get<ref_obj<ref, T>>();
   //  node_obj<Key, T> node =
 
     return std::move(v);
@@ -269,34 +278,5 @@ struct new_obj: obj_base {
   }
 
 };
-
-// Print the Abstract Syntax Tree
-
-
-template<constexpr_string Key, typename V>
-static void yaml(node_val<Key, V> node){
-  node.print();
-}
-
-template<constexpr_string Key, typename V>
-static void yaml(node_arr<Key, V> node){
-  node.print();
-}
-
-template<constexpr_string Key, typename T>
-static void yaml(node_obj<Key, T> node){
-  node.print();
-}
-
-//using node_val = node<val_key<Key>>;
-
-template<is_key... Keys>
-static void yaml(new_obj<Keys...>& obj){
-  std::apply([](auto&&... args){
-    ((yaml(args)), ...);
-  //
-  //  ((std::cout << args.type << " \"" << args.key << "\"\n"), ...);
-  }, obj.nodes);
-}
 
 }

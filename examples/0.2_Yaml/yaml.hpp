@@ -233,8 +233,10 @@ struct obj_key: new_key<Key> {};
 
 // Specific Types derived from specific keys
 
+
 template<is_key key>
 struct new_node {};
+
 
 template<constexpr_string Key>
 struct new_node<val_key<Key>> {
@@ -242,9 +244,15 @@ struct new_node<val_key<Key>> {
 };
 
 template<constexpr_string Key>
+using val_node = new_node<val_key<Key>>;
+
+template<constexpr_string Key>
 struct new_node<obj_key<Key>> {
   static constexpr const char* type = "obj";
 };
+
+template<constexpr_string Key>
+using obj_node = new_node<obj_key<Key>>;
 
 // Note: Statically Assert if Two Template Arguments are the same!
 //  Not allowed!
@@ -296,7 +304,8 @@ struct new_obj: obj_base {
     static_assert(value_type<V>, "type is not a value type");
     static_assert(is_contained<val_key<Key>, Keys...>::value, "key for yaml::val does not exist in yaml::obj");
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
-//    new_node<val_key<Key>> node = get<val_key<Key>>();
+    val_node<Key> node = get<val_key<Key>>();
+    std::cout<<"INSERTED: "<<node.type<<std::endl;
 //    new_node<val_key<Key>> t = std::get<>(nodes);
     return std::move(v);
   }
@@ -309,6 +318,10 @@ struct new_obj: obj_base {
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
 //    new_node<val_key<Key>> node = get<val_key<Key>>();
 //    new_node<val_key<Key>> t = std::get<>(nodes);
+
+    obj_node<Key> node = get<obj_key<Key>>();
+    std::cout<<"INSERTED: "<<node.type<<std::endl;
+
     return std::move(v);
   }
 

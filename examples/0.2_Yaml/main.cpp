@@ -35,21 +35,28 @@ int main( int argc, char* args[] ) {
 		I now need to make a function which generates the corresponding type,
 		or rather assigns the corresponding type, casts and stores in the tuple
 		appropriately using the correct parameter.
+
+		now I need to make the object printable somehow.
+		which is equivalent to marshalling the data, actually.
+		so I should simply write a yaml::marshall function
 	*/
 
-	struct B: yaml::new_obj<>{};
+	struct B: ctom::new_obj<>{};
 
 	struct T:
-	yaml::new_obj <
-		yaml::val_key<"other">,
-		yaml::val_key<"other2">,
-		yaml::obj_key<"test">
-	>{
+	ctom::new_obj <
+		ctom::val_key<"other">,
+		ctom::val_key<"other2">,
+		ctom::obj_key<"test">
+	//	yaml::arr_key<"array">
+	> {
 		int t = T::val<"other2">(10);
 		B b = T::obj<"test">(B{});
 	} T;
 
-	std::cout<<T.t<<std::endl;
+	//std::cout<<T.t<<std::endl;
+
+	ctom::yaml(T);
 
 /*	int t = T::val<"other">(1);
 		int b = T::obj<"test">();

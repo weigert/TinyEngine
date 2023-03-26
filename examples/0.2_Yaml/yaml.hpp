@@ -1,5 +1,8 @@
 /*
-yaml.hpp
+ctom.hpp
+
+compile-time object model
+
 minimal yaml parser
 idea: what if instead of doing it yaml -> object model -> into struct,
 we instead do struct -> object model -> yaml regex?
@@ -16,7 +19,7 @@ that is all.
 #include <iomanip>
 #include <array>
 
-namespace yaml {
+namespace ctom {
 
 // constant expression string,
 //  allows us to use this as a template parameter with
@@ -47,108 +50,10 @@ template<size_t N> struct constexpr_string {
 };
 template<unsigned N> constexpr_string(char const (&)[N]) ->constexpr_string<N-1>;
 
-// yaml basic derivd types
-//
-
-// basic yaml key
-
-
-template<constexpr_string S>
-struct key {
-  static constexpr char const* _key = S;
-  // we can now do compile time assertion that the key is actually valid!
-};
-
-template<constexpr_string S>
-std::ostream& operator<<(std::ostream& os, const key<S>& k){
-    return os << S;
-}
-
 /*
 ================================================================================
                                 Yaml Nodes
 ================================================================================
-*/
-
-/*
-
-// Nodes
-
-struct node{
-  virtual void print(std::ostream& os){
-    os << "NOTHING";
-  }
-};
-
-std::ostream& operator<<(std::ostream& os, node& n){
-    n.print(os);
-    return os;
-}
-
-// Node-Type: Value
-
-struct val_base: node{};
-
-template<typename T>
-concept yaml_val = std::derived_from<T, val_base>;
-
-
-
-template<value_type V>
-struct val: val_base {
-
-  V value;
-
-  val(const V& v):value{v}{}
-
-  constexpr operator V() const { return value; }
-
-  void print(std::ostream& os) override {
-    os << value;
-  }
-
-};
-
-// Node-Type: Object
-
-struct obj_base: node {};
-
-template<typename T>
-concept yaml_obj = std::derived_from<T, obj_base>;
-
-//template<constexpr_string Key>
-struct obj: obj_base {
-
-  std::map<const char*, node*> sub;
-
-  // Sub-Node Constructors
-
-  template<constexpr_string Key, value_type V>
-  constexpr yaml::val<V> _val(const V& v){
-    yaml::val<V>* s = new yaml::val<V>(v);
-    sub[Key.value] = s;
-    return *s;
-  }
-
-  // Moved: Pointer remains Valid!
-
-  template<constexpr_string Key, yaml_obj V>
-  constexpr V _obj(const V& _v){
-    V* v = new V();
-    sub[Key.value] = v;
-    return *v;
-  }
-
-  void print(std::ostream& os){
-    os << std::endl;
-    for(auto& s: sub){
-      os << s.first << ": ";
-      s.second->print(os);
-      os << std::endl;
-    }
-  }
-
-};
 */
 
 // Object in Set
@@ -218,41 +123,52 @@ struct key_base{};
 template<typename T>
 concept is_key = std::derived_from<T, key_base>;
 
-template<constexpr_string Key>
-struct new_key: key_base {
-  key<Key> _key;
-};
-
 // Specific, Distinct Types of Keys!
 
 template<constexpr_string Key>
-struct val_key: new_key<Key> {};
+struct val_key: key_base {};
 
 template<constexpr_string Key>
-struct obj_key: new_key<Key> {};
+struct arr_key: key_base {};
+
+template<constexpr_string Key>
+struct obj_key: key_base {};
 
 // Specific Types derived from specific keys
 
-
 template<is_key key>
 struct new_node {};
-
-
-template<constexpr_string Key>
-struct new_node<val_key<Key>> {
-  static constexpr const char* type = "val";
-};
 
 template<constexpr_string Key>
 using val_node = new_node<val_key<Key>>;
 
 template<constexpr_string Key>
-struct new_node<obj_key<Key>> {
-  static constexpr const char* type = "obj";
-};
+using arr_node = new_node<arr_key<Key>>;
 
 template<constexpr_string Key>
 using obj_node = new_node<obj_key<Key>>;
+
+
+
+
+template<constexpr_string Key>
+struct new_node<val_key<Key>> {
+  static constexpr const char* type = "val";
+  static constexpr char const* key = Key;
+};
+
+template<constexpr_string Key>
+struct new_node<arr_key<Key>> {
+  static constexpr const char* type = "arr";
+  static constexpr char const* key = Key;
+};
+
+template<constexpr_string Key>
+struct new_node<obj_key<Key>> {
+  static constexpr const char* type = "obj";
+  static constexpr char const* key = Key;
+};
+
 
 // Note: Statically Assert if Two Template Arguments are the same!
 //  Not allowed!
@@ -294,10 +210,6 @@ struct new_obj: obj_base {
     return std::get<index<Key>::value>(nodes);
   }
 
-//  new_obj(){
-//    std::apply([](auto&&... args) {((std::cout << args.type << '\n'), ...);}, nodes);
-//  }
-
   // Assign a value!
   template<constexpr_string Key, typename V>
   V val(const V& v){
@@ -305,7 +217,7 @@ struct new_obj: obj_base {
     static_assert(is_contained<val_key<Key>, Keys...>::value, "key for yaml::val does not exist in yaml::obj");
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
     val_node<Key> node = get<val_key<Key>>();
-    std::cout<<"INSERTED: "<<node.type<<std::endl;
+  //  std::cout<<"INSERTED: "<<node.type<<std::endl;
 //    new_node<val_key<Key>> t = std::get<>(nodes);
     return std::move(v);
   }
@@ -320,17 +232,21 @@ struct new_obj: obj_base {
 //    new_node<val_key<Key>> t = std::get<>(nodes);
 
     obj_node<Key> node = get<obj_key<Key>>();
-    std::cout<<"INSERTED: "<<node.type<<std::endl;
+  //  std::cout<<"INSERTED: "<<node.type<<std::endl;
 
     return std::move(v);
   }
 
 };
 
-// Print the Abstract Syntax Tree
 
-static void ast(){
-  std::cout<<"PRINTING AST:"<<std::endl;
+
+
+
+// Print the Abstract Syntax Tree
+template<is_key... Keys>
+static void yaml(new_obj<Keys...>& obj){
+  std::apply([](auto&&... args) {((std::cout << args.type << " \"" << args.key << "\"\n"), ...);}, obj.nodes);
 }
 
 }

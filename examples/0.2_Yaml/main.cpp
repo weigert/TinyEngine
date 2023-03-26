@@ -7,6 +7,7 @@ int main( int argc, char* args[] ) {
 	// 	We need the template parameter,
 	//	so that we can deduce the parser.
 
+/*
 	int t = yaml::val<int>(10);
 	std::cout<<t<<std::endl;
 
@@ -26,18 +27,33 @@ int main( int argc, char* args[] ) {
 	} _A, _D;
 	std::cout<<_A;
 	std::cout<<_D;
+*/
 
 	/*
-	// Full compile time:
+		note: this implies that there is a value type with key other
 
-		template<
-			yaml::obj<"test">,
-			yaml::val<"other">
-		> struct B: yaml::obj {
-			int t;
-			int b;
-		}
-		*/
+		I now need to make a function which generates the corresponding type,
+		or rather assigns the corresponding type, casts and stores in the tuple
+		appropriately using the correct parameter.
+	*/
+
+	struct B: yaml::new_obj<>{};
+
+	struct T:
+	yaml::new_obj <
+		yaml::val_key<"other">,
+		yaml::val_key<"other2">,
+		yaml::obj_key<"test">
+	>{
+		int t = T::val<"other2">(10);
+		B b = T::obj<"test">(B{});
+	} T;
+
+	std::cout<<T.t<<std::endl;
+
+/*	int t = T::val<"other">(1);
+		int b = T::obj<"test">();
+	} T;
 
 /*
 	// Full Compile Time Resolution

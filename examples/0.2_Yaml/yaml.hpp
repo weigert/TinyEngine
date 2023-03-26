@@ -70,6 +70,8 @@ std::ostream& operator<<(std::ostream& os, const key<S>& k){
 ================================================================================
 */
 
+/*
+
 // Nodes
 
 struct node{
@@ -90,15 +92,7 @@ struct val_base: node{};
 template<typename T>
 concept yaml_val = std::derived_from<T, val_base>;
 
-template<typename V>
-concept value_type =
-    std::is_same_v<V, bool>
-||  std::is_same_v<V, char>
-||  std::is_same_v<V, int>
-||  std::is_same_v<V, long>
-||  std::is_same_v<V, size_t>
-||  std::is_same_v<V, float>
-||  std::is_same_v<V, double>;
+
 
 template<value_type V>
 struct val: val_base {
@@ -152,6 +146,170 @@ struct obj: obj_base {
       s.second->print(os);
       os << std::endl;
     }
+  }
+
+};
+*/
+
+// Object in Set
+
+template <typename T, typename... List>
+struct is_contained;
+
+template <typename T>
+struct is_contained<T> {
+  static constexpr bool value = false;
+};
+
+template <typename T, typename Head, typename... Tail>
+struct is_contained<T, Head, Tail...>{
+  static constexpr bool value =
+    std::is_same<T, Head>::value || is_contained<T, Tail...>::value;
+};
+
+// Unique Key in Key-Set
+
+template <typename... List>
+struct is_unique;
+
+template <>
+struct is_unique<> {
+    static constexpr bool value = true;
+};
+
+template <typename Head, typename... Tail>
+struct is_unique<Head, Tail...>{
+  static constexpr bool value = !is_contained<Head, Tail...>::value && is_unique<Tail...>::value;
+};
+
+// Tuple Indexer
+
+template <class T, size_t N, class... Args>
+struct tuple_index {
+    static constexpr size_t value = N;
+};
+
+template <class T, size_t N, class... Args>
+struct tuple_index<T, N, T, Args...> {
+    static constexpr size_t value = N;
+};
+
+template <class T, size_t N, class U, class... Args>
+struct tuple_index<T, N, U, Args...> {
+    static constexpr size_t value = tuple_index<T, N + 1, Args...>::value;
+};
+
+// Basic Type Constraints
+
+template<typename V>
+concept value_type =
+    std::is_same_v<V, bool>
+||  std::is_same_v<V, char>
+||  std::is_same_v<V, int>
+||  std::is_same_v<V, long>
+||  std::is_same_v<V, size_t>
+||  std::is_same_v<V, float>
+||  std::is_same_v<V, double>;
+
+// Let's try something new
+
+struct key_base{};
+
+template<typename T>
+concept is_key = std::derived_from<T, key_base>;
+
+template<constexpr_string Key>
+struct new_key: key_base {
+  key<Key> _key;
+};
+
+// Specific, Distinct Types of Keys!
+
+template<constexpr_string Key>
+struct val_key: new_key<Key> {};
+
+template<constexpr_string Key>
+struct obj_key: new_key<Key> {};
+
+// Specific Types derived from specific keys
+
+template<is_key key>
+struct new_node {};
+
+template<constexpr_string Key>
+struct new_node<val_key<Key>> {
+  static constexpr const char* type = "val";
+};
+
+template<constexpr_string Key>
+struct new_node<obj_key<Key>> {
+  static constexpr const char* type = "obj";
+};
+
+// Note: Statically Assert if Two Template Arguments are the same!
+//  Not allowed!
+
+//template<constexpr_string... Keys>
+//struct unique_key_set{
+//  static constexpr bool value = is_unique<new_key<Keys>...>::value;
+//};
+
+
+
+
+
+
+
+
+
+
+
+
+struct obj_base{};
+
+template<typename T>
+concept is_obj = std::derived_from<T, obj_base>;
+
+template<is_key... Keys>
+struct new_obj: obj_base {
+
+  //static_assert(unique_key_set<Keys...>::value)
+
+  std::tuple<new_node<Keys>...> nodes;
+
+  template<is_key Key> struct index {
+    static constexpr size_t value = tuple_index<Key, 0, Keys...>::value;
+  };
+
+  template<is_key Key>
+  new_node<Key>& get() {
+    return std::get<index<Key>::value>(nodes);
+  }
+
+//  new_obj(){
+//    std::apply([](auto&&... args) {((std::cout << args.type << '\n'), ...);}, nodes);
+//  }
+
+  // Assign a value!
+  template<constexpr_string Key, typename V>
+  V val(const V& v){
+    static_assert(value_type<V>, "type is not a value type");
+    static_assert(is_contained<val_key<Key>, Keys...>::value, "key for yaml::val does not exist in yaml::obj");
+//    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
+//    new_node<val_key<Key>> node = get<val_key<Key>>();
+//    new_node<val_key<Key>> t = std::get<>(nodes);
+    return std::move(v);
+  }
+
+  template<constexpr_string Key, typename V>
+  // requires()
+  V obj(const V& v){
+    static_assert(is_obj<V>, "type is not a derived type of yaml::obj");
+    static_assert(is_contained<obj_key<Key>, Keys...>::value, "key for yaml::obj does not exist in yaml::obj");
+//    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
+//    new_node<val_key<Key>> node = get<val_key<Key>>();
+//    new_node<val_key<Key>> t = std::get<>(nodes);
+    return std::move(v);
   }
 
 };

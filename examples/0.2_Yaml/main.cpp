@@ -3,40 +3,46 @@
 
 int main( int argc, char* args[] ) {
 
-	// A struct of this type will always have this key
+	// Basic Key-Value Yaml Node:
+	// 	We need the template parameter,
+	//	so that we can deduce the parser.
 
-	struct B: yaml::obj<"struct B"> {
-		B(){ yaml::done(); }
-	};
+	int t = yaml::val<int>(10);
+	std::cout<<t<<std::endl;
 
-	// This struct has a type which has a strict key,
-	// 	in other words B has a fixed key which cannot be overwritten.
+	// Nested Struct-Type Yaml Node:
 
-	struct A: yaml::obj<"struct A"> {
-		A(){ yaml::done(); }
+	struct B: yaml::obj {
+		int t 		= B::_val<"t">(3);
+	} _B, _C;
+	std::cout<<_B;
+	std::cout<<_C;
 
-		int a 	= yaml::val<"a", int>(1);
-		float b = yaml::val<"b", float>(1.0f);
+	//
 
-		B bb;
-	} a;
+	struct A: yaml::obj {
+		float b 	= A::_val<"b">(1.5);
+		B bc 			= A::_obj<"bc">(B{});
+	} _A, _D;
+	std::cout<<_A;
+	std::cout<<_D;
 
-	// This struct instead has its key determined
-	// 	at compile time, but not as a strict derived type
-	//  which forces it to a specific key
+	/*
+	// Full compile time:
 
-	struct C {
-		C(){ yaml::done(); }
-		char c = yaml::val<"c", char>('c');
-	};
+		template<
+			yaml::obj<"test">,
+			yaml::val<"other">
+		> struct B: yaml::obj {
+			int t;
+			int b;
+		}
+		*/
 
-	C c0 = yaml::obj<"C0">{};
-	C c1 = yaml::obj<"C1">{};
-
+/*
 	// Full Compile Time Resolution
 
 	struct D: yaml::obj<"struct D"> {
-		D(){ D::done(); }
 		size_t n = D::val<"n">(1);
 		char c = D::val<"c">('b');
 	//	C c0 = yaml::obj<"C0">{};
@@ -49,7 +55,10 @@ int main( int argc, char* args[] ) {
 
 	// Other stuff
 
-	int j = yaml::val<"j", int>(1);
+
+*/
+
+	//
 
 	//yaml::key<"A"> midkey_a;
 	//yaml::key<"B"> midkey_b;

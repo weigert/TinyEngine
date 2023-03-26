@@ -53,21 +53,16 @@ template<unsigned N> constexpr_string(char const (&)[N]) ->constexpr_string<N-1>
 // basic yaml key
 
 
-static size_t shift = 0;
-
-template<constexpr_string T>
+template<constexpr_string S>
 struct key {
-
-  static constexpr char const* _key = T;
-  key(){
-    for(size_t i = 0; i < shift; i++)
-      std::cout<<"  ";
-    std::cout<<_key<<std::endl;
-  }
-
+  static constexpr char const* _key = S;
   // we can now do compile time assertion that the key is actually valid!
-
 };
+
+template<constexpr_string S>
+std::ostream& operator<<(std::ostream& os, const key<S>& k){
+    return os << S;
+}
 
 /*
 ================================================================================
@@ -77,14 +72,23 @@ struct key {
 
 // Nodes
 
-struct node{};
+struct node{
+  virtual void print(std::ostream& os){
+    os << "NOTHING";
+  }
+};
+
+std::ostream& operator<<(std::ostream& os, node& n){
+    n.print(os);
+    return os;
+}
 
 // Node-Type: Value
 
 struct val_base: node{};
 
 template<typename T>
-concept is_val = std::derived_from<T, val_base>;
+concept yaml_val = std::derived_from<T, val_base>;
 
 template<typename V>
 concept value_type =
@@ -96,70 +100,61 @@ concept value_type =
 ||  std::is_same_v<V, float>
 ||  std::is_same_v<V, double>;
 
-template<constexpr_string Key, value_type V>
+template<value_type V>
 struct val: val_base {
 
-  key<Key> _key;
   V value;
 
-  val(const V& v){}
-  constexpr operator V() const { return std::move(value); }
+  val(const V& v):value{v}{}
+
+  constexpr operator V() const { return value; }
+
+  void print(std::ostream& os) override {
+    os << value;
+  }
 
 };
 
 // Node-Type: Object
 
-struct obj_base{
-
-  std::vector<node> sub;
-  
-  template<constexpr_string SubKey, value_type V>
-  constexpr V val(const V& v){
-    yaml::val<SubKey, V> _subval(v);
-    sub.push_back(_subval);
-    return _subval;
-  }
-
-};
+struct obj_base: node {};
 
 template<typename T>
-concept is_obj = std::derived_from<T, obj_base>;
+concept yaml_obj = std::derived_from<T, obj_base>;
 
-template<constexpr_string Key>
+//template<constexpr_string Key>
 struct obj: obj_base {
 
-  key<Key> _key;
-
-  obj(){
-    shift++;
-  }
-
-  // Runtime Assignment:
-  //  Possible for non-node types or identical node types
-
-  template<typename V> requires(!is_obj<V> && !value_type<V>)
-  constexpr operator V() const { return V{}; }
-
-  template<typename V> requires(std::derived_from<V, obj<Key>>)
-  constexpr operator V() const { return V{}; }
-
-  static void done(){
-//    std::cout<<"DONE"<<std::endl;
-    shift--;
-  }
+  std::map<const char*, node*> sub;
 
   // Sub-Node Constructors
 
+  template<constexpr_string Key, value_type V>
+  constexpr yaml::val<V> _val(const V& v){
+    yaml::val<V>* s = new yaml::val<V>(v);
+    sub[Key.value] = s;
+    return *s;
+  }
+
+  // Moved: Pointer remains Valid!
+
+  template<constexpr_string Key, yaml_obj V>
+  constexpr V _obj(const V& _v){
+    V* v = new V();
+    sub[Key.value] = v;
+    return *v;
+  }
+
+  void print(std::ostream& os){
+    os << std::endl;
+    for(auto& s: sub){
+      os << s.first << ": ";
+      s.second->print(os);
+      os << std::endl;
+    }
+  }
+
 };
-
-
-
-
-
-static void done(){
-//  std::cout<<"DONE"<<std::endl;
-  shift--;
-}
 
 // Print the Abstract Syntax Tree
 

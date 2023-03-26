@@ -49,13 +49,11 @@ int main( int argc, char* args[] ) {
 	ctom::obj_impl <
 		ctom::ref_val<"other", int>,
 		ctom::ref_val<"other2", int>,
-		ctom::ref_obj<"test", B>,
-		ctom::ref_arr<"array", int>
-	//	yaml::arr_key<"array">
+		ctom::ref_obj<"test", B>
 	> {
-	//	int t = T::val<"other2">(10);
+		int t = T::val<"other2">(10);
 	//	int a;
-	//	B b = T::obj<"test">(B{});
+		//B b = T::obj<"test">(B{});
 	} T;
 
 	T.print();

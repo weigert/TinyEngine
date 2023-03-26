@@ -52,7 +52,7 @@ template<unsigned N> constexpr_string(char const (&)[N]) ->constexpr_string<N-1>
 
 /*
 ================================================================================
-                                Yaml Nodes
+                                Helper Stuff
 ================================================================================
 */
 
@@ -152,10 +152,10 @@ template<constexpr_string ref, typename T>
 struct node<ref_val<ref, T>> {
   static constexpr const char* type = "val";
   static constexpr char const* key = ref;
-  T val;
+  T value;
 
   void print(){
-    std::cout<<key<<": "<<val<<std::endl;
+    std::cout<<key<<": "<<value<<std::endl;
 //    val.print();
   }
 };
@@ -207,18 +207,6 @@ concept is_value =
 ||  std::is_same_v<V, float>
 ||  std::is_same_v<V, double>;
 
-template<typename T>
-struct val_impl: val_base {
-  static_assert(is_value<T>, "type is not value type");
-
-  T value;
-
-  void print(){
-    std::cout<<value<<std::endl;
-  }
-
-};
-
 // Array
 
 // ...
@@ -248,7 +236,7 @@ struct obj_impl: obj_base {
     static_assert(is_contained<ref_val<ref, V>, refs...>::value, "key for yaml::val does not exist in yaml::obj");
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
     node_val<ref, V>& node = get<ref_val<ref, V>>();
-    node.val = v;
+    node.value = v;
     return std::move(v);
   }
 

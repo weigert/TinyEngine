@@ -52,9 +52,9 @@ int main( int argc, char* args[] ) {
 		ctom::ref_obj<"test", B>
 	//	yaml::arr_key<"array">
 	> {
-		int t = T::val<"other2">(10);
-		int a;
-		B b = T::obj<"test">(B{});
+	//	int t = T::val<"other2">(10);
+	//	int a;
+	//	B b = T::obj<"test">(B{});
 	} T;
 
 	T.print();

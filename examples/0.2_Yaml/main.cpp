@@ -41,22 +41,27 @@ int main( int argc, char* args[] ) {
 		so I should simply write a yaml::marshall function
 	*/
 
-	struct B: ctom::new_obj<>{};
+	struct B: ctom::new_obj<
+		ctom::val_key<"sub-int", int>
+	>{};
 
 	struct T:
 	ctom::new_obj <
-		ctom::val_key<"other">,
-		ctom::val_key<"other2">,
-		ctom::obj_key<"test">
+		ctom::val_key<"other", int>,
+		ctom::val_key<"other2", int>,
+		ctom::obj_key<"test", B>
 	//	yaml::arr_key<"array">
 	> {
 		int t = T::val<"other2">(10);
+		int a;
 		B b = T::obj<"test">(B{});
 	} T;
 
-	//std::cout<<T.t<<std::endl;
-
 	ctom::yaml(T);
+
+/*	int t = T::val<"other">(1);
+		int b = T::obj<"test">();
+	} T;
 
 /*	int t = T::val<"other">(1);
 		int b = T::obj<"test">();

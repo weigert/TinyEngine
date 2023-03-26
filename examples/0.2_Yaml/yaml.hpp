@@ -123,53 +123,6 @@ struct key_base{};
 template<typename T>
 concept is_key = std::derived_from<T, key_base>;
 
-// Specific, Distinct Types of Keys!
-
-template<constexpr_string Key>
-struct val_key: key_base {};
-
-template<constexpr_string Key>
-struct arr_key: key_base {};
-
-template<constexpr_string Key>
-struct obj_key: key_base {};
-
-// Specific Types derived from specific keys
-
-template<is_key key>
-struct new_node {};
-
-template<constexpr_string Key>
-using val_node = new_node<val_key<Key>>;
-
-template<constexpr_string Key>
-using arr_node = new_node<arr_key<Key>>;
-
-template<constexpr_string Key>
-using obj_node = new_node<obj_key<Key>>;
-
-
-
-
-template<constexpr_string Key>
-struct new_node<val_key<Key>> {
-  static constexpr const char* type = "val";
-  static constexpr char const* key = Key;
-};
-
-template<constexpr_string Key>
-struct new_node<arr_key<Key>> {
-  static constexpr const char* type = "arr";
-  static constexpr char const* key = Key;
-};
-
-template<constexpr_string Key>
-struct new_node<obj_key<Key>> {
-  static constexpr const char* type = "obj";
-  static constexpr char const* key = Key;
-};
-
-
 // Note: Statically Assert if Two Template Arguments are the same!
 //  Not allowed!
 
@@ -177,6 +130,50 @@ struct new_node<obj_key<Key>> {
 //struct unique_key_set{
 //  static constexpr bool value = is_unique<new_key<Keys>...>::value;
 //};
+
+// Specific, Distinct Types of Keys!
+
+template<constexpr_string Key, typename V>
+struct val_key: key_base {};
+
+template<constexpr_string Key, typename T>
+struct arr_key: key_base {};
+
+// Specific Types derived from specific keys
+
+template<is_key key>
+struct node {};
+
+template<constexpr_string Key, typename V>
+using node_val = node<val_key<Key, V>>;
+
+template<constexpr_string Key, typename V>
+struct node<val_key<Key, V>> {
+  static constexpr const char* type = "val";
+  static constexpr char const* key = Key;
+  V value;
+
+  void print(){
+    std::cout<<key<<": "<<value<<std::endl;
+  }
+};
+
+template<constexpr_string Key, typename T>
+using node_arr = node<arr_key<Key, T>>;
+
+template<constexpr_string Key, typename T>
+struct node<arr_key<Key, T>> {
+  static constexpr const char* type = "arr";
+  static constexpr char const* key = Key;
+  // std::vector<T> values;
+
+  void print(){
+    std::cout<<key<<": "<<std::endl;
+  }
+};
+
+
+
 
 
 
@@ -194,19 +191,44 @@ struct obj_base{};
 template<typename T>
 concept is_obj = std::derived_from<T, obj_base>;
 
+// This is the basic object type,
+// meaning that it is templated by a bunch of keys.
+
+template<constexpr_string Key, is_obj T>
+struct obj_key: key_base {};
+
+//template<is_key... Keys>
+//struct new_obj;
+
+template<constexpr_string Key, is_obj T>
+struct node<obj_key<Key, T>> {
+  static constexpr const char* type = "obj";
+  static constexpr char const* key = Key;
+  T obj;
+
+  void print(){
+    std::cout<<key<<": "<<std::endl;
+    obj.print();
+  }
+
+};
+
+template<constexpr_string Key, typename T>
+using node_obj = node<obj_key<Key, T>>;
+
 template<is_key... Keys>
 struct new_obj: obj_base {
 
   //static_assert(unique_key_set<Keys...>::value)
 
-  std::tuple<new_node<Keys>...> nodes;
+  std::tuple<node<Keys>...> nodes;
 
   template<is_key Key> struct index {
     static constexpr size_t value = tuple_index<Key, 0, Keys...>::value;
   };
 
   template<is_key Key>
-  new_node<Key>& get() {
+  node<Key>& get() {
     return std::get<index<Key>::value>(nodes);
   }
 
@@ -214,39 +236,67 @@ struct new_obj: obj_base {
   template<constexpr_string Key, typename V>
   V val(const V& v){
     static_assert(value_type<V>, "type is not a value type");
-    static_assert(is_contained<val_key<Key>, Keys...>::value, "key for yaml::val does not exist in yaml::obj");
+    static_assert(is_contained<val_key<Key, V>, Keys...>::value, "key for yaml::val does not exist in yaml::obj");
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
-    val_node<Key> node = get<val_key<Key>>();
-  //  std::cout<<"INSERTED: "<<node.type<<std::endl;
-//    new_node<val_key<Key>> t = std::get<>(nodes);
+    node_val<Key, V>& node = get<val_key<Key, V>>();
+    node.value = v;
     return std::move(v);
   }
 
-  template<constexpr_string Key, typename V>
-  // requires()
-  V obj(const V& v){
-    static_assert(is_obj<V>, "type is not a derived type of yaml::obj");
-    static_assert(is_contained<obj_key<Key>, Keys...>::value, "key for yaml::obj does not exist in yaml::obj");
+  template<constexpr_string Key, typename T>
+  T obj(const T& v){
+    static_assert(is_obj<T>, "type is not a derived type of yaml::obj");
+    static_assert(is_contained<obj_key<Key, T>, Keys...>::value, "key for yaml::obj does not exist in yaml::obj");
 //    std::cout<<"INDEX: "<<index<val_key<Key>>::value<<std::endl;
-//    new_node<val_key<Key>> node = get<val_key<Key>>();
-//    new_node<val_key<Key>> t = std::get<>(nodes);
+//    node<val_key<Key>> node = get<val_key<Key>>();
+//    node<val_key<Key>> t = std::get<>(nodes);
 
-    obj_node<Key> node = get<obj_key<Key>>();
-  //  std::cout<<"INSERTED: "<<node.type<<std::endl;
+    node<obj_key<Key, T>>& node = get<obj_key<Key, T>>();
+  //  node_obj<Key, T> node =
 
     return std::move(v);
+  }
+
+  void print(){
+
+
+    std::apply([](auto&&... args){
+      (args.print(), ...);
+    //
+    //  ((std::cout << args.type << " \"" << args.key << "\"\n"), ...);
+    }, nodes);
+
   }
 
 };
 
-
-
-
-
 // Print the Abstract Syntax Tree
+
+
+template<constexpr_string Key, typename V>
+static void yaml(node_val<Key, V> node){
+  node.print();
+}
+
+template<constexpr_string Key, typename V>
+static void yaml(node_arr<Key, V> node){
+  node.print();
+}
+
+template<constexpr_string Key, typename T>
+static void yaml(node_obj<Key, T> node){
+  node.print();
+}
+
+//using node_val = node<val_key<Key>>;
+
 template<is_key... Keys>
 static void yaml(new_obj<Keys...>& obj){
-  std::apply([](auto&&... args) {((std::cout << args.type << " \"" << args.key << "\"\n"), ...);}, obj.nodes);
+  std::apply([](auto&&... args){
+    ((yaml(args)), ...);
+  //
+  //  ((std::cout << args.type << " \"" << args.key << "\"\n"), ...);
+  }, obj.nodes);
 }
 
 }

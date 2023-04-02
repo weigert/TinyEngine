@@ -267,7 +267,7 @@ brew install glew
 brew install sdl2
 brew install sdl2_image
 brew install sdl2_mixer
-brew install sld2_ttf
+brew install sdl2_ttf
 brew install glm
 brew install boost
 ```

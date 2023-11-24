@@ -1,6 +1,9 @@
-#ifndef TINYENGINE_UTILITY_TARGET
-#define TINYENGINE_UTILITY_TARGET
+#ifndef TINYENGINE_CORE_TARGET
+#define TINYENGINE_CORE_TARGET
+
 #include <TinyEngine/Texture>
+
+namespace Tiny {
 
 class Target {
 public:
@@ -94,5 +97,7 @@ public:
     bind(depth, GL_DEPTH_ATTACHMENT);
   }
 };
+
+} // end of namespace Tiny
 
 #endif

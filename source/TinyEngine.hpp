@@ -27,8 +27,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 // Include Utility Headers
-#ifndef TINYENGINE_UTILITIES
-#define TINYENGINE_UTILITIES
+#ifndef TINYENGINE_CORE
+#define TINYENGINE_CORE
 
 #include <TinyEngine/Buffer>
 #include <TinyEngine/Instance>

@@ -1,7 +1,10 @@
-#ifndef TINYENGINE_UTILITY_SHADER
-#define TINYENGINE_UTILITY_SHADER
+#ifndef TINYENGINE_CORE_SHADER
+#define TINYENGINE_CORE_SHADER
+
 #include <TinyEngine/Buffer>
 #include <TinyEngine/Texture>
+
+namespace Tiny {
 
 class ShaderBase {
 public:
@@ -29,7 +32,7 @@ public:
   static void ssbo(std::vector<std::string> names);    //Define a list of SSBOs
   void interface(std::string name);                    //Add SSBO to permitted interface blocks
   void interface(std::vector<std::string> names);      //Add a list of buffers to interface
-  template<typename T> static void bind(std::string name, Buffer* buf);
+  template<typename T> static void bind(std::string name, BufferRef* buf);
 
   int boundtextures;                            //Texture Indexing
 
@@ -135,7 +138,7 @@ void ShaderBase::interface(std::vector<std::string> names){
 }
 
 template<typename T>
-void ShaderBase::bind(std::string name, Buffer* buf){
+void ShaderBase::bind(std::string name, BufferRef* buf){
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->index);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], buf->index);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -292,5 +295,7 @@ public:
   }
 
 };
+
+} // end of namespace Tiny
 
 #endif

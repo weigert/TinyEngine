@@ -37,12 +37,12 @@ setup:
 			@cp include/audio.hpp $(INCPATH)/TinyEngine/Audio
 			@cp include/event.hpp $(INCPATH)/TinyEngine/Event
 			@cp include/view.hpp $(INCPATH)/TinyEngine/View
-			@cp include/utility/buffer.hpp $(INCPATH)/TinyEngine/Buffer
-			@cp include/utility/instance.hpp $(INCPATH)/TinyEngine/Instance
-			@cp include/utility/model.hpp $(INCPATH)/TinyEngine/Model
-			@cp include/utility/shader.hpp $(INCPATH)/TinyEngine/Shader
-			@cp include/utility/texture.hpp $(INCPATH)/TinyEngine/Texture
-			@cp include/utility/target.hpp $(INCPATH)/TinyEngine/Target
+			@cp include/core/buffer.hpp $(INCPATH)/TinyEngine/Buffer
+			@cp include/core/instance.hpp $(INCPATH)/TinyEngine/Instance
+			@cp include/core/model.hpp $(INCPATH)/TinyEngine/Model
+			@cp include/core/shader.hpp $(INCPATH)/TinyEngine/Shader
+			@cp include/core/texture.hpp $(INCPATH)/TinyEngine/Texture
+			@cp include/core/target.hpp $(INCPATH)/TinyEngine/Target
 			@cp include/external/imgui/imgui.h $(INCPATH)/TinyEngine/imgui
 			@cp include/external/imgui/imgui_impl_opengl3.h $(INCPATH)/TinyEngine/imgui_impl_opengl3
 			@cp include/external/imgui/imgui_impl_sdl.h $(INCPATH)/TinyEngine/imgui_impl_sdl
@@ -80,5 +80,5 @@ helpers:
 			@echo "Copying Helper Header Files ...";
 			@if [ ! -d "$(INCPATH)" ]; then mkdir $(INCPATH); fi;
 			@if [ ! -d "$(INCPATH)/TinyEngine" ]; then mkdir $(INCPATH)/TinyEngine; fi;
-			@$(foreach var,$(HELPERS), cp include/helpers/$(var).hpp $(INCPATH)/TinyEngine/$(var);)
+			@$(foreach var,$(HELPERS), cp include/util/$(var).hpp $(INCPATH)/TinyEngine/$(var);)
 			@echo "Done";

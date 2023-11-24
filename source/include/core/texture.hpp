@@ -1,5 +1,7 @@
-#ifndef TINYENGINE_UTILITY_TEXTURE
-#define TINYENGINE_UTILITY_TEXTURE
+#ifndef TINYENGINE_CORE_TEXTURE
+#define TINYENGINE_CORE_TEXTURE
+
+namespace Tiny {
 
 class Texture;
 using tfunc = std::function<void(Texture*)>; //Arbitrary function operating on texture pointer
@@ -68,5 +70,7 @@ void Cubetexture::setup(TextureConfig TC, void* data){
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, TC.internal, W, H, 0, TC.format, TC.type, data);
   Texture::parameter(this);
 }
+
+} // end of namespace Tiny
 
 #endif

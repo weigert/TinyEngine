@@ -1,5 +1,5 @@
 #define TINYENGINE_NAMESPACE
-#define TINYENGINE_UTILITIES
+#define TINYENGINE_CORE
 #include "TinyEngine.hpp"
 
 #include "include/audio.cpp"

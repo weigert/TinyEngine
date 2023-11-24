@@ -2,12 +2,12 @@
 #define TINYENGINE
 
 /*
-* TinyEngine
+* TinyEngine 1.8
 * by Nicholas McDonald
 * https://github.com/weigert/TinyEngine
 */
 
-#define TINYENGINE_VERSION "1.7"
+#define TINYENGINE_VERSION "1.8"
 
 #include <iostream>
 #include <functional>
@@ -52,7 +52,7 @@ using Handle = std::function<void()>;
 
 #include <TinyEngine/timer>
 
-namespace Tiny{
+namespace Tiny {
 
 static View view;           //Window and Interface  (Requires Initialization)
 static Event event;         //Event Handler

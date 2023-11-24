@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <initializer_list>
 
 namespace color {
 using namespace glm;

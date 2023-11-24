@@ -246,7 +246,7 @@ sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-
 For systems with `dnf` as package manager, the dependencies can be installed using:
 
 ```bash
-sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel
+sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel eigen3-devel
 ```
 
 #### MacOS (+Apple M1)

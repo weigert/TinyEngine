@@ -20,7 +20,7 @@ TINYOS = -framework OpenGL
 endif
 
 all: main.cpp
-			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
+	@$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYOS) $(TINYLINK) -o main
 
 DAT = shader			#data directory to embed
 .PHONY: embedded

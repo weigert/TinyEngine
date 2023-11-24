@@ -26,4 +26,4 @@ CC = g++-12 -std=c++17
 endif
 
 all: main.cpp
-			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
+	@$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main

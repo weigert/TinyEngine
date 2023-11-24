@@ -27,11 +27,11 @@ endif
 
 .PHONY: pooled
 pooled: source/main.cpp
-			$(CC) source/main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
+	@$(CC) source/main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
 
 .PHONY: naive
 naive: source/naive.cpp
-			$(CC) source/naive.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
+	@$(CC) source/naive.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
 
 all: naive pool
 

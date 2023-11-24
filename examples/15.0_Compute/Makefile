@@ -3,7 +3,7 @@
 
 CC = g++ -std=c++17
 CF = -Wfatal-errors -O
-LF = -I$(HOME)/.local/include -L$(HOME)/.local/lib
+LF = -I$(HOME)/.local/include -L$(HOME)/.local/lib -I/usr/include/eigen3
 
 # General Linking
 
@@ -26,7 +26,7 @@ CC = g++-12 -std=c++17
 endif
 
 all: main.cpp
-			$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
+	@$(CC) main.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
 
 DAT = shader			#data directory to embed
 .PHONY: embedded

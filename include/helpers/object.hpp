@@ -1,6 +1,8 @@
 #ifndef TINYENGINE_HELPER_OBJECT
 #define TINYENGINE_HELPER_OBJECT
 
+#include <fstream>
+
 namespace obj {
 using namespace std;
 

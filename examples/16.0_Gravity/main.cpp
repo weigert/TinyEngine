@@ -45,17 +45,20 @@ int main( int argc, char* args[] ) {
 	Tiny::Buffer<float> massbuf(mass);
 
   //Compute Shader with SSBO Binding Points
-	Tiny::Compute compute("shader/gravity.cs", {"position", "velocity", "mass"});
+	Tiny::Compute compute_v("shader/gravity_v.cs", {"position", "velocity", "mass"});
+	compute_v.bind("position", &posbuf);
+	compute_v.bind("velocity", &velbuf);
+	compute_v.bind("mass", &massbuf);
 
+	Tiny::Compute compute_p("shader/gravity_p.cs", {"position", "velocity", "mass"});
+	compute_p.bind("position", &posbuf);
+	compute_p.bind("velocity", &velbuf);
+	compute_p.bind("mass", &massbuf);
 
 	//Use the Buffer as an Attribute of a Model VAO
 	Tiny::Model particles({"in_Pos"});
 	particles.bind("in_Pos", &posbuf);
 	particles.SIZE = NPARTICLES;
-	//Link Buffers to the SSBO Binding Points
-	compute.bind("position", &posbuf);
-	compute.bind("velocity", &velbuf);
-	compute.bind("mass", &massbuf);
 
 	//Visualization Shader, does not need attributes
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos"});
@@ -75,9 +78,13 @@ int main( int argc, char* args[] ) {
 
 		if(paused) return;
 
-		compute.use();
-		compute.uniform("size", NPARTICLES);
-		compute.dispatch(1+SPARTICLES/32, 1+SPARTICLES/32);
+		compute_v.use();
+		compute_v.uniform("size", NPARTICLES);
+		compute_v.dispatch(2, 2);
+
+		compute_p.use();
+		compute_p.uniform("size", NPARTICLES);
+		compute_p.dispatch(2, 2);
 
 	});
 

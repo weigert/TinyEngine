@@ -64,30 +64,30 @@ int main( int argc, char* args[] ) {
 	}
 
 	//3 Buffers
-	Buffer posbufA(position);
-	Buffer posbufB(position);
-	Buffer velbufA(velocity);
-	Buffer velbufB(velocity);
-	Buffer massbuf(mass);
+	Tiny::Buffer<glm::vec4> posbufA(position);
+	Tiny::Buffer<glm::vec4> posbufB(position);
+	Tiny::Buffer<glm::vec4> velbufA(velocity);
+	Tiny::Buffer<glm::vec4> velbufB(velocity);
+	Tiny::Buffer<float> massbuf(mass);
 
   //Compute Shader with SSBO Binding Points
-	Compute compute("shader/collide.cs", {"positionA", "positionB", "velocityA", "velocityB"});
+	Tiny::Compute compute("shader/collide.cs", {"positionA", "positionB", "velocityA", "velocityB"});
 
 	//Link Buffers to the SSBO Binding Points
-	compute.bind<glm::vec4>("positionA", &posbufA);
-	compute.bind<glm::vec4>("positionB", &posbufB);
-	compute.bind<glm::vec4>("velocityA", &velbufA);
-	compute.bind<glm::vec4>("velocityB", &velbufB);
+	compute.bind("positionA", &posbufA);
+	compute.bind("positionB", &posbufB);
+	compute.bind("velocityA", &velbufA);
+	compute.bind("velocityB", &velbufB);
 
-	Square2D flat;
-	Instance particles(&flat);
-	particles.bind<glm::vec4>("in_Pos", &posbufA);
+	Tiny::Square2D flat;
+	Tiny::Instance particles(&flat);
+	particles.bind("in_Pos", &posbufA);
 	particles.SIZE = position.size();
 
 	//Visualization Shader, does not need attributes
-	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Pos"}, {"velocityA", "velocityB"});
-	particleShader.bind<glm::vec4>("velocityA", &velbufA);
-	particleShader.bind<glm::vec4>("velocityB", &velbufB);
+	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Pos"}, {"velocityA", "velocityB"});
+	particleShader.bind("velocityA", &velbufA);
+	particleShader.bind("velocityB", &velbufB);
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){

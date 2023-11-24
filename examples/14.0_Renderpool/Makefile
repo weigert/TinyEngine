@@ -1,7 +1,7 @@
 # TinyEngine Makefile
 # Compiler Configuration
 
-CC = g++-10 -std=c++20
+CC = g++ -std=c++20
 CF = -Wfatal-errors -O
 LF = -I$(HOME)/.local/include -L$(HOME)/.local/lib
 
@@ -33,6 +33,7 @@ pooled: source/main.cpp
 naive: source/naive.cpp
 	@$(CC) source/naive.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -o main
 
+.PHONY: all
 all: naive pool
 
 DAT = shader			#data directory to embed

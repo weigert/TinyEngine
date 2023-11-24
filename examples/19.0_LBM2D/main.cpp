@@ -15,21 +15,21 @@ int main(int argc, char* argv[]){
 
   // Initialize our Arrays
 
-  Buffer f(NX*NY*Q, (float*)NULL);      //Raw F Buffer
-  Buffer fprop(NX*NY*Q, (float*)NULL);  //Raw FProp Buffer
-  Buffer b(NX*NY, (float*)NULL);        //Boundary Condition
+  Tiny::Buffer<float> f(NX*NY*Q, (float*)NULL);      //Raw F Buffer
+  Tiny::Buffer<float> fprop(NX*NY*Q, (float*)NULL);  //Raw FProp Buffer
+  Tiny::Buffer<float> b(NX*NY, (float*)NULL);        //Boundary Condition
 
   // Computed Quantities (For Efficiency)
 
-  Buffer rho(NX*NY, (float*)NULL);
-  Buffer v(NX*NY, (glm::vec2*)NULL);
+  Tiny::Buffer<float> rho(NX*NY, (float*)NULL);
+  Tiny::Buffer<glm::vec2> v(NX*NY, (glm::vec2*)NULL);
 
   // Initialization Shader
 
-  Compute init("shader/init.cs", {"f", "fprop", "b"});
-  init.bind<float>("f", &f);
-  init.bind<float>("fprop", &fprop);
-  init.bind<float>("b", &b);
+  Tiny::Compute init("shader/init.cs", {"f", "fprop", "b"});
+  init.bind("f", &f);
+  init.bind("fprop", &fprop);
+  init.bind("b", &b);
 
   // Initialize the Boundary Condition (if you like!)
   float* boundary = new float[NX*NY];
@@ -75,27 +75,27 @@ int main(int argc, char* argv[]){
 
   // Collision and Streaming Compute Shaders
 
-  Compute collide("shader/collide.cs", {"f", "fprop", "b", "rho", "v"});
-  collide.bind<float>("f", &f);
-  collide.bind<float>("fprop", &fprop);
-  collide.bind<float>("b", &b);
-  collide.bind<float>("rho", &rho);
-  collide.bind<glm::vec2>("v", &v);
+  Tiny::Compute collide("shader/collide.cs", {"f", "fprop", "b", "rho", "v"});
+  collide.bind("f", &f);
+  collide.bind("fprop", &fprop);
+  collide.bind("b", &b);
+  collide.bind("rho", &rho);
+  collide.bind("v", &v);
 
-  Compute stream("shader/stream.cs", {"f", "fprop", "b"});
-  stream.bind<float>("f", &f);
-  stream.bind<float>("fprop", &fprop);
-  stream.bind<float>("b", &b);
+  Tiny::Compute stream("shader/stream.cs", {"f", "fprop", "b"});
+  stream.bind("f", &f);
+  stream.bind("fprop", &fprop);
+  stream.bind("b", &b);
 
   // Visualization Shader (Flat2D, Samples SSBO)
 
-  Shader view({"shader/view.vs", "shader/view.fs"}, {"in_Quad", "in_Tex"}, {"f", "fprop", "b", "rho", "v"});
-  view.bind<float>("f", &f);
-  view.bind<float>("fprop", &fprop);
-  view.bind<float>("b", &b);
-  view.bind<float>("rho", &rho);
-  view.bind<glm::vec2>("v", &v);
-  Square2D flat;
+  Tiny::Shader view({"shader/view.vs", "shader/view.fs"}, {"in_Quad", "in_Tex"}, {"f", "fprop", "b", "rho", "v"});
+  view.bind("f", &f);
+  view.bind("fprop", &fprop);
+  view.bind("b", &b);
+  view.bind("rho", &rho);
+  view.bind("v", &v);
+  Tiny::Square2D flat;
 
   // Initialize!
 

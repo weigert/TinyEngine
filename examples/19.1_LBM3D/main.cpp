@@ -34,17 +34,17 @@ int main( int argc, char* args[] ) {
 
 	setup();																					//Prepare Model Stuff
 
-	Buffer positions, normals;												//Define Buffers
-	Buffer indices;
+	Tiny::Buffer<glm::vec3> positions, normals;												//Define Buffers
+	Tiny::Buffer<int> indices;
 	construct(positions, normals, indices);						//Call algorithm to fill buffers
 
-	Model mesh({"in_Position", "in_Normal"});					//Create Model with 2 Properties
-	mesh.bind<glm::vec3>("in_Position", &positions);	//Bind Buffer to Property
-	mesh.bind<glm::vec3>("in_Normal", &normals);
+	Tiny::Model mesh({"in_Position", "in_Normal"});					//Create Model with 2 Properties
+	mesh.bind("in_Position", &positions);	//Bind Buffer to Property
+	mesh.bind("in_Normal", &normals);
 	mesh.index(&indices);
 	mesh.model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
 
-	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
+	Tiny::Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
 	/*
 	==============================================================================
@@ -68,13 +68,13 @@ int main( int argc, char* args[] ) {
   for(size_t z = 0; z < NZ; z++)
     dirs[(x*NY + y)*NZ + z] = glm::vec4(0);
 
-  Buffer dirbuf(NX*NY*NZ, dirs);
+  Tiny::Buffer<glm::vec4> dirbuf(NX*NY*NZ, dirs);
 
   // Lattice Boltzmann Arrays
 
-  Buffer f(NX*NY*NZ*Q, (float*)NULL);       //Raw F Buffer
-  Buffer fprop(NX*NY*NZ*Q, (float*)NULL);   //Raw FProp Buffer (Collision Step)
-  Buffer rho(NX*NY*NZ, (float*)NULL);       //Density (For Efficiency)
+  Tiny::Buffer<float> f(NX*NY*NZ*Q, (float*)NULL);       //Raw F Buffer
+  Tiny::Buffer<float> fprop(NX*NY*NZ*Q, (float*)NULL);   //Raw FProp Buffer (Collision Step)
+  Tiny::Buffer<float> rho(NX*NY*NZ, (float*)NULL);       //Density (For Efficiency)
 
   // Boundary Condition
 
@@ -92,16 +92,16 @@ int main( int argc, char* args[] ) {
 
   }
 
-  Buffer b(NX*NY*NZ, boundary);
+  Tiny::Buffer<float> b(NX*NY*NZ, boundary);
 
   // Initialization Compute Shader
 
-  Compute init("shader/LBM/init.cs", {"f", "fprop", "b", "rho", "v"});
-  init.bind<float>("f", &f);
-  init.bind<float>("fprop", &fprop);
-  init.bind<float>("b", &b);
-  init.bind<float>("rho", &rho);
-  init.bind<glm::vec4>("v", &dirbuf);
+  Tiny::Compute init("shader/LBM/init.cs", {"f", "fprop", "b", "rho", "v"});
+  init.bind("f", &f);
+  init.bind("fprop", &fprop);
+  init.bind("b", &b);
+  init.bind("rho", &rho);
+  init.bind("v", &dirbuf);
 
   init.use();
   init.uniform("NX", NX);
@@ -111,17 +111,17 @@ int main( int argc, char* args[] ) {
 
   // Collision and Streaming Compute Shaders
 
-  Compute collide("shader/LBM/collide.cs", {"f", "fprop", "b", "rho", "v"});
-  collide.bind<float>("f", &f);
-  collide.bind<float>("fprop", &fprop);
-  collide.bind<float>("b", &b);
-  collide.bind<float>("rho", &rho);
-  collide.bind<glm::vec4>("v", &dirbuf);
+  Tiny::Compute collide("shader/LBM/collide.cs", {"f", "fprop", "b", "rho", "v"});
+  collide.bind("f", &f);
+  collide.bind("fprop", &fprop);
+  collide.bind("b", &b);
+  collide.bind("rho", &rho);
+  collide.bind("v", &dirbuf);
 
-  Compute stream("shader/LBM/stream.cs", {"f", "fprop", "b"});
-  stream.bind<float>("f", &f);
-  stream.bind<float>("fprop", &fprop);
-  stream.bind<float>("b", &b);
+  Tiny::Compute stream("shader/LBM/stream.cs", {"f", "fprop", "b"});
+  stream.bind("f", &f);
+  stream.bind("fprop", &fprop);
+  stream.bind("b", &b);
 
   /*
   =========================================
@@ -145,22 +145,22 @@ int main( int argc, char* args[] ) {
       pos.push_back(p);
   }
 
-  Buffer posbuf(pos);
+  Tiny::Buffer<glm::vec4> posbuf(pos);
 
   // Model for Rendering Position, Direction Data
 
-	Shader streamshader({"shader/stream.vs", "shader/stream.gs", "shader/stream.fs"}, {"in_Position", "in_Direction"});
-  Model windmodel({"in_Position", "in_Direction"});
-  windmodel.bind<glm::vec4>("in_Position", &posbuf);
-  windmodel.bind<glm::vec4>("in_Direction", &dirbuf);
+	Tiny::Shader streamshader({"shader/stream.vs", "shader/stream.gs", "shader/stream.fs"}, {"in_Position", "in_Direction"});
+  Tiny::Model windmodel({"in_Position", "in_Direction"});
+  windmodel.bind("in_Position", &posbuf);
+  windmodel.bind("in_Direction", &dirbuf);
   windmodel.SIZE = pos.size();
 
   // Shader to Move Particles Along
 
-  Compute move("shader/move.cs", {"b", "v", "p"});
-  move.bind<glm::vec4>("b", &b);
-  move.bind<glm::vec4>("v", &dirbuf);
-  move.bind<glm::vec4>("p", &posbuf);
+  Tiny::Compute move("shader/move.cs", {"b", "v", "p"});
+  move.bind("b", &b);
+  move.bind("v", &dirbuf);
+  move.bind("p", &posbuf);
 
 
 

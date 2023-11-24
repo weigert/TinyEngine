@@ -34,13 +34,13 @@ int main( int argc, char* args[] ) {
 
   // Shader, Model for Rendering Sphere / Sampling from Cubemap
 
-  Shader sphere({"shader/sphere.vs", "shader/sphere.fs"}, {"in_Position"});
+  Tiny::Shader sphere({"shader/sphere.vs", "shader/sphere.fs"}, {"in_Position"});
   Icosphere icosahedron;
 
   // Cubemap and Cube Voronoi Shader
 
-  Shader cubevoronoi({"shader/cubevoronoi.vs", "shader/cubevoronoi.gs", "shader/cubevoronoi.fs"}, {"in_Position"});
-  Cubemap voronoi(512, 512);
+  Tiny::Shader cubevoronoi({"shader/cubevoronoi.vs", "shader/cubevoronoi.gs", "shader/cubevoronoi.fs"}, {"in_Position"});
+  Tiny::Cubemap voronoi(512, 512);
 
   // View Matrices for Cubemap Geometry Shader
 
@@ -68,11 +68,11 @@ int main( int argc, char* args[] ) {
 
   // Buffer and Instance of Flat
 
-  Buffer centroidbuf(offsets);
+  Tiny::Buffer<glm::vec3> centroidbuf(offsets);
 
-  Square3D flat;
-  Instance instance(&flat);
-  instance.bind<glm::vec3>("in_Centroid", &centroidbuf);
+  Tiny::Square3D flat;
+  Tiny::Instance instance(&flat);
+  instance.bind("in_Centroid", &centroidbuf);
 
   // Loop
 

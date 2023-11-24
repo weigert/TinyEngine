@@ -1,6 +1,6 @@
 #version 430
 
-layout(local_size_x = 1024) in;
+layout(local_size_x = 32, local_size_y = 32) in;
 
 layout (std430, binding = 0) buffer vertices {
   vec4 p[];
@@ -20,20 +20,24 @@ uniform int t;
 uniform int mode;
 uniform int rk;
 
-const float dt = 0.2f;
+const float dt = 0.0001f;
 const float G = 10.0f;
 
 #include force.cs
 
 void main() {
 
-  const uint index = gl_GlobalInvocationID.x;
-  if(index >= size) return;
+  const uint index = gl_LocalInvocationID.x*32 + gl_LocalInvocationID.y;
+  if(index >= size) 
+    return;
 
-  const int ind_x = int(gl_GlobalInvocationID.x / res);
-  const int ind_y = int(gl_GlobalInvocationID.x % res);
+  const uint ind_x = gl_GlobalInvocationID.x;
+  const uint ind_y = gl_GlobalInvocationID.y;
 
-  if(ind_x == res/2 && ind_y == res-1) return;
+  if(ind_y == 64 && ind_x == 32)
+    return;
+
+  //if(ind_x == res || ind_y == res) return;
 //  if(ind_x == res/3 && ind_y == res-1) return;
 //  if(ind_x == 2*res/3 && ind_y == res-1) return;
 
@@ -72,13 +76,14 @@ void main() {
 
   if(mode == 0){
 
-    f[rk*size + index] = cforce( index, rk );
+    f[index] = cforce( index, rk );
+    return;
 
   }
 
   // Compute
 
-  if(mode == 1){
+  else if(mode == 1){
 
    leapfrog(index);
   //  verlet(index);

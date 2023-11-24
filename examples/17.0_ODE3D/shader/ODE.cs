@@ -11,6 +11,7 @@ layout (std430, binding = 1) buffer color {
 };
 
 uniform int size;
+
 const float dt = 0.001f;
 const float G = 10.0f;
 
@@ -25,10 +26,11 @@ vec3 force(vec3 pB, vec3 pA){
 
 void main() {
 
-  const uvec3 wsize = gl_WorkGroupSize*gl_NumWorkGroups;
-  const uint index = gl_GlobalInvocationID.y*wsize.x+gl_GlobalInvocationID.x;
+  const uint wsize = 384;
+  const uint index = gl_GlobalInvocationID.x*384+gl_GlobalInvocationID.y;
 
-  if(index > size) return;
+  if(index >= size)
+    return;
 
   const float A = 0.9;
   const float B = 5.0;

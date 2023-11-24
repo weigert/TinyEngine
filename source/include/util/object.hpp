@@ -133,7 +133,7 @@ using namespace std;
     model->bind("in_Position", new Tiny::Buffer<glm::vec3>(positions), true);
     model->bind("in_Normal", new Tiny::Buffer<glm::vec3>(normals), true);
     model->bind("in_Color", new Tiny::Buffer<glm::vec4>(colors), true);
-    model->SIZE = positions.size()/3;
+    model->SIZE = positions.size();
     return model;
 
   }

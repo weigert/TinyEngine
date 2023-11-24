@@ -1,7 +1,7 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/camera>
 
-const int RES = 150;
+const int RES = 64;
 
 int main( int argc, char* args[] ) {
 
@@ -86,8 +86,8 @@ int main( int argc, char* args[] ) {
 
   int t = 0;
 
-  std::vector<glm::vec4> velocityvec(4*RES*RES, glm::vec4(0));
-  std::vector<glm::vec4> forcevec(4*RES*RES, glm::vec4(0));
+  std::vector<glm::vec4> velocityvec(RES*RES, glm::vec4(0));
+  std::vector<glm::vec4> forcevec(RES*RES, glm::vec4(0));
 
   Tiny::Buffer<glm::vec4> velocitybuf(velocityvec);
   Tiny::Buffer<glm::vec4> forcebuf(forcevec);
@@ -127,11 +127,11 @@ int main( int argc, char* args[] ) {
 
 			shift.uniform("mode", 0);
 			shift.uniform("rk", i);
-			shift.dispatch(1+(RES*RES)/1024);
+			shift.dispatch(2, 2);
 
 			shift.uniform("mode", 1);
 			shift.uniform("rk", i);
-			shift.dispatch(1+(RES*RES)/1024);
+			shift.dispatch(2, 2);
 
 		}
 

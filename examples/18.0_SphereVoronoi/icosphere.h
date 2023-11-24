@@ -1,10 +1,11 @@
 #define PI 3.14159265f
 
-struct Icosphere: Model {
+struct Icosphere: Tiny::Model {
 
   std::vector<glm::vec3> positions;
   std::vector<glm::uvec3> indices;
-  Buffer pos, ind;
+  Tiny::Buffer<glm::vec3> pos;
+  Tiny::Buffer<glm::uvec3> ind;
 
   Icosphere():Model({"in_Position", "in_Tex"}){
 
@@ -14,7 +15,7 @@ struct Icosphere: Model {
     pos.fill(positions);
     ind.fill(indices);
 
-    bind<glm::vec3>("in_Position", &pos);
+    bind("in_Position", &pos);
     index(&ind);
     SIZE = indices.size()*3;
 

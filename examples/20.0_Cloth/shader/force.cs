@@ -143,8 +143,8 @@ void shift( uint index ){
 
 void leapfrog( uint index ){
 
-  v[index] = v[index] + dt*f[index]/mass;
-  p[index] = p[index] + dt*v[index];
+  v[index] += dt*f[index]/mass;
+  p[index] += dt*v[index];
 
 }
 

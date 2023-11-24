@@ -36,7 +36,7 @@ void setup(){
 
 };
 
-void construct(Buffer& positions, Buffer& normals, Buffer& indices){
+void construct(Tiny::Buffer<glm::vec3>& positions, Tiny::Buffer<glm::vec3>& normals, Tiny::Buffer<int>& indices){
   //Fill the Buffers!
 
   std::vector<int> indbuf;

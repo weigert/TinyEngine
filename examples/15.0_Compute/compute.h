@@ -67,10 +67,9 @@ void increment(){
 
 	std::fill(buffer.begin(), buffer.end(), 0.0f);         //Reset Buffer
 
-  Buffer buf(buffer);                                   //Raw Buffer Object
-
-	Compute compute("shader/increment.cs", {"buff"});		  //Create the Compute Shader
-	compute.bind<float>("buff", &buf);								    //Upload the Buffer
+  Tiny::Buffer<float> buf(buffer);                       //Raw Buffer Object
+	Tiny::Compute compute("shader/increment.cs", {"buff"});		  //Create the Compute Shader
+	compute.bind("buff", &buf);								                  //Upload the Buffer
 	compute.use();																	      //Use the Shader
 
 	std::cout<<"Parallel ";
@@ -121,9 +120,9 @@ void accumulate(){
 
   //Parallel
 
-  Compute compute("shader/accumulate.cs", {"buff"});		//Create the Compute Shader
-  Buffer buf(buffer);
-  compute.bind<float>("buff", &buf);							    //Upload the Buffer
+  Tiny::Compute compute("shader/accumulate.cs", {"buff"});		//Create the Compute Shader
+  Tiny::Buffer<float> buf(buffer);
+  compute.bind("buff", &buf);							    //Upload the Buffer
   compute.use();																        //Use the Shader
 
   int K = 256;                                          //K-Ary Merge
@@ -236,18 +235,18 @@ void gausstransform(){
     P[m*N+n] = 0.0f;
 
   //Define Shaders and their Interfaces
-  Compute compute("shader/gausstransform.cs", {"pointsetA", "pointsetB", "probability"});
-  Compute accumulate("shader/2Daccumulate.cs", {"vector", "probability"});
+  Tiny::Compute compute("shader/gausstransform.cs", {"pointsetA", "pointsetB", "probability"});
+  Tiny::Compute accumulate("shader/2Daccumulate.cs", {"vector", "probability"});
 
-  Buffer pA(pointsetA);
-  Buffer pB(pointsetB);
-  Buffer prob(N*M, (float*)NULL);
-  Buffer vec((M>N)?M:N, (float*)NULL);
+  Tiny::Buffer<glm::vec4> pA(pointsetA);
+  Tiny::Buffer<glm::vec4> pB(pointsetB);
+  Tiny::Buffer<float> prob(N*M, (float*)NULL);
+  Tiny::Buffer<float> vec((M>N)?M:N, (float*)NULL);
 
-  compute.bind<glm::vec4>("pointsetA", &pA);
-  compute.bind<glm::vec4>("pointsetB", &pB);
-  compute.bind<float>("probability", &prob);
-  compute.bind<float>("vector", &vec);
+  compute.bind("pointsetA", &pA);
+  compute.bind("pointsetB", &pB);
+  compute.bind("probability", &prob);
+  compute.bind("vector", &vec);
 
   std::cout<<"Parallel ";
   timer::benchmark<std::chrono::milliseconds>([&](){
@@ -344,15 +343,15 @@ void matrixmatrix(){
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   //Define Shaders and their Interfaces
-  Compute compute("shader/matmult.cs", {"matrixA", "matrixB", "result"});
+  Tiny::Compute compute("shader/matmult.cs", {"matrixA", "matrixB", "result"});
 
-  Buffer mA(N*K, A);
-  Buffer mB(K*M, B);
-  Buffer res(N*M, (float*)R);
+  Tiny::Buffer<float> mA(N*K, A);
+  Tiny::Buffer<float> mB(K*M, B);
+  Tiny::Buffer<float> res(N*M, (float*)R);
 
-  compute.bind<float>("matrixA", &mA);
-  compute.bind<float>("matrixB", &mB);
-  compute.bind<float>("result", &res);
+  compute.bind("matrixA", &mA);
+  compute.bind("matrixB", &mB);
+  compute.bind("result", &res);
 
   //const int BS = 2;
 

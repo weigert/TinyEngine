@@ -14,16 +14,16 @@ int main( int argc, char* args[] ) {
 	Tiny::event.handler  = eventHandler;
 	Tiny::view.interface = interfaceFunc;
 
-	Shader shader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color"});
-	Shader cubedepth({"shader/cubedepth.vs", "shader/cubedepth.gs", "shader/cubedepth.fs"}, {"in_Position"});
+	Tiny::Shader shader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color"});
+	Tiny::Shader cubedepth({"shader/cubedepth.vs", "shader/cubedepth.gs", "shader/cubedepth.fs"}, {"in_Position"});
 
 	std::string path = "object/";
 
-	Model* lamp = obj::load(path+"Lamp");
-	Model* chair = obj::load(path+"Chair");
-	Model* table = obj::load(path+"Table");
-	Model* shelf =  obj::load(path+"Shelf");
-	Model* frame =  obj::load(path+"Frame");
+	Tiny::Model* lamp = obj::load(path+"Lamp");
+	Tiny::Model* chair = obj::load(path+"Chair");
+	Tiny::Model* table = obj::load(path+"Table");
+	Tiny::Model* shelf =  obj::load(path+"Shelf");
+	Tiny::Model* frame =  obj::load(path+"Frame");
 
 	lamp->model = glm::translate(glm::mat4(1.0f), glm::vec3(2,5,2));
 	table->model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,2));
@@ -32,11 +32,11 @@ int main( int argc, char* args[] ) {
 	frame->model = glm::translate(glm::mat4(1.0f), glm::vec3(-25,15,0));
 	frame->model = glm::rotate(frame->model, glm::radians(90.0f), glm::vec3(0,1,0));
 
-  Model* room = construct_room();
+  Tiny::Model* room = construct_room();
 	room->model = glm::scale(glm::mat4(1.0f), glm::vec3(25));
 
 	//Shadow Map
-	Cubemap pointshadow(1000, 1000);
+	Tiny::Cubemap pointshadow(1000, 1000);
 
 	Tiny::view.pipeline = [&](){
 

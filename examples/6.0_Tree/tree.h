@@ -153,7 +153,7 @@ glm::vec3 Branch::leafdensity(int searchdepth){
 Branch* root;
 
 
-void construct(Buffer& positions, Buffer& normals, Buffer& colors, Buffer& indices){
+void construct(Tiny::Buffer<glm::vec3>& positions, Tiny::Buffer<glm::vec3>& normals, Tiny::Buffer<glm::vec4>& colors, Tiny::Buffer<int>& indices){
 
   std::vector<int> indbuf;
   std::vector<float> posbuf, norbuf, colbuf;

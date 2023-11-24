@@ -13,7 +13,7 @@ int main( int argc, char* args[] ) {
 	Tiny::event.handler = cam::handler;
 	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
 
-	Square3D model;									//Model we want to instance render!
+	Tiny::Square3D model;									//Model we want to instance render!
 
 	std::vector<glm::mat4> models;
 	for(int i = 0; i < 1000; i++){	//Generate random model matrices
@@ -21,12 +21,12 @@ int main( int argc, char* args[] ) {
 		models.push_back(glm::rotate(model, 2.0f*3.14159265f*(float)(rand()%360)/360.0f, glm::vec3(0.0, 1.0, 0.0)));
 	}
 
-	Buffer modelbuf(models);
-	Instance particle(&model);			//Particle system based on this model
+	Tiny::Buffer modelbuf(models);
+	Tiny::Instance particle(&model);			//Particle system based on this model
 	particle.bind<glm::mat4>("in_Model", &modelbuf);			//Update particle system
 
-	Texture tex(image::load("dot.png"));		//Texture to draw onto the model
-	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
+	Tiny::Texture tex(image::load("dot.png"));		//Texture to draw onto the model
+	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
 
 	Tiny::view.pipeline = [&](){
 

@@ -20,9 +20,9 @@ int main( int argc, char* args[] ) {
 	  ImGui::DragInt("Bits", &bits, 1, 1, 16);
 	};
 
-	Texture tex(image::load("canyon.png"));		//Load Texture with Image
-	Square2D flat;														//Create Primitive Model
-	Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
+	Tiny::Texture tex(image::load("canyon.png"));		//Load Texture with Image
+	Tiny::Square2D flat;														//Create Primitive Model
+	Tiny::Shader effect({"shader/effect.vs", "shader/effect.fs"}, {"in_Quad", "in_Tex"});
 
 	std::string test = "imageTexture";
 

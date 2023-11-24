@@ -30,14 +30,14 @@ int main( int argc, char* args[] ) {
 	};
 
 	std::string path = "skull";
-	Model* skull = obj::load(path);
+	Tiny::Model* skull = obj::load(path);
 	skull->model = glm::translate(glm::mat4(1.0f), glm::vec3(0,-3.5,0));
 
-	Square2D flat;	//Flat square primitive for drawing billboard to screen
-	Shader dither({"shader/dither.vs", "shader/dither.fs"}, {"in_Quad", "in_Tex"});
-	Shader basic({"shader/default.vs", "shader/default.fs"}, {"in_Quad", "in_Tex"});
+	Tiny::Square2D flat;	//Flat square primitive for drawing billboard to screen
+	Tiny::Shader dither({"shader/dither.vs", "shader/dither.fs"}, {"in_Quad", "in_Tex"});
+	Tiny::Shader basic({"shader/default.vs", "shader/default.fs"}, {"in_Quad", "in_Tex"});
 
-	Billboard image(WIDTH, HEIGHT);
+	Tiny::Billboard image(WIDTH, HEIGHT);
 
 	Tiny::view.pipeline = [&](){
 

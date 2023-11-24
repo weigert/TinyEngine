@@ -47,14 +47,14 @@ int main( int argc, char* args[] ) {
   cam::look = glm::vec3(RES/2, RES/2, 0);
 
 
-  Buffer verticebuf(vertices);
+  Tiny::Buffer<glm::vec4> verticebuf(vertices);
 
   // Raw Point Model
 
-  Shader pointShader({"shader/point.vs", "shader/point.fs"}, {"in_Pos"});
+  Tiny::Shader pointShader({"shader/point.vs", "shader/point.fs"}, {"in_Pos"});
 
-  Model verticemodel({"in_Pos"});
-  verticemodel.bind<glm::vec4>("in_Pos", &verticebuf);
+  Tiny::Model verticemodel({"in_Pos"});
+  verticemodel.bind("in_Pos", &verticebuf);
   verticemodel.SIZE = RES*RES;
 
   // Raw Surface Model
@@ -70,15 +70,15 @@ int main( int argc, char* args[] ) {
     indices.emplace_back( (i)*RES + j,  (i+1)*RES + j+1, (i+1)*RES + j, 1);
   }
 
-  Buffer indexbuf(indices);
+  Tiny::Buffer<glm::ivec4> indexbuf(indices);
 
-  Shader surfaceShader({"shader/surface.vs", "shader/surface.fs"}, {"in_Pos", "in_Index"}, {"vertices"});
+  Tiny::Shader surfaceShader({"shader/surface.vs", "shader/surface.fs"}, {"in_Pos", "in_Index"}, {"vertices"});
 
-  Triangle triangle;
-	Instance triangleinstance(&triangle);
-  triangleinstance.bind<glm::ivec4>("in_Index", &indexbuf);
+  Tiny::Triangle triangle;
+	Tiny::Instance triangleinstance(&triangle);
+  triangleinstance.bind("in_Index", &indexbuf);
 
-	surfaceShader.bind<glm::vec4>("vertices", &verticebuf);
+	surfaceShader.bind("vertices", &verticebuf);
 
   // Compute Shaders for Computing Forces and Updating Positions
 
@@ -89,14 +89,14 @@ int main( int argc, char* args[] ) {
   std::vector<glm::vec4> velocityvec(4*RES*RES, glm::vec4(0));
   std::vector<glm::vec4> forcevec(4*RES*RES, glm::vec4(0));
 
-  Buffer velocitybuf(velocityvec);
-  Buffer forcebuf(forcevec);
+  Tiny::Buffer<glm::vec4> velocitybuf(velocityvec);
+  Tiny::Buffer<glm::vec4> forcebuf(forcevec);
 
-  Compute shift("shader/shift.cs", {"vertices", "velocity", "force"});
+  Tiny::Compute shift("shader/shift.cs", {"vertices", "velocity", "force"});
 
-  shift.bind<glm::vec4>("vertices", &verticebuf);
-  shift.bind<glm::vec4>("velocity", &velocitybuf);
-  shift.bind<glm::vec4>("force", &forcebuf);
+  shift.bind("vertices", &verticebuf);
+  shift.bind("velocity", &velocitybuf);
+  shift.bind("force", &forcebuf);
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){

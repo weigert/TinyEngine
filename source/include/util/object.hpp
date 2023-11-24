@@ -36,16 +36,15 @@ using namespace std;
     return mat;
   }
 
-  Model* load(string file){
+  Tiny::Model* load(string file){
 
     unordered_map<string, glm::vec3> mat = materials(file);
 
     vector<glm::vec3> vbuf;
     vector<glm::vec3> nbuf;
-
-    vector<float> positions;
-    vector<float> normals;
-    vector<float> colors;
+    vector<glm::vec3> positions;
+    vector<glm::vec3> normals;
+    vector<glm::vec4> colors;
 
     ifstream in(file+".obj", ios::in);
     if(!in){
@@ -106,15 +105,11 @@ using namespace std;
         }
 
         for(int i = 0; i < 3; i++){
-          positions.push_back(vbuf[vI[i]-1].x);
-          positions.push_back(vbuf[vI[i]-1].y);
-          positions.push_back(vbuf[vI[i]-1].z);
+          positions.push_back(vbuf[vI[i]-1]);
         }
         if(!normals.empty())
           for(int i = 0; i < 3; i++){
-            normals.push_back(nbuf[nI[i]-1].x);
-            normals.push_back(nbuf[nI[i]-1].y);
-            normals.push_back(nbuf[nI[i]-1].z);
+            normals.push_back(nbuf[nI[i]-1]);
           }
         else{
           glm::vec3 a = vbuf[vI[0]-1];
@@ -122,16 +117,11 @@ using namespace std;
           glm::vec3 c = vbuf[vI[2]-1];
           glm::vec3 n = glm::normalize(glm::cross(b-a, c-a));
           for(int i = 0; i < 3; i++){
-            normals.push_back(n.x);
-            normals.push_back(n.y);
-            normals.push_back(n.z);
+            normals.push_back(n);
           }
         }
         for(int i = 0; i < 3; i++){
-          colors.push_back(color.x);
-          colors.push_back(color.y);
-          colors.push_back(color.z);
-          colors.push_back(1.0);
+          colors.push_back(glm::vec4(color, 1.0));
         }
       }
     }
@@ -139,10 +129,10 @@ using namespace std;
     in.close();
 
     //Construct the Model with Buffers
-    Model* model = new Model({"in_Position", "in_Normal", "in_Color"});
-    model->bind<glm::vec3>("in_Position", new Buffer(positions), true);
-    model->bind<glm::vec3>("in_Normal", new Buffer(normals), true);
-    model->bind<glm::vec4>("in_Color", new Buffer(colors), true);
+    Tiny::Model* model = new Tiny::Model({"in_Position", "in_Normal", "in_Color"});
+    model->bind("in_Position", new Tiny::Buffer<glm::vec3>(positions), true);
+    model->bind("in_Normal", new Tiny::Buffer<glm::vec3>(normals), true);
+    model->bind("in_Color", new Tiny::Buffer<glm::vec4>(colors), true);
     model->SIZE = positions.size()/3;
     return model;
 

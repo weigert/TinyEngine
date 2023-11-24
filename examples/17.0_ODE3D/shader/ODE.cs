@@ -26,7 +26,7 @@ vec3 force(vec3 pB, vec3 pA){
 void main() {
 
   const uvec3 wsize = gl_WorkGroupSize*gl_NumWorkGroups;
-  const uint index = gl_GlobalInvocationID.x*wsize.y+gl_GlobalInvocationID.y;
+  const uint index = gl_GlobalInvocationID.y*wsize.x+gl_GlobalInvocationID.x;
 
   if(index > size) return;
 

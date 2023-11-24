@@ -44,7 +44,7 @@ std::function<void()> eventHandler = [](){
 };
 
 //Interface Function
-Handle interfaceFunc = [](){
+std::function<void()>  interfaceFunc = [](){
   //Window Size
   ImGui::SetNextWindowSize(ImVec2(480, 260), ImGuiCond_Once);
   ImGui::SetNextWindowPos(ImVec2(50, 470), ImGuiCond_Once);

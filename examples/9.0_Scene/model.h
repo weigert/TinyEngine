@@ -51,7 +51,7 @@ std::function<void()> eventHandler = [](){
 };
 
 //Interface Function
-Handle interfaceFunc = [](){
+std::function<void()> interfaceFunc = [](){
   //Window Size
   ImGui::SetNextWindowSize(ImVec2(480, 260), ImGuiCond_Once);
   ImGui::SetNextWindowPos(ImVec2(50, 470), ImGuiCond_Once);
@@ -68,22 +68,22 @@ Handle interfaceFunc = [](){
   ImGui::End();
 };
 
-Model* construct_room(){
+Tiny::Model* construct_room(){
 
-  std::vector<float> positions = {
-    -1.0, 0.0, -1.0,
-    -1.0, 0.0,  1.0,
-     1.0, 0.0, -1.0,
-     1.0, 0.0,  1.0,
-    -1.0, 1.0, -1.0,
-    -1.0, 1.0,  1.0,
-     1.0, 1.0, -1.0,
-     1.0, 1.0,  1.0
+  std::vector<glm::vec3> positions = {
+    {-1.0, 0.0, -1.0},
+    {-1.0, 0.0,  1.0},
+    { 1.0, 0.0, -1.0},
+    { 1.0, 0.0,  1.0},
+    {-1.0, 1.0, -1.0},
+    {-1.0, 1.0,  1.0},
+    { 1.0, 1.0, -1.0},
+    { 1.0, 1.0,  1.0}
   };
 
   std::vector<int> indices;
-  std::vector<float> normals;
-  std::vector<float> colors;
+  std::vector<glm::vec3> normals;
+  std::vector<glm::vec4> colors;
 
   indices.push_back(0);
   indices.push_back(1);
@@ -107,36 +107,24 @@ Model* construct_room(){
   glm::vec3 ceilingcolor = glm::vec3(0.9, 0.9, 0.8);
 
   for(int i = 0; i < 4; i++){
-    normals.push_back(0.0);
-    normals.push_back(1.0);
-    normals.push_back(0.0);
-
-    colors.push_back(floorcolor.x);
-    colors.push_back(floorcolor.y);
-    colors.push_back(floorcolor.z);
-    colors.push_back(1.0);
+    normals.emplace_back(0.0, 1.0, 0.0);
+    colors.emplace_back(floorcolor, 1.0);
   }
 
   for(int i = 0; i < 4; i++){
-    normals.push_back(0.0);
-    normals.push_back(-1.0);
-    normals.push_back(0.0);
-
-    colors.push_back(ceilingcolor.x);
-    colors.push_back(ceilingcolor.y);
-    colors.push_back(ceilingcolor.z);
-    colors.push_back(1.0);
+    normals.emplace_back(0.0, -1.0, 0.0);
+    colors.emplace_back(ceilingcolor, 1.0);
   }
 
-  float wallA[12] = {
-    -1.0, 0.0, -1.0,
-     1.0, 0.0, -1.0,
-    -1.0, 1.0, -1.0,
-     1.0, 1.0, -1.0,
+  glm::vec3 wallA[4] = {
+    {-1.0, 0.0, -1.0},
+    { 1.0, 0.0, -1.0},
+    {-1.0, 1.0, -1.0},
+    { 1.0, 1.0, -1.0}
   };
 
   //Walls
-  int P = positions.size()/3;
+  int P = positions.size();
   indices.push_back(P);
   indices.push_back(P+1);
   indices.push_back(P+2);
@@ -144,29 +132,23 @@ Model* construct_room(){
   indices.push_back(P+3);
   indices.push_back(P+2);
 
-  for(int i = 0; i < 12; i++)
+  for(int i = 0; i < 4; i++)
     positions.push_back(wallA[i]);
 
   for(int i = 0; i < 4; i++){
-    normals.push_back(0.0);
-    normals.push_back(0.0);
-    normals.push_back(1.0);
-
-    colors.push_back(ceilingcolor.x);
-    colors.push_back(ceilingcolor.y);
-    colors.push_back(ceilingcolor.z);
-    colors.push_back(1.0);
+    normals.emplace_back(0.0, 0.0, 1.0);
+    colors.emplace_back(ceilingcolor, 1.0);
   }
 
-  float wallB[12] = {
-    -1.0, 0.0, 1.0,
-     1.0, 0.0, 1.0,
-    -1.0, 1.0, 1.0,
-     1.0, 1.0, 1.0,
+  glm::vec3 wallB[4] = {
+    {-1.0, 0.0, 1.0},
+    { 1.0, 0.0, 1.0},
+    {-1.0, 1.0, 1.0},
+    { 1.0, 1.0, 1.0}
   };
 
   //Walls
-  P = positions.size()/3;
+  P = positions.size();
   indices.push_back(P);
   indices.push_back(P+2);
   indices.push_back(P+1);
@@ -174,30 +156,23 @@ Model* construct_room(){
   indices.push_back(P+2);
   indices.push_back(P+3);
 
-  for(int i = 0; i < 12; i++)
+  for(int i = 0; i < 4; i++)
     positions.push_back(wallB[i]);
 
   for(int i = 0; i < 4; i++){
-    normals.push_back( 0.0);
-    normals.push_back( 0.0);
-    normals.push_back(-1.0);
-
-    colors.push_back(ceilingcolor.x);
-    colors.push_back(ceilingcolor.y);
-    colors.push_back(ceilingcolor.z);
-    colors.push_back(1.0);
+    normals.emplace_back( 0.0, 0.0, -1.0);
+    colors.emplace_back(ceilingcolor, 1.0);
   }
 
-
-  float wallC[12] = {
-    -1.0, 0.0,-1.0,
-    -1.0, 0.0, 1.0,
-    -1.0, 1.0,-1.0,
-    -1.0, 1.0, 1.0,
+  glm::vec3 wallC[4] = {
+    {-1.0, 0.0,-1.0},
+    {-1.0, 0.0, 1.0},
+    {-1.0, 1.0,-1.0},
+    {-1.0, 1.0, 1.0}
   };
 
   //Walls
-  P = positions.size()/3;
+  P = positions.size();
   indices.push_back(P);
   indices.push_back(P+2);
   indices.push_back(P+1);
@@ -205,29 +180,23 @@ Model* construct_room(){
   indices.push_back(P+2);
   indices.push_back(P+3);
 
-  for(int i = 0; i < 12; i++)
+  for(int i = 0; i < 4; i++)
     positions.push_back(wallC[i]);
 
   for(int i = 0; i < 4; i++){
-    normals.push_back( 1.0);
-    normals.push_back( 0.0);
-    normals.push_back( 0.0);
-
-    colors.push_back(ceilingcolor.x);
-    colors.push_back(ceilingcolor.y);
-    colors.push_back(ceilingcolor.z);
-    colors.push_back(1.0);
+    normals.emplace_back( 1.0, 0.0, 0.0);
+    colors.emplace_back(ceilingcolor, 1.0);
   }
 
-  float wallD[12] = {
-     1.0, 0.0,-1.0,
-     1.0, 0.0, 1.0,
-     1.0, 1.0,-1.0,
-     1.0, 1.0, 1.0,
+  glm::vec3 wallD[4] = {
+    {1.0, 0.0,-1.0},
+    {1.0, 0.0, 1.0},
+    {1.0, 1.0,-1.0},
+    {1.0, 1.0, 1.0}
   };
 
   //Walls
-  P = positions.size()/3;
+  P = positions.size();
   indices.push_back(P);
   indices.push_back(P+1);
   indices.push_back(P+2);
@@ -235,26 +204,20 @@ Model* construct_room(){
   indices.push_back(P+3);
   indices.push_back(P+2);
 
-  for(int i = 0; i < 12; i++)
+  for(int i = 0; i < 4; i++)
     positions.push_back(wallD[i]);
 
   for(int i = 0; i < 4; i++){
-    normals.push_back(-1.0);
-    normals.push_back( 0.0);
-    normals.push_back( 0.0);
-
-    colors.push_back(ceilingcolor.x);
-    colors.push_back(ceilingcolor.y);
-    colors.push_back(ceilingcolor.z);
-    colors.push_back(1.0);
+    normals.emplace_back(-1.0, 0.0, 0.0);
+    colors.emplace_back(ceilingcolor, 1.0);
   }
 
-  Model* model = new Model({"in_Position", "in_Normal", "in_Color"});
-  model->bind<glm::vec3>("in_Position", new Buffer(positions));
-  model->bind<glm::vec3>("in_Normal", new Buffer(normals));
-  model->bind<glm::vec4>("in_Color", new Buffer(colors));
-  model->SIZE = positions.size()/3;
-  model->index(new Buffer(indices));
+  Tiny::Model* model = new Tiny::Model({"in_Position", "in_Normal", "in_Color"});
+  model->bind("in_Position", new Tiny::Buffer<glm::vec3>(positions));
+  model->bind("in_Normal", new Tiny::Buffer<glm::vec3>(normals));
+  model->bind("in_Color", new Tiny::Buffer<glm::vec4>(colors));
+  model->SIZE = positions.size();
+  model->index(new Tiny::Buffer<int>(indices));
   return model;
 
 }

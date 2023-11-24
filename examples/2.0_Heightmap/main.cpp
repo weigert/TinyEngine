@@ -22,17 +22,17 @@ int main( int argc, char* args[] ) {
 
 	setup();																					//Prepare Model Stuff
 
-	Buffer positions, normals;												//Define Buffers
-	Buffer indices;
+	Tiny::Buffer<glm::vec3> positions, normals;							//Define Buffers
+	Tiny::Buffer<int> indices;
 	construct(positions, normals, indices);						//Call algorithm to fill buffers
 
-	Model mesh({"in_Position", "in_Normal"});					//Create Model with 2 Properties
-	mesh.bind<glm::vec3>("in_Position", &positions);	//Bind Buffer to Property
-	mesh.bind<glm::vec3>("in_Normal", &normals);
+	Tiny::Model mesh({"in_Position", "in_Normal"});					//Create Model with 2 Properties
+	mesh.bind("in_Position", &positions);	//Bind Buffer to Property
+	mesh.bind("in_Normal", &normals);
 	mesh.index(&indices);
 	mesh.model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
 
-	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
+	Tiny::Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
 	Tiny::view.pipeline = [&](){											//Setup Drawing Pipeline
 

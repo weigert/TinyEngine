@@ -43,21 +43,21 @@ int main( int argc, char* args[] ) {
 	for(int i = 0; i < NPARTICLES; i++)
 		position.push_back(glm::vec4(randf(),randf(),randf(), 1));
 
-	Buffer posbuf(position);
-	Buffer colbuf;
+	Tiny::Buffer<glm::vec4> posbuf(position);
+	Tiny::Buffer<glm::vec4> colbuf;
 	colbuf.fill<glm::vec4>(NPARTICLES, NULL);
 
   //Compute Shader
-	Compute compute("shader/ODE.cs", {"position", "color"});
-	compute.bind<glm::vec4>("position", &posbuf);
-	compute.bind<glm::vec4>("color", &colbuf);
+	Tiny::Compute compute("shader/ODE.cs", {"position", "color"});
+	compute.bind("position", &posbuf);
+	compute.bind("color", &colbuf);
 
 	//Visualization Shader
-	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos", "in_Col"});
+	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos", "in_Col"});
 
-	Model particles({"position", "color"});
-	particles.bind<glm::vec4>("position", &posbuf);
-	particles.bind<glm::vec4>("color", &colbuf);
+	Tiny::Model particles({"position", "color"});
+	particles.bind("position", &posbuf);
+	particles.bind("color", &colbuf);
 	particles.SIZE = NPARTICLES;
 
 	//Define the rendering pipeline
@@ -74,7 +74,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::loop([&](){
 
-		cam::pan(-0.2f);
+		//cam::pan(-0.2f);
 
 		if(paused) return;
 

@@ -15,24 +15,24 @@ layout (std430, binding = 2) readonly buffer mass {
 };
 
 uniform int size;
-const float dt = 0.00005f;
+const float dt = 0.000005f;
 const float G = 10.0f;
 
 vec3 force(vec3 pB, vec3 pA){
 
   const vec3 dir = pB - pA;
   const float dist = length(dir);
-  if(dist == 0.0f) return vec3(0);
+  if(abs(dist) < 1E-4) return vec3(0);
   return normalize(dir)/(dist*dist);
 
 }
 
 void main() {
 
-  const uvec3 wsize = gl_WorkGroupSize*gl_NumWorkGroups;
-  const uint index = gl_GlobalInvocationID.x*wsize.y+gl_GlobalInvocationID.y;
+  const uint index = gl_LocalInvocationID.x;//*8+gl_GlobalInvocationID.y;
 
-  if(index > size) return;
+  if(index > size) 
+    return;
 
   vec4 F = vec4(0.0f);
   for(int i = 0; i < size; i++){
@@ -45,7 +45,7 @@ void main() {
   }
 
   //Black-Hole
-  F.xyz += G*force(vec3(0), p[index].xyz)*100.0f;
+  // F.xyz += G*force(vec3(0), p[index].xyz)*5;
 
   v[index] += dt*F;
   p[index] += dt*v[index];

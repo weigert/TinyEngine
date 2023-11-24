@@ -20,22 +20,22 @@ int main( int argc, char* args[] ) {
 			else return glm::vec4(0.0, 0.0, 0.0, 1.0);
 		}, glm::ivec2(1200, 800));
 
-	Texture textureA(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE}, s->pixels);
-	Texture textureB(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
+	Tiny::Texture textureA(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE}, s->pixels);
+	Tiny::Texture textureB(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
 
-	Target targetA(1200, 800);
+	Tiny::Target targetA(1200, 800);
 	targetA.bind(textureA, GL_COLOR_ATTACHMENT0);
 
-	Target targetB(1200, 800);
+	Tiny::Target targetB(1200, 800);
 	targetB.bind(textureB, GL_COLOR_ATTACHMENT0);
 
 	bool flip = true;
 
-	Square2D flat;	//Flat square primitive for drawing billboard to screen
+	Tiny::Square2D flat;	//Flat square primitive for drawing billboard to screen
 
 	//Shader for drawing billboard to screen and for doing an automata step
-	Shader shader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
-	Shader automata({"shader/automata.vs", "shader/automata.fs"}, {"in_Quad", "in_Tex"});
+	Tiny::Shader shader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
+	Tiny::Shader automata({"shader/automata.vs", "shader/automata.fs"}, {"in_Quad", "in_Tex"});
 
 	Tiny::view.pipeline = [&](){
 

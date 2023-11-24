@@ -13,8 +13,8 @@ int main( int argc, char* args[] ) {
 	Tiny::event.handler  = eventHandler;		//Set Event Handler
 	Tiny::view.interface = interfaceFunc;		//Set Interface Function
 
-	Square2D flat;													//Flat geometry primitive
-	Shader sdf({"shader/sdf.vs", "shader/sdf.fs"}, {"in_Quad", "in_Tex"});
+	Tiny::Square2D flat;													//Flat geometry primitive
+	Tiny::Shader sdf({"shader/sdf.vs", "shader/sdf.fs"}, {"in_Quad", "in_Tex"});
 
 	Tiny::view.pipeline = [&](){
 

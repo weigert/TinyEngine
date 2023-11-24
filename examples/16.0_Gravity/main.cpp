@@ -18,7 +18,7 @@ int main( int argc, char* args[] ) {
 
 //	glPointSize(2.0f);
 
-	bool paused = false;
+	bool paused = true;
 	Tiny::view.interface = [&](){};
   Tiny::event.handler = [&](){
 
@@ -35,30 +35,30 @@ int main( int argc, char* args[] ) {
 	std::vector<float> mass;
 	for(int i = 0; i < NPARTICLES; i++){
 		position.push_back(((glm::vec4(rand()%10000, rand()%10000, rand()%10000, 10000.0f)-5000.0f)/5000.0f));
-		velocity.push_back(200.0f*glm::normalize((glm::vec4(rand()%1000, rand()%1000, rand()%1000, 500.0f)-500.0f)/500.0f));
-		mass.push_back(1.0f+(float)(rand()%1000)/100.0f);
+		velocity.emplace_back(0.0, 0.0, 0.0, 0.0);
+		mass.push_back(1.0f);
 	}
 
 	//3 Buffers
-	Buffer posbuf(position);
-	Buffer velbuf(velocity);
-	Buffer massbuf(mass);
+	Tiny::Buffer<glm::vec4> posbuf(position);
+	Tiny::Buffer<glm::vec4> velbuf(velocity);
+	Tiny::Buffer<float> massbuf(mass);
 
   //Compute Shader with SSBO Binding Points
-	Compute compute("shader/gravity.cs", {"position", "velocity", "mass"});
+	Tiny::Compute compute("shader/gravity.cs", {"position", "velocity", "mass"});
 
-	//Link Buffers to the SSBO Binding Points
-	compute.bind<glm::vec4>("position", &posbuf);
-	compute.bind<glm::vec4>("velocity", &velbuf);
-	compute.bind<float>("mass", &massbuf);
 
 	//Use the Buffer as an Attribute of a Model VAO
-	Model particles({"in_Pos"});
-	particles.bind<glm::vec4>("in_Pos", &posbuf);
+	Tiny::Model particles({"in_Pos"});
+	particles.bind("in_Pos", &posbuf);
 	particles.SIZE = NPARTICLES;
+	//Link Buffers to the SSBO Binding Points
+	compute.bind("position", &posbuf);
+	compute.bind("velocity", &velbuf);
+	compute.bind("mass", &massbuf);
 
 	//Visualization Shader, does not need attributes
-	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos"});
+	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos"});
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){

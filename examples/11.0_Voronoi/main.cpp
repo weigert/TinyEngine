@@ -56,28 +56,28 @@ int main( int argc, char* args[] ) {
 	//Generate Set of Centroids
 	sample::disc(centroids, K, glm::vec2(-1), glm::vec2(1));
 	offset = centroids;
-	Buffer centroidbuf(centroids);
+	Tiny::Buffer<glm::vec2> centroidbuf(centroids);
 
 	//Utility Classes
-	Square2D flat;
-	Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Centroid"});
+	Tiny::Square2D flat;
+	Tiny::Shader voronoi({"shader/voronoi.vs", "shader/voronoi.fs"}, {"in_Quad", "in_Tex", "in_Centroid"});
 
-	Billboard billboard(_SIZE_, _SIZE_);
-	Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
+	Tiny::Billboard billboard(_SIZE_, _SIZE_);
+	Tiny::Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
 
 	//Filter Effects
-	Shader bubble({"shader/bubble.vs", "shader/bubble.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
-	Shader mosaic({"shader/mosaic.vs", "shader/mosaic.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
+	Tiny::Shader bubble({"shader/bubble.vs", "shader/bubble.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
+	Tiny::Shader mosaic({"shader/mosaic.vs", "shader/mosaic.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
 
 	//SSBO Centroids into Filters
-	bubble.bind<glm::vec2>("centroids", &centroidbuf);
-	mosaic.bind<glm::vec2>("centroids", &centroidbuf);
+	bubble.bind("centroids", &centroidbuf);
+	mosaic.bind("centroids", &centroidbuf);
 
 	//Prepare instance render of flat, per-centroid
-	Instance instance(&flat);
-	instance.bind<glm::vec2>("in_Centroid", &centroidbuf);
+	Tiny::Instance instance(&flat);
+	instance.bind("in_Centroid", &centroidbuf);
 
-	Texture tex(image::load("starry_night.png")); //Load Texture with Image
+	Tiny::Texture tex(image::load("starry_night.png")); //Load Texture with Image
 
 	//Prepare Noise for jiggling the centroids
 	FastNoiseLite noise;

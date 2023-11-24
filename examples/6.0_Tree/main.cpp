@@ -41,37 +41,38 @@ int main( int argc, char* args[] ) {
 
 	root = new Branch({0.6, 0.45, 2.5}); //Create Root
 
-	Buffer positions, normals, colors;
-	Buffer indices;
+	Tiny::Buffer<glm::vec3> positions, normals;
+	Tiny::Buffer<glm::vec4> colors;
+	Tiny::Buffer<int> indices;
 	construct(positions, normals, colors, indices);
 
-	Model treemesh({"in_Position", "in_Normal", "in_Color"});
-	treemesh.bind<glm::vec3>("in_Position", &positions);
-	treemesh.bind<glm::vec3>("in_Normal", &normals);
-	treemesh.bind<glm::vec4>("in_Color", &colors);
+	Tiny::Model treemesh({"in_Position", "in_Normal", "in_Color"});
+	treemesh.bind("in_Position", &positions);
+	treemesh.bind("in_Normal", &normals);
+	treemesh.bind("in_Color", &colors);
 	treemesh.index(&indices);
 
-	Square3D flat;																	//Geometry for Particle System
+	Tiny::Square3D flat;																	//Geometry for Particle System
 
 	std::vector<glm::mat4> leaves;
 	addLeaves(leaves, true);												//Generate the model matrices
 
-	Buffer models(leaves);
-	Instance particle(&flat);												//Make Particle System
-	particle.bind<glm::mat4>("in_Model", &models);  //Add Matrices
+	Tiny::Buffer<glm::mat4> models(leaves);
+	Tiny::Instance particle(&flat);												//Make Particle System
+	particle.bind("in_Model", &models);  //Add Matrices
 
-	Texture tex(image::load("leaf.png"));
+	Tiny::Texture tex(image::load("leaf.png"));
 
-	Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
-	Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
-	Shader depth({"shader/depth.vs", "shader/depth.fs"}, {"in_Position"});
-	Shader particledepth({"shader/particledepth.vs", "shader/particledepth.fs"}, {"in_Quad", "in_Tex", "in_Model"});
+	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
+	Tiny::Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
+	Tiny::Shader depth({"shader/depth.vs", "shader/depth.fs"}, {"in_Position"});
+	Tiny::Shader particledepth({"shader/particledepth.vs", "shader/particledepth.fs"}, {"in_Quad", "in_Tex", "in_Model"});
 
-	Target shadow(1600, 1600);
-	Texture depthtex(1600, 1600, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE});
+	Tiny::Target shadow(1600, 1600);
+	Tiny::Texture depthtex(1600, 1600, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE});
 	shadow.bind(depthtex, GL_DEPTH_ATTACHMENT);
 
-	Square3D floor;
+	Tiny::Square3D floor;
 	floor.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1,0,0));
 	floor.model = glm::scale(floor.model, glm::vec3(1000));
 

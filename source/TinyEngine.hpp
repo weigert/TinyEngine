@@ -1,34 +1,24 @@
 #ifndef TINYENGINE
 #define TINYENGINE
 
-/*
-* TinyEngine 1.8
-* by Nicholas McDonald
-* https://github.com/weigert/TinyEngine
-*/
+// TinyEngine 1.8
+// by Nicholas McDonald
+// https://github.com/weigert/TinyEngine
 
 #define TINYENGINE_VERSION "1.8"
 
-#include <iostream>
-#include <functional>
-#include <initializer_list>
-#include <string>
-#include <csignal>
-#include <deque>
-#include <boost/filesystem.hpp>
-#include <sstream>
-
-#include <GL/glew.h>                                //Rendering Dependencies
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_mixer.h>
-#include <glm/glm.hpp>
-#include "glm/gtc/matrix_transform.hpp"
 
-// Include Utility Headers
-#ifndef TINYENGINE_CORE
-#define TINYENGINE_CORE
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <TinyEngine/Audio>
+#include <TinyEngine/Event>
+#include <TinyEngine/View>
 
 #include <TinyEngine/Buffer>
 #include <TinyEngine/Instance>
@@ -37,20 +27,9 @@
 #include <TinyEngine/Target>
 #include <TinyEngine/Texture>
 
-#endif
-
-using slist = std::initializer_list<std::string>;
-using Handle = std::function<void()>;
-
-// TinyEngine Namespace / Entrypoint
-#ifndef TINYENGINE_NAMESPACE
-#define TINYENGINE_NAMESPACE
-
-#include <TinyEngine/Audio>
-#include <TinyEngine/View>
-#include <TinyEngine/Event>
-
 #include <TinyEngine/timer>
+
+#include <csignal>
 
 namespace Tiny {
 
@@ -130,7 +109,6 @@ int average = 0;
 template<typename F, typename... Args>
 void loop(F function, Args&&... args){
 
-  if(!benchmark)
   while(!event.quit){
 
     if(Tiny::view.enabled){
@@ -148,44 +126,8 @@ void loop(F function, Args&&... args){
 
   }
 
-  else while(!event.quit){
-
-    if(Tiny::view.enabled){
-      std::cout<<"Event Input ";
-      timer::benchmark<std::chrono::milliseconds>([&](){
-        event.input();        //Get Input
-      });
-      std::cout<<"Event Handling ";
-      timer::benchmark<std::chrono::milliseconds>([&](){
-      event.handle(view);   //Call the event-handling system
-      });
-    }
-
-    if(Tiny::audio.enabled){
-      std::cout<<"Audio Processing ";
-      timer::benchmark<std::chrono::milliseconds>([&](){
-        audio.process();      //Audio Processor
-      });
-    }
-
-    std::cout<<"Loop Function ";
-    timer::benchmark<std::chrono::microseconds>([&](){
-      function(args...);      //User-defined Game Loop
-    });
-
-    if(Tiny::view.enabled){
-      std::cout<<"Render Pipeline ";
-      average = 0.99*average + 0.01*timer::benchmark<std::chrono::microseconds>([&](){
-        view.render();         //Render View
-        glFinish();
-      });
-    }
-
-  }
-
 }
 
 }
 
-#endif
 #endif

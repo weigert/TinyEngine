@@ -10,13 +10,7 @@
 
 namespace Tiny {
 
-class Instance {
-private:
-
-  Model* model;                                   //Model Pointer
-  std::unordered_map<std::string, int> instances; //Binding Points of Attributes
-
-public:
+struct Instance {
 
   size_t SIZE;                                    //Number of Instances
   Instance(Model* m):model(m){};
@@ -26,6 +20,9 @@ public:
   void render(GLenum mode = GL_TRIANGLE_STRIP);
   void render(GLenum mode, int size);
 
+private:
+  Model* model;                                   //Model Pointer
+  std::unordered_map<std::string, int> instances; //Binding Points of Attributes
 };
 
 template<typename T>

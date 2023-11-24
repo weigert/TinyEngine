@@ -2,6 +2,7 @@
 #define TINYENGINE_HELPER_OBJECT
 
 #include <fstream>
+#include <sstream>
 
 namespace obj {
 using namespace std;

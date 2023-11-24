@@ -10,7 +10,7 @@ void Audio::load(slist in){
     Mix_Chunk* sound = Mix_LoadWAV( e.c_str() );
     if(sound != NULL)
       sounds[e] = sound;
-    else std::cout<<"Failed to load audio file "<<e<<std::endl;
+    else throw std::runtime_error("Failed to load audio file");
   }
 }
 
@@ -29,7 +29,7 @@ void Audio::process(){
   while(!unprocessed.empty()){
     if(unprocessed.back() != NULL)
       Mix_PlayChannel( -1, unprocessed.back(), 0 );
-    else std::cout<<"Failed to play sound byte"<<std::endl;
+    else throw std::runtime_error("Failed to play sound byte");
     unprocessed.pop_back();
   }
 }

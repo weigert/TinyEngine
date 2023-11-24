@@ -4,6 +4,10 @@
 #include <TinyEngine/Buffer>
 #include <TinyEngine/Texture>
 
+#include <boost/filesystem.hpp>
+#include <sstream>
+#include <iostream>
+
 namespace Tiny {
 
 class ShaderBase {

@@ -1,6 +1,8 @@
 #ifndef TINYENGINE_CORE_TEXTURE
 #define TINYENGINE_CORE_TEXTURE
 
+#include <functional>
+
 namespace Tiny {
 
 class Texture;

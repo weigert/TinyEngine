@@ -1,11 +1,22 @@
 #ifndef TINYENGINE_VIEW
 #define TINYENGINE_VIEW
 
+#include <GL/glew.h>                                //Rendering Dependencies
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+#include <glm/glm.hpp>
+
 #include <TinyEngine/imgui>                    //Interface Dependencies
 #include <TinyEngine/imgui_impl_sdl>
 #include <TinyEngine/imgui_impl_opengl3>
 
+#include <string>
+#include <functional>
+
 class View {
+
+  using Handle = std::function<void()>;
   public:
     bool init(std::string windowName, int width, int height);
     void quit();

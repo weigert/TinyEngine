@@ -1,6 +1,12 @@
 #ifndef TINYENGINE_EVENT
 #define TINYENGINE_EVENT
 
+#include <TinyEngine/View>
+
+#include <deque>
+#include <unordered_map>
+#include <functional>
+
 struct Scroll{
   bool posx, posy, negx, negy;
   void reset(){
@@ -9,6 +15,8 @@ struct Scroll{
 };
 
 class Event{
+  using Handle = std::function<void()>;
+
 private:
   SDL_Event in;
 

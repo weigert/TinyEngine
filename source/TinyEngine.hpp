@@ -31,6 +31,7 @@
 
 #include <csignal>
 
+//! My Namespace
 namespace Tiny {
 
 static View view;           //Window and Interface  (Requires Initialization)

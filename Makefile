@@ -23,6 +23,12 @@ python:
 	@echo "TinyEngine: Building Python Module..."
 	@cd python; $(MAKE) all
 
+# Build the Documentation
+.PHONY: doc
+doc:
+	@echo "TinyEngine: Building Documentation w. Doxygen..."
+	@doxygen ./doc/Doxyfile
+
 # All of the above...
 .PHONY: all
 all: source examples python

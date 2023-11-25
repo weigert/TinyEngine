@@ -7,83 +7,97 @@
 
 namespace Tiny {
 
-struct BufferRef {
+//! Buffer is an opaque OpenGL Array Buffer Object Reference
+//! 
+//! Construction and Destruction of the Buffer will allocate
+//! and de-allocate the GPU enabled buffer.
+//!
+//! Data can be uploaded to and retrieved from the GPU through
+//! the Buffer type, using templated member functions.
+//!
+//! Buffers are filled and retrieved from raw memory pointers.
+//!
+struct Buffer {
 
-  BufferRef(){ 
-    glGenBuffers(1, &index);
+  //! Allocate GPU Buffer
+  Buffer(){ 
+    glGenBuffers(1, &_index);
   }
 
-  ~BufferRef(){
-    glDeleteBuffers(1, &index);
+  //! Allocate GPU Buffer, Fill w. Data from Vector
+  template<typename T>
+  Buffer(const std::vector<T>& buf):Buffer(){
+    set(buf);
   }
 
-  GLuint index;
-  size_t SIZE;
+  //! Allocate GPU Buffer, Fill w. Data from Raw Memory Pointer
+  template<typename T>
+  Buffer(const size_t size, const T* data):Buffer(){
+    set(size, data);
+  }
 
+  //! De-Allocate GPU Buffer
+  ~Buffer(){
+    glDeleteBuffers(1, &_index);
+  }
+
+  // Data Setting / Getting
+  template<typename T> void set(const size_t size, const T* data);  //!< Set Data from Raw Memory
+  template<typename T> void set(const std::vector<T>& buf);         //!< Set Data from Vector
+  template<typename T> void set(const T val);                       //!< Set Data from Single Value
+
+  template<typename T> void get(const size_t size, T* data) const;  //!< Get Data into Raw Memory
+  template<typename T> void get(std::vector<T>& buf) const;         //!< Get Data into Vector (Note: Must be Reserved!)
+  template<typename T> void get(T& val) const;                      //!< Get Data into Single Value
+
+  // Data Inspection
+
+  const uint32_t index() const {  //!< Get the OpenGL Buffer Pointer
+    return _index;
+  }
+
+  const size_t size() const {     //!< Return the Buffer Size in Bytes
+    return _size;
+  }
+
+private:
+  uint32_t _index;  //!< Underlying OpenGL Buffer Index
+  size_t _size;     //!< Size of the Buffer in Bytes
 };
 
 template<typename T>
-struct Buffer: public BufferRef {
-
-  typedef T value_type;
-
-  Buffer():BufferRef(){}
-  virtual ~Buffer() = default;
-
-  Buffer(const std::vector<T>& buf):BufferRef(){
-    fill(buf);
-  }
-
-  Buffer(const size_t size, const T* data):BufferRef(){
-    fill(size, data);
-  }
-
-  template<typename V> void fill(const size_t size, const V* data);
-  template<typename V> void fill(const std::vector<V>& buf);
-  template<typename V> void fill(const V val);
-
-  void retrieve(size_t size, T* data);
-  void retrieve(std::vector<T>& buf);
-  void retrieve(T& val);
-
-};
-
-template<typename T>
-template<typename V>
-void Buffer<T>::fill(const size_t size, const V* data){
-  glBindBuffer(GL_ARRAY_BUFFER, index);
-  glBufferData(GL_ARRAY_BUFFER, size*sizeof(V), data, GL_DYNAMIC_DRAW);
+void Buffer::set(const size_t size, const T* data){
+  _size = size*sizeof(T);
+  glBindBuffer(GL_ARRAY_BUFFER, _index);
+  glBufferData(GL_ARRAY_BUFFER, _size, data, GL_DYNAMIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-  SIZE = size;
 }
 
 template<typename T>
-template<typename V>
-void Buffer<T>::fill(const std::vector<V>& buf){
-  fill(buf.size(), &buf[0]);
+void Buffer::set(const std::vector<T>& buf){
+  set(buf.size(), &buf[0]);
 }
 
 template<typename T>
-template<typename V>
-void Buffer<T>::fill(const V val){
-  fill(1, &val);
+void Buffer::set(const T val){
+  set(1, &val);
 }
 
 template<typename T>
-void Buffer<T>::retrieve(size_t size, T* data){
-  glBindBuffer(GL_ARRAY_BUFFER, index);
+void Buffer::get(const size_t size, T* data) const {
+  glBindBuffer(GL_ARRAY_BUFFER, _index);
   glGetBufferSubData(GL_ARRAY_BUFFER, 0, size*sizeof(T), data);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 template<typename T>
-void Buffer<T>::retrieve(std::vector<T>& buf){
-  retrieve(buf.size(), &buf[0]);
+void Buffer::get(std::vector<T>& buf) const {
+  get(buf.size(), &buf[0]);
 }
 
 template<typename T>
-void Buffer<T>::retrieve(T& val){
-  retrieve(1, &val);
+void Buffer::get(T& val) const {
+  get(1, &val);
 }
 
 } // end of namespace Tiny

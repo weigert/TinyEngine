@@ -86,17 +86,21 @@ int main( int argc, char* args[] ) {
 
   int t = 0;
 
-  std::vector<glm::vec4> velocityvec(RES*RES, glm::vec4(0));
-  std::vector<glm::vec4> forcevec(RES*RES, glm::vec4(0));
+  std::vector<glm::vec4> velocityvec(2*RES*RES, glm::vec4(0));
+  std::vector<glm::vec4> forcevec(2*RES*RES, glm::vec4(0));
 
   Tiny::Buffer<glm::vec4> velocitybuf(velocityvec);
   Tiny::Buffer<glm::vec4> forcebuf(forcevec);
 
-  Tiny::Compute shift("shader/shift.cs", {"vertices", "velocity", "force"});
+  Tiny::Compute shift_f("shader/shift_f.cs", {"vertices", "velocity", "force"});
+  shift_f.bind("vertices", &verticebuf);
+  shift_f.bind("velocity", &velocitybuf);
+  shift_f.bind("force", &forcebuf);
 
-  shift.bind("vertices", &verticebuf);
-  shift.bind("velocity", &velocitybuf);
-  shift.bind("force", &forcebuf);
+  Tiny::Compute shift_pv("shader/shift_pv.cs", {"vertices", "velocity", "force"});
+  shift_pv.bind("vertices", &verticebuf);
+  shift_pv.bind("velocity", &velocitybuf);
+  shift_pv.bind("force", &forcebuf);
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){
@@ -118,38 +122,19 @@ int main( int argc, char* args[] ) {
 
     if(paused) return;
 
-    shift.use();
-    shift.uniform("size", RES*RES);
-    shift.uniform("res", RES);
-    shift.uniform("t", t);
+    shift_f.use();
+    shift_f.uniform("size", RES*RES);
+    shift_f.uniform("res", RES);
+    shift_f.uniform("t", t);
+    shift_f.uniform("rk", 0);
+    shift_f.dispatch(RES/32, RES/32);
 
-		for(int i = 0; i < 1; i++){
-
-			shift.uniform("mode", 0);
-			shift.uniform("rk", i);
-			shift.dispatch(2, 2);
-
-			shift.uniform("mode", 1);
-			shift.uniform("rk", i);
-			shift.dispatch(2, 2);
-
-		}
-
-
-
-		/*
-
-
-		shift.uniform("mode", 2);
-		shift.dispatch(1+(RES*RES)/1024);
-
-		shift.uniform("mode", 3);
-		shift.dispatch(1+(RES*RES)/1024);
-
-		shift.uniform("mode", 4);
-		shift.dispatch(1+(RES*RES)/1024);
-
-		*/
+    shift_pv.use();
+    shift_pv.uniform("size", RES*RES);
+    shift_pv.uniform("res", RES);
+    shift_pv.uniform("t", t);
+    shift_pv.uniform("rk", 0);
+    shift_pv.dispatch(RES/32, RES/32);
 
     t++;
 

@@ -64,10 +64,9 @@ public:
   }
 };
 
-class Billboard: public Target{   //Billboard specialization
-public:
+//! Billboard is a Target with RGBA-Color and Depth-Buffers.
+struct Billboard: Target {
   Texture texture, depth;         //Two normal textures
-
   Billboard(int _W, int _H):
   texture(_W, _H), depth(_W, _H), Target(_W, _H){
     texture.setup({GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
@@ -85,7 +84,8 @@ public:
 
 };
 
-class Cubemap: public Target{     //Cubemap specialization
+//! Cubemap is a Target with an RGBA-Color and Depth-Buffres
+struct Cubemap: Target {
 public:
   Cubetexture texture, depth;     //Two cubemap textures
 

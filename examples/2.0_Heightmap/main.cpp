@@ -22,15 +22,15 @@ int main( int argc, char* args[] ) {
 
 	setup();																					//Prepare Model Stuff
 
-	Tiny::Buffer<glm::vec3> positions, normals;							//Define Buffers
-	Tiny::Buffer<int> indices;
+	Tiny::Buffer positions, normals;							//Define Buffers
+	Tiny::Buffer indices;
 	construct(positions, normals, indices);						//Call algorithm to fill buffers
 
 	Tiny::Model mesh({"in_Position", "in_Normal"});					//Create Model with 2 Properties
-	mesh.bind("in_Position", &positions);	//Bind Buffer to Property
-	mesh.bind("in_Normal", &normals);
+	mesh.bind<glm::vec3>("in_Position", &positions);	//Bind Buffer to Property
+	mesh.bind<glm::vec3>("in_Normal", &normals);
 	mesh.index(&indices);
-	mesh.model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
 
 	Tiny::Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
@@ -39,7 +39,7 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(color::white);								//Target Screen
 
 		defaultShader.use();														//Prepare Shader
-		defaultShader.uniform("model", mesh.model);			//Set Model Matrix
+		defaultShader.uniform("model", model);					//Set Model Matrix
 		defaultShader.uniform("vp", cam::vp);						//View Projection Matrix
 		mesh.render(GL_LINES);													//Render Model with Lines
 

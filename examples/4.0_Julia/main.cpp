@@ -29,7 +29,7 @@ int main( int argc, char* args[] ) {
 		julia.uniform("diverge", glm::vec4(dc[0], dc[1], dc[2], dc[3]));
 		julia.uniform("bias", glm::vec2(bias[0], bias[1]));
 		julia.uniform("offset", glm::vec2(px, py));
-		julia.uniform("model", flat.model);
+		julia.uniform("model", glm::mat4(1));
 		flat.render();											//Draw onto Flat Geometry
 
 	};

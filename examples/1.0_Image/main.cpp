@@ -35,7 +35,7 @@ int main( int argc, char* args[] ) {
 		effect.uniform("res", res);
 		effect.uniform("bits", bits);
 		effect.texture("imageTexture", tex);		//Load Texture
-		effect.uniform("model", flat.model);		//Add Model Matrix
+		effect.uniform("model", glm::mat4(1));	//Add Model Matrix
 		flat.render();													//Render Primitive
 
 	};

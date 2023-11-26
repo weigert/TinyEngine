@@ -44,14 +44,14 @@ int main( int argc, char* args[] ) {
 				targetB.target(false);		//Use target as the render target (no clearing)!
 				automata.use();																				//Use the Automata Shader
 				automata.texture("imageTexture", textureA);		//Target texture!
-				automata.uniform("model", flat.model);
+				automata.uniform("model", glm::mat4(1));
 				flat.render();			//Render target texture to itself using primitive and automata shader
 			}
 			else{
 				targetA.target(false);		//Use target as the render target (no clearing)!
 				automata.use();																				//Use the Automata Shader
 				automata.texture("imageTexture", textureB);		//Target texture!
-				automata.uniform("model", flat.model);
+				automata.uniform("model", glm::mat4(1));
 				flat.render();			//Render target texture to itself using primitive and automata shader
 			}
 			flip = !flip;
@@ -61,7 +61,7 @@ int main( int argc, char* args[] ) {
 		shader.use(); 																		//Setup Shader
 		if(flip) shader.texture("imageTexture", textureA);
 		else 		 shader.texture("imageTexture", textureB);
-		shader.uniform("model", flat.model);
+		shader.uniform("model", glm::mat4(1));
 		flat.render();																		//Render Objects
 
 	};

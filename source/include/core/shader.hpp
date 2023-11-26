@@ -36,7 +36,7 @@ public:
   static void ssbo(std::vector<std::string> names);    //Define a list of SSBOs
   void interface(std::string name);                    //Add SSBO to permitted interface blocks
   void interface(std::vector<std::string> names);      //Add a list of buffers to interface
-  static void bind(std::string name, BufferRef* buf);
+  static void bind(std::string name, Buffer* buf);
 
   int boundtextures;                            //Texture Indexing
 
@@ -141,9 +141,9 @@ void ShaderBase::interface(std::vector<std::string> names){
   for(auto& l: names) interface(l);
 }
 
-void ShaderBase::bind(std::string name, BufferRef* buf){
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->index);
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], buf->index);
+void ShaderBase::bind(std::string name, Buffer* buf){
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->index());
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], buf->index());
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 

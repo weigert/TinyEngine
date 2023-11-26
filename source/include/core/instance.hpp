@@ -10,57 +10,71 @@
 
 namespace Tiny {
 
+//! An Instance is a combination of a Model (Reference) and an Attribute Buffer, which
+//! allow for the instanced rendering of the Model, once per Attribute Buffer-Element.
+//!
 struct Instance {
 
-  size_t SIZE;                                    //Number of Instances
-  Instance(Model* m):model(m){};
+  //! Construct Instance with Model Reference
+  Instance(Model& m):
+    _model(m){};
 
-  template<typename T> void bind(std::string, Buffer<T>*);
-  template<typename T> void config(Buffer<T>*);
-  void render(GLenum mode = GL_TRIANGLE_STRIP);
-  void render(GLenum mode, int size);
+  template<typename T> void bind(const std::string, const Buffer&);   //!< Instantiate the Model for every Buffer Component
+  template<typename T> void config(const Buffer&);                    //!< Setup Attribute Divisor
+  
+  void render(const GLenum primitive, const size_t N) const;          //!< Render the Instance w. Primitive, Number of Instances
+  void render() const;                                                //!< Default Primitive, Size
+
+  const inline Model& model() const { return _model; }  //!< Retrieve the Model Reference
+  const inline size_t count() const { return _count; }  //!< Retrieve Number of Attributes
+  const inline size_t size()  const { return _size; }   //!< Retrieve Number of Attribute Elements
 
 private:
-  Model* model;                                   //Model Pointer
-  std::unordered_map<std::string, int> instances; //Binding Points of Attributes
+  Model& _model;  //!< Model Reference
+  size_t _count;  //!< Number of Attribute Divisors
+  size_t _size;   //!< Default Number of Instances
 };
 
-template<typename T>
-void Instance::bind(std::string name, Buffer<T>* buf){
-  SIZE = buf->SIZE;
-  glBindVertexArray(model->vao);
-  glBindBuffer(GL_ARRAY_BUFFER, buf->index);
-  config(buf);
-  instances[name] = buf->index;
-}
+// Attribute Divisor Binding / Configuration
 
 template<typename T>
-void Instance::config(Buffer<T>* buf){
-  glEnableVertexAttribArray(model->bindings.size()+instances.size());
-  glVertexAttribPointer(model->bindings.size()+instances.size(), sizeof(T)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (void*)0);
-  glVertexAttribDivisor(model->bindings.size()+instances.size(), 1);
+void Instance::bind(const std::string name, const Buffer& _buf){
+  _model.operator()();    // Activate Model
+  _buf.operator()();      // Activate Buffer
+  config<T>(_buf);        // Configure Buffer Divisor
+  _size = _buf.size<T>(); // Size of Buffer in T = N Instances
+  _count = _count+1;      // Increment Number of Attributes
 }
 
-void Instance::render(GLenum mode, int size){
-  glBindVertexArray(model->vao);
-  if(model->indexed){
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->iindex);
-    glDrawElementsInstanced(mode, model->SIZE, GL_UNSIGNED_INT, 0, size);
-  }
-  else glDrawArraysInstanced(mode, 0, model->SIZE, size);
+template<typename T>
+void Instance::config(const Buffer& buf){
+  glEnableVertexAttribArray(_model.bindings.size() + _count);
+  glVertexAttribPointer(_model.bindings.size() + _count, sizeof(T)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (void*)0);
+  glVertexAttribDivisor(_model.bindings.size() + _count, 1);
 }
 
-template<> //For Matrices - Special Procedure
-void Instance::config<glm::mat4>(Buffer<glm::mat4>* buf){
+template<>
+void Instance::config<glm::mat4>(const Buffer& buf){
   for(int i = 0; i < 4; i++){
-    glEnableVertexAttribArray(model->bindings.size()+instances.size()+i);
-    glVertexAttribPointer(model->bindings.size()+instances.size()+i, 4, GL_FLOAT, GL_FALSE, 4*sizeof(glm::vec4), (void*)(i*sizeof(glm::vec4)));
-    glVertexAttribDivisor(model->bindings.size()+instances.size()+i, 1);
+    glEnableVertexAttribArray(_model.bindings.size() + _count + i);
+    glVertexAttribPointer(_model.bindings.size() + _count + i, 4, GL_FLOAT, GL_FALSE, 4*sizeof(glm::vec4), (void*)(i*sizeof(glm::vec4)));
+    glVertexAttribDivisor(_model.bindings.size() + _count + i, 1);
   }
 }
 
-void Instance::render(GLenum mode){
-  render(mode, SIZE);
+// Dispatch Render Call
+
+void Instance::render(const GLenum primitive, const size_t size) const {
+  _model.operator()();
+  if(_model._index != NULL){
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _model._index->index());
+    glDrawElementsInstanced(primitive, _model.size(), GL_UNSIGNED_INT, 0, size);
+  }
+  else glDrawArraysInstanced(primitive, 0, _model.size(), size);
+}
+
+void Instance::render() const {
+  render(GL_TRIANGLE_STRIP, _size);
 }
 
 } // end of namespace Tiny

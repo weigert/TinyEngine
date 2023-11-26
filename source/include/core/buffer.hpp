@@ -7,7 +7,7 @@
 
 namespace Tiny {
 
-//! Buffer is an opaque OpenGL Array Buffer Object Reference
+//! A Buffer is an opaque OpenGL Array Buffer Object Reference
 //! 
 //! Construction and Destruction of the Buffer will allocate
 //! and de-allocate the GPU enabled buffer.
@@ -41,7 +41,13 @@ struct Buffer {
     glDeleteBuffers(1, &_index);
   }
 
+  //! Activate the Buffer
+  void operator()() const {
+    glBindBuffer(GL_ARRAY_BUFFER, this->index());
+  }
+
   // Data Setting / Getting
+
   template<typename T> void set(const size_t size, const T* data);  //!< Set Data from Raw Memory
   template<typename T> void set(const std::vector<T>& buf);         //!< Set Data from Vector
   template<typename T> void set(const T val);                       //!< Set Data from Single Value
@@ -50,15 +56,9 @@ struct Buffer {
   template<typename T> void get(std::vector<T>& buf) const;         //!< Get Data into Vector (Note: Must be Reserved!)
   template<typename T> void get(T& val) const;                      //!< Get Data into Single Value
 
-  // Data Inspection
-
-  const uint32_t index() const {  //!< Get the OpenGL Buffer Pointer
-    return _index;
-  }
-
-  const size_t size() const {     //!< Return the Buffer Size in Bytes
-    return _size;
-  }
+  template<typename T = GLfloat>
+  const inline size_t size()    const { return _size/sizeof(T); }   //!< Return the Buffer Size in T
+  const inline uint32_t index() const { return _index; }            //!< Get the OpenGL Buffer Pointer
 
 private:
   uint32_t _index;  //!< Underlying OpenGL Buffer Index
@@ -67,8 +67,8 @@ private:
 
 template<typename T>
 void Buffer::set(const size_t size, const T* data){
+  this->operator()();
   _size = size*sizeof(T);                                       // Set Buffer Size to Number of Bytes
-  glBindBuffer(GL_ARRAY_BUFFER, _index);                        // Bind the Buffer Index (Make Active)
   glBufferData(GL_ARRAY_BUFFER, _size, data, GL_DYNAMIC_DRAW);  // Fill the Buffer w. Raw Memory Data
   glBindBuffer(GL_ARRAY_BUFFER, 0);                             // Un-Bind the Buffer Index
 }
@@ -85,7 +85,7 @@ void Buffer::set(const T val){
 
 template<typename T>
 void Buffer::get(const size_t size, T* data) const {
-  glBindBuffer(GL_ARRAY_BUFFER, _index);
+  this->operator()();
   glGetBufferSubData(GL_ARRAY_BUFFER, 0, size*sizeof(T), data);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

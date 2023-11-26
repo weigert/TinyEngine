@@ -24,6 +24,11 @@ struct Buffer {
     glGenBuffers(1, &_index);
   }
 
+  //! De-Allocate GPU Buffer
+  ~Buffer(){
+    glDeleteBuffers(1, &_index);
+  }
+
   //! Allocate GPU Buffer, Fill w. Data from Vector
   template<typename T>
   Buffer(const std::vector<T>& buf):Buffer(){
@@ -34,16 +39,6 @@ struct Buffer {
   template<typename T>
   Buffer(const size_t size, const T* data):Buffer(){
     set(size, data);
-  }
-
-  //! De-Allocate GPU Buffer
-  ~Buffer(){
-    glDeleteBuffers(1, &_index);
-  }
-
-  //! Activate the Buffer
-  void operator()() const {
-    glBindBuffer(GL_ARRAY_BUFFER, this->index());
   }
 
   // Data Setting / Getting
@@ -59,6 +54,9 @@ struct Buffer {
   template<typename T = GLfloat>
   const inline size_t size()    const { return _size/sizeof(T); }   //!< Return the Buffer Size in T
   const inline uint32_t index() const { return _index; }            //!< Get the OpenGL Buffer Pointer
+  void operator()(const GLenum E = GL_ARRAY_BUFFER) const {         //!< Bind the Buffer
+    glBindBuffer(E, this->index());
+  }
 
 private:
   uint32_t _index;  //!< Underlying OpenGL Buffer Index

@@ -23,7 +23,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::Buffer modelbuf(models);
 	Tiny::Instance particle(model);			//Particle system based on this model
-	particle.bind<glm::mat4>("in_Model", modelbuf);			//Update particle system
+	particle.bind<glm::mat4>(modelbuf);			//Update particle system
 
 	Tiny::Texture tex(image::load("dot.png"));		//Texture to draw onto the model
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});

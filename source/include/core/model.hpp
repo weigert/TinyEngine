@@ -16,7 +16,13 @@ struct Model {
 
   //! Allocate GPU Model (Vertex Array Object)
   Model(){
-    glGenVertexArrays(1, &vao);
+    glGenVertexArrays(1, &_vao);
+  }
+
+  //! De-Allocate GPU Model
+  ~Model(){
+    glDisableVertexAttribArray(_vao);
+    glDeleteVertexArrays(1, &_vao);
   }
 
   //! Allocate GPU Model and Enable Buffer Binding Points
@@ -28,65 +34,66 @@ struct Model {
     }
   }
 
-  //! De-Allocate GPU Model
-  ~Model(){
-    glDisableVertexAttribArray(vao);
-    glDeleteVertexArrays(1, &vao);
-    for(auto& buf: buffers)
-      delete buf.second;
-  }
-
-  //! Activate the Model (Vertex Array Object)
-  void operator()() const {
-    glBindVertexArray(this->vao);
-  }
-
   // Data Setting / Getting
 
-  template<typename T> void bind(std::string binding, Buffer* buf, bool owned = false);
-  void index(Buffer* buf, bool owned = false);
-  void render(GLenum primitive = GL_TRIANGLE_STRIP);
+  template<typename T> void bind(std::string binding, Buffer* buf);
+  void render(const GLenum, const size_t) const;  //!< Render the Instance w. Primitive, Number of Instances
+  void render() const;                            //!< Default Primitive, Size
 
-  const size_t size() const {
-    return _size;
-  }
-
-  Buffer* _index = NULL;
-  std::unordered_map<std::string, int> bindings;        //Binding Points of Attributes
-  std::unordered_map<std::string, Buffer*> buffers;  //Owned Buffer
+  inline const uint32_t vao() const { return _vao; }            //!< Retrieve Vertex Array Object Index
+  inline const size_t size()  const { return _size; }           //!< Retrieve Number of Vertices
+  inline const size_t count() const { return bindings.size(); } //!< Retrieve Binding Count
+  void operator()() const { glBindVertexArray(this->vao()); }   //!< Bind the Vertex Array Object
 
 protected:
-  uint32_t vao;                                           //Vertex Array Object
-  size_t _size = 0;                                      //Number of Vertices
+  uint32_t _vao;                                  //!< Vertex Array Object Index
+  size_t _size;                                   //!< Number of Vertices
+  std::unordered_map<std::string, int> bindings;  //!< Binding Count
 };
 
 template<typename T>
-void Model::bind(std::string binding, Buffer* buf, bool owned){  //Bind a specific buffer to a binding point
-  glBindVertexArray(vao);
-  glBindBuffer(GL_ARRAY_BUFFER, buf->index());
+void Model::bind(std::string binding, Buffer* buf){  //Bind a specific buffer to a binding point
+  this->operator()();
+  buf->operator()();
+  _size = buf->size<T>();
   #ifdef TINYENGINE_OS_MAC
-  glVertexAttribPointer( bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0, 0 );
+  glVertexAttribPointer(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0, 0 );
   #else
   glBindVertexBuffer(bindings[binding], buf->index(), 0, sizeof(T));
   glVertexAttribFormat(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
   #endif
-  if(owned) buffers[binding] = buf;
 }
 
-void Model::index(Buffer* buf, bool owned){
-  _index = buf;
-  _size = _index->size();///sizeof(int);
-  if(owned) buffers["index"] = _index;
+void Model::render(const GLenum primitive, const size_t size) const {
+  this->operator()();
+  glDrawArrays(primitive, 0, size);
 }
 
-void Model::render(GLenum mode){
-  glBindVertexArray(vao);
-  if(_index != NULL){
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _index->index());
-    glDrawElements(mode, _size, GL_UNSIGNED_INT, 0);
+void Model::render() const {
+  render(GL_TRIANGLE_STRIP, this->size());
+}
+
+// Indexed Model
+
+struct Indexed: Model {
+
+  template<typename T>
+  Indexed(Buffer& _index):Model(),
+    _size(_index.size()/sizeof(T)),
+    _index(_index){}
+
+  void render(const GLenum primitive) const {
+    _index(GL_ELEMENT_ARRAY_BUFFER);
+    glDrawElements(primitive, _size, GL_UNSIGNED_INT, 0);
   }
-  else glDrawArrays(mode, 0, _size);
-}
+
+  inline Buffer& index() const      { return _index; }
+  inline const size_t size() const  { return _size; }
+
+private:
+  Buffer& _index;
+  size_t _size;
+};
 
 // Model-Type Instantiations
 
@@ -94,8 +101,7 @@ struct Point: Model {
 private:
   Buffer vert;
 public:
-  Point():
-    Model({"vert"}),
+  Point():Model({"vert"}),
     vert(std::vector<glm::vec3>{
       {0.0f, 0.0f, 0.0f}
     }){
@@ -108,8 +114,7 @@ struct Square2D: Model {
 private:
   Buffer vert, tex;
 public:
-  Square2D():
-    Model({"in_Quad", "in_Tex"}),
+  Square2D():Model({"in_Quad", "in_Tex"}),
     vert(std::vector<glm::vec2>{
       {-1.0f, -1.0f},
       { 1.0f, -1.0f},
@@ -133,8 +138,7 @@ private:
   Buffer vert;
   Buffer tex;
 public:
-  Square3D():
-    Model({"in_Quad", "in_Tex"}),
+  Square3D():Model({"in_Quad", "in_Tex"}),
     vert(std::vector<glm::vec3>{
       {-1.0f,  1.0f,  0.0f},
       {-1.0f, -1.0f,  0.0f},
@@ -157,8 +161,7 @@ struct Gizmo: Model {
 private:
   Buffer vert, tex;
 public:
-  Gizmo():
-    Model({"in_Quad", "in_Tex"}),
+  Gizmo():Model({"in_Quad", "in_Tex"}),
     vert(std::vector<glm::vec3>{
       { 0.0f, 0.0f, 0.0f},
       { 1.0f, 0.0f, 0.0f},
@@ -185,8 +188,7 @@ struct Triangle: Model {
 private:
 	Buffer vert;
 public:
-	Triangle():
-    Model({"vert"}),
+	Triangle():Model({"vert"}),
     vert(std::vector<glm::vec4>{
       {1.0f, 0.0f, 0.0f, 0.0f},
 		  {0.0f, 1.0f, 0.0f, 0.0f},
@@ -203,8 +205,7 @@ private:
   Buffer vert;
   Buffer tex;
 public:
-  Cube():
-    Model({"in_Quad", "in_Tex"}),
+  Cube():Model({"in_Quad", "in_Tex"}),
     vert(std::vector<glm::vec3>{
       { 1.0f, -1.0f,  1.0f}, { 1.0f,  1.0f,  1.0f}, {-1.0f,  1.0f,  1.0f}, {-1.0f,  1.0f,  1.0f}, {-1.0f, -1.0f,  1.0f}, { 1.0f, -1.0f,  1.0f}, // front
       {-1.0f,  1.0f, -1.0f}, { 1.0f,  1.0f, -1.0f}, { 1.0f, -1.0f, -1.0f}, { 1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}, {-1.0f,  1.0f, -1.0f}, // back

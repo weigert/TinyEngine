@@ -77,22 +77,30 @@ void Model::render() const {
 
 struct Indexed: Model {
 
-  template<typename T>
-  Indexed(Buffer& _index):Model(),
-    _size(_index.size()/sizeof(T)),
-    _index(_index){}
+  using Model::Model;
 
-  void render(const GLenum primitive) const {
+  Indexed(std::vector<std::string> nbinding, Buffer& _index):
+    _index(_index),
+    Model(nbinding){}
+
+  template<typename T>
+  void set(Buffer& b){
+    _index = b;
+    _size = _index.size()/sizeof(T);
+  }
+
+  void render(const GLenum primitive) {
+    this->operator()();
     _index(GL_ELEMENT_ARRAY_BUFFER);
-    glDrawElements(primitive, _size, GL_UNSIGNED_INT, 0);
+    glDrawElements(primitive, this->size(), GL_UNSIGNED_INT, 0);
   }
 
   inline Buffer& index() const      { return _index; }
   inline const size_t size() const  { return _size; }
 
+  size_t _size;
 private:
   Buffer& _index;
-  size_t _size;
 };
 
 // Model-Type Instantiations

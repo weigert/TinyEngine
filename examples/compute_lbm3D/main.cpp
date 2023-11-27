@@ -34,15 +34,17 @@ int main( int argc, char* args[] ) {
 
 	setup();																					//Prepare Model Stuff
 
-	Tiny::Buffer<glm::vec3> positions, normals;												//Define Buffers
-	Tiny::Buffer<int> indices;
+	Tiny::Buffer positions, normals;												//Define Buffers
+	Tiny::Buffer indices;
 	construct(positions, normals, indices);						//Call algorithm to fill buffers
 
-	Tiny::Model mesh({"in_Position", "in_Normal"});					//Create Model with 2 Properties
-	mesh.bind("in_Position", &positions);	//Bind Buffer to Property
-	mesh.bind("in_Normal", &normals);
-	mesh.index(&indices);
-	mesh.model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
+	Tiny::Indexed mesh({"in_Position", "in_Normal"}, indices);					//Create Model with 2 Properties
+	mesh.bind<glm::vec3>("in_Position", positions);	//Bind Buffer to Property
+	mesh.bind<glm::vec3>("in_Normal", normals);
+  //mesh.set<int>(indices);
+  mesh._size = indices.size();
+
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
 
 	Tiny::Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
 
@@ -68,13 +70,13 @@ int main( int argc, char* args[] ) {
   for(size_t z = 0; z < NZ; z++)
     dirs[(x*NY + y)*NZ + z] = glm::vec4(0);
 
-  Tiny::Buffer<glm::vec4> dirbuf(NX*NY*NZ, dirs);
+  Tiny::Buffer dirbuf(NX*NY*NZ, dirs);
 
   // Lattice Boltzmann Arrays
 
-  Tiny::Buffer<float> f(NX*NY*NZ*Q, (float*)NULL);       //Raw F Buffer
-  Tiny::Buffer<float> fprop(NX*NY*NZ*Q, (float*)NULL);   //Raw FProp Buffer (Collision Step)
-  Tiny::Buffer<float> rho(NX*NY*NZ, (float*)NULL);       //Density (For Efficiency)
+  Tiny::Buffer f(NX*NY*NZ*Q, (float*)NULL);       //Raw F Buffer
+  Tiny::Buffer fprop(NX*NY*NZ*Q, (float*)NULL);   //Raw FProp Buffer (Collision Step)
+  Tiny::Buffer rho(NX*NY*NZ, (float*)NULL);       //Density (For Efficiency)
 
   // Boundary Condition
 
@@ -92,7 +94,7 @@ int main( int argc, char* args[] ) {
 
   }
 
-  Tiny::Buffer<float> b(NX*NY*NZ, boundary);
+  Tiny::Buffer b(NX*NY*NZ, boundary);
 
   // Initialization Compute Shader
 
@@ -145,15 +147,14 @@ int main( int argc, char* args[] ) {
       pos.push_back(p);
   }
 
-  Tiny::Buffer<glm::vec4> posbuf(pos);
+  Tiny::Buffer posbuf(pos);
 
   // Model for Rendering Position, Direction Data
 
 	Tiny::Shader streamshader({"shader/stream.vs", "shader/stream.gs", "shader/stream.fs"}, {"in_Position", "in_Direction"});
   Tiny::Model windmodel({"in_Position", "in_Direction"});
-  windmodel.bind("in_Position", &posbuf);
-  windmodel.bind("in_Direction", &dirbuf);
-  windmodel.SIZE = pos.size();
+  windmodel.bind<glm::vec4>("in_Position", posbuf);
+  windmodel.bind<glm::vec4>("in_Direction", dirbuf);
 
   // Shader to Move Particles Along
 
@@ -182,19 +183,19 @@ int main( int argc, char* args[] ) {
 		glLineWidth(1.0f);
 
 		defaultShader.use();														//Prepare Shader
-		defaultShader.uniform("model", mesh.model);			//Set Model Matrix
+		defaultShader.uniform("model", model);			//Set Model Matrix
 		defaultShader.uniform("vp", cam::vp);						//View Projection Matrix
 		mesh.render(GL_LINES);													//Render Model with Lines
 
 		glLineWidth(2.0f);
 
 		streamshader.use();
-		streamshader.uniform("model", mesh.model);			//Set Model Matrix
+		streamshader.uniform("model", model);			//Set Model Matrix
 		streamshader.uniform("vp", cam::vp);
 		streamshader.uniform("NX", NX);
 		streamshader.uniform("NY", NY);
 		streamshader.uniform("NZ", NZ);
-		windmodel.render(GL_POINTS);
+		windmodel.render(GL_POINTS, windmodel.size());
 
 	};
 
@@ -228,7 +229,7 @@ int main( int argc, char* args[] ) {
 
     // Retrieve the Directions
 
-    posbuf.retrieve(pos);
+    posbuf.get(pos);
 
     for(auto& p: pos){
 
@@ -248,7 +249,7 @@ int main( int argc, char* args[] ) {
 
     }
 
-    posbuf.fill(pos);
+    posbuf.set(pos);
 
 	});
 

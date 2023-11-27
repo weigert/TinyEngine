@@ -59,11 +59,11 @@ private:
 template<typename M>
 template<typename T>
 void Instance<M>::bind(const Buffer& _buf){
-  _model();                                   // Activate Model
-  _buf();                                     // Activate Buffer
+  _model();                           // Activate Model
+  _buf();                             // Activate Buffer
   config<T>(_model.count() + _count); // Configure Buffer Divisor
-  _size = _buf.size<T>();                     // Size of Buffer in T = N Instances
-  _count = _count+1;                          // Increment Number of Attributes
+  _size = _buf.size<T>();             // Size of Buffer in T = N Instances
+  _count = _count+1;                  // Increment Number of Attributes
 }
 
 // Dispatch Render Call
@@ -75,10 +75,10 @@ void Instance<M>::render(const GLenum primitive, const size_t N) const {
 }
 
 template<>
-void Instance<Tiny::Indexed>::render(const GLenum primitive, const size_t size) const {
+void Instance<Tiny::Indexed>::render(const GLenum primitive, const size_t N) const {
   _model.operator()();
   _model.index()(GL_ELEMENT_ARRAY_BUFFER);
-  glDrawElementsInstanced(primitive, _model.size(), GL_UNSIGNED_INT, 0, size);
+  glDrawElementsInstanced(primitive, _model.size(), GL_UNSIGNED_INT, 0, N);
 }
 
 template<typename M>

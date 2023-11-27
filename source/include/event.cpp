@@ -1,5 +1,7 @@
 #include "event.hpp"
 
+namespace Tiny {
+
 void Event::input(){
 while(SDL_PollEvent(&in)){
 
@@ -59,9 +61,7 @@ void Event::handle(View &view){
       view.showInterface = !view.showInterface;
 
     if(press.back() == SDLK_F11){   //Toggle fullscreen
-      view.fullscreen = !view.fullscreen;
-      if(!view.fullscreen) SDL_SetWindowFullscreen(view.gWindow, 0);
-      else SDL_SetWindowFullscreen(view.gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+      view.toggle_fullscreen();
     }
 
     press.pop_back();
@@ -71,4 +71,6 @@ void Event::handle(View &view){
   scroll.reset();
   mousemove = false;
   windowEventTrigger = false;
+}
+
 }

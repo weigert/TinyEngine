@@ -1,11 +1,5 @@
-/*
-
-  Casting of GLM Types from Python Lists
-
-*/
-
-#ifndef TINYENGINE_PYTHON_GLMCAST
-#define TINYENGINE_PYTHON_GLMCAST
+#ifndef TINYENGINE_GLM_PYTHON
+#define TINYENGINE_GLM_PYTHON
 
 #include "glm/gtc/type_ptr.hpp" // includes all vector and matrix types too
 #include <cstddef>

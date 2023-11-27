@@ -10,6 +10,8 @@
 #include <deque>
 #include <unordered_map>
 
+namespace Tiny {
+
 class Audio{
 public:
 
@@ -29,3 +31,5 @@ public:
 };
 
 #endif
+
+}

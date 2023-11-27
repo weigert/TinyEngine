@@ -1,10 +1,9 @@
-# TinyEngine Python Binding Testing Script
-from tinyengine import tiny
+import tinyengine as tiny
 
-tiny.view.linewidth(2.0);
+tiny.view.linewidth = 2.0
 tiny.window("Python Test", 1200, 800)
 
-gizmoshader = tiny.Shader(['shader/gizmo.vs', 'shader/gizmo.fs']);
+gizmoshader = tiny.Shader(['examples/shader/gizmo.vs', 'examples/shader/gizmo.fs']);
 gizmo = tiny.Gizmo();
 
 def handler():
@@ -12,17 +11,18 @@ def handler():
 
 def pipeline():
 
-    tiny.view.target([0.0, 0.0, 0.0], True)
+    tiny.view.target([0.0, 0.0, 0.0], True, True)
 
     gizmoshader.use();
     gizmoshader.uniform("vp", tiny.cam.vp());
+    #gizmo.render()
     gizmo.render(tiny.GL.lines);
 
 def loop():
     return;
 
-tiny.view.pipeline(pipeline);
-tiny.event.handler(handler);
+tiny.view.pipeline = pipeline;
+tiny.event.handler = handler;
 
 tiny.cam.zoomrate(5.0);
 tiny.cam.moverate(0.1);

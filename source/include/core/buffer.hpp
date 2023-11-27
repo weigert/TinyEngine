@@ -45,11 +45,9 @@ struct Buffer {
 
   template<typename T> void set(const size_t size, const T* data);  //!< Set Data from Raw Memory
   template<typename T> void set(const std::vector<T>& buf);         //!< Set Data from Vector
-  template<typename T> void set(const T val);                       //!< Set Data from Single Value
 
   template<typename T> void get(const size_t size, T* data) const;  //!< Get Data into Raw Memory
   template<typename T> void get(std::vector<T>& buf) const;         //!< Get Data into Vector (Note: Must be Reserved!)
-  template<typename T> void get(T& val) const;                      //!< Get Data into Single Value
 
   template<typename T = GLfloat>
   const inline size_t size()    const { return _size/sizeof(T); }   //!< Return the Buffer Size in T
@@ -77,11 +75,6 @@ void Buffer::set(const std::vector<T>& buf){
 }
 
 template<typename T>
-void Buffer::set(const T val){
-  set(1, &val);
-}
-
-template<typename T>
 void Buffer::get(const size_t size, T* data) const {
   this->operator()();
   glGetBufferSubData(GL_ARRAY_BUFFER, 0, size*sizeof(T), data);
@@ -91,11 +84,6 @@ void Buffer::get(const size_t size, T* data) const {
 template<typename T>
 void Buffer::get(std::vector<T>& buf) const {
   get(buf.size(), &buf[0]);
-}
-
-template<typename T>
-void Buffer::get(T& val) const {
-  get(1, &val);
 }
 
 } // end of namespace Tiny

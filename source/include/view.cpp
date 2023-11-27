@@ -1,5 +1,7 @@
 #include "view.hpp"
 
+namespace Tiny {
+
 bool View::init(std::string _name, int W, int H){
   enabled = windowed;
   WIDTH = W; HEIGHT = H;
@@ -102,4 +104,6 @@ void View::target(glm::vec3 clearcolor, bool clearc, bool cleard){
   glClearColor(clearcolor.x, clearcolor.y, clearcolor.z, 1.0f);
   if(clearc) glClear(GL_COLOR_BUFFER_BIT);
   if(cleard) glClear(GL_DEPTH_BUFFER_BIT);
+}
+
 }

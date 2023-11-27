@@ -1,4 +1,4 @@
-from tinyengine import tiny
+import tinyengine as tiny
 
 def loop():
     return;

@@ -36,7 +36,7 @@ struct Model {
 
   // Data Setting / Getting
 
-  template<typename T> void bind(std::string binding, Buffer* buf);
+  template<typename T> void bind(std::string binding, Buffer& buf);
   void render(const GLenum, const size_t) const;  //!< Render the Instance w. Primitive, Number of Instances
   void render() const;                            //!< Default Primitive, Size
 
@@ -52,14 +52,14 @@ protected:
 };
 
 template<typename T>
-void Model::bind(std::string binding, Buffer* buf){  //Bind a specific buffer to a binding point
+void Model::bind(std::string binding, Buffer& buf){  //Bind a specific buffer to a binding point
   this->operator()();
-  buf->operator()();
-  _size = buf->size<T>();
+  buf.operator()();
+  _size = buf.size<T>();
   #ifdef TINYENGINE_OS_MAC
   glVertexAttribPointer(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0, 0 );
   #else
-  glBindVertexBuffer(bindings[binding], buf->index(), 0, sizeof(T));
+  glBindVertexBuffer(bindings[binding], buf.index(), 0, sizeof(T));
   glVertexAttribFormat(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
   #endif
 }
@@ -106,7 +106,7 @@ public:
       {0.0f, 0.0f, 0.0f}
     }){
     _size = 1;
-    bind<glm::vec3>("vert", &vert);
+    bind<glm::vec3>("vert", vert);
   }
 };
 
@@ -128,8 +128,8 @@ public:
       { 1.0f,  0.0f}
     }){
     _size = 4;
-    bind<glm::vec2>("in_Quad", &vert);
-    bind<glm::vec2>("in_Tex", &tex);
+    bind<glm::vec2>("in_Quad", vert);
+    bind<glm::vec2>("in_Tex", tex);
   }
 };
 
@@ -152,8 +152,8 @@ public:
       { 1.0f,  1.0f}
     }){
     _size = 4;
-    bind<glm::vec3>("in_Quad", &vert);
-    bind<glm::vec2>("in_Tex", &tex);
+    bind<glm::vec3>("in_Quad", vert);
+    bind<glm::vec2>("in_Tex", tex);
   }
 };
 
@@ -179,8 +179,8 @@ public:
       { 0.0f, 0.0f, 1.0f}
     }){
     _size = 6;
-    bind<glm::vec3>("in_Quad", &vert);
-    bind<glm::vec3>("in_Tex", &tex);
+    bind<glm::vec3>("in_Quad", vert);
+    bind<glm::vec3>("in_Tex", tex);
   }
 };
 
@@ -196,7 +196,7 @@ public:
 		  {1.0f, 0.0f, 0.0f, 0.0f}
     }){
     _size = 4;
-		bind<glm::vec4>("vert", &vert);
+		bind<glm::vec4>("vert", vert);
 	}
 };
 
@@ -221,8 +221,8 @@ public:
     {1.0f,  1.0f}
   }){
     _size = 36;
-    bind<glm::vec3>("in_Quad", &vert);
-    bind<glm::vec2>("in_Tex", &tex);
+    bind<glm::vec3>("in_Quad", vert);
+    bind<glm::vec2>("in_Tex", tex);
   }
 };
 

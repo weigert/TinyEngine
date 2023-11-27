@@ -12,11 +12,15 @@ This could potentially open TinyEngine and the easy visualization of generated d
 
 ### Building and Usage
 
+```
+sudo dnf install python3-devel
+```
+
 First, make sure TinyEngine is installed normally.
 
 To build the python bindings, install pybind11 and setuptools and run the setup script:
 
-    pip3 install setuptools pybind11
+    pip3 install pybind11
     python3 setup.py install --user
 
 The TinyEngine module should then be available for import regularly in python:

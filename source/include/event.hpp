@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <functional>
 
+namespace Tiny {
+
 struct Scroll{
   bool posx, posy, negx, negy;
   void reset(){
@@ -14,20 +16,12 @@ struct Scroll{
   }
 };
 
-class Event{
-  using Handle = std::function<void()>;
-
-private:
-  SDL_Event in;
-
-public:
+struct Event{
   bool quit = false;
   void input();                   //Take inputs and add them to stack
 
   void handle(View &view);        //General Event Handler
-  Handle handler = [](){};        //User defined event Handler
-
-  bool fullscreenToggle = false;
+  std::function<void()> handler = [](){};        //User defined event Handler
 
   //Keyboard Events
   std::unordered_map<SDL_Keycode, bool> active;
@@ -44,6 +38,11 @@ public:
   Scroll scroll;
   SDL_Event windowEvent;         //Window Resizing Event
   bool windowEventTrigger = false;
+
+private:  
+  SDL_Event in;
 };
+
+}
 
 #endif

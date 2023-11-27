@@ -26,7 +26,7 @@ CC = g++-12 -std=c++17
 endif
 
 all:
-	$(eval MODULE:= tinyengine$(shell python3-config --extension-suffix))
-	$(CC) source/TinyEngine.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -shared -fPIC $(shell python3 -m pybind11 --includes) -o ${MODULE}
+	@$(eval MODULE:= tinyengine$(shell python3-config --extension-suffix))
+	@$(CC) source/TinyEngine.cpp $(CF) $(LF) -lTinyEngine $(TINYLINK) -shared -fPIC $(shell python3 -m pybind11 --includes) -o ${MODULE}
 	@echo "Installing TinyEngine Python Module..."
-	@mv ${MODULE} /home/nickmcdonald/.local/lib/python3.12/site-packages/${MODULE}
+	@mv ${MODULE} $(HOME)/.local/lib/python3.12/site-packages/${MODULE}

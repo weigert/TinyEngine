@@ -57,10 +57,26 @@ view.def_readwrite("pointsize", &Tiny::View::pointSize);
 
 py::class_<Tiny::Buffer>(module, "Buffer")
  .def(py::init<>())
- .def(py::init<const std::vector<float>&>());
-
-//  .def("fill_float", static_cast<void(Tiny::Buffer::*)(std::vector<float>)>(&Tiny::Buffer::set));
-//  .def("size" [])
+ .def("size", &Tiny::Buffer::size)
+ .def("index", &Tiny::Buffer::index)
+ // Value-Construction
+ .def(py::init<const std::vector<int>&>())
+ .def(py::init<const std::vector<float>&>())
+ .def(py::init<const std::vector<uint32_t>&>())
+ .def(py::init<const std::vector<glm::vec3>&>())
+ .def(py::init<const std::vector<glm::vec4>&>())
+ // Value Assignment
+ .def("set", py::overload_cast<const std::vector<int>&>(&Tiny::Buffer::set<int>))
+ .def("set", py::overload_cast<const std::vector<float>&>(&Tiny::Buffer::set<float>))
+ .def("set", py::overload_cast<const std::vector<uint32_t>&>(&Tiny::Buffer::set<uint32_t>))
+ .def("set", py::overload_cast<const std::vector<glm::vec3>&>(&Tiny::Buffer::set<glm::vec3>))
+ .def("set", py::overload_cast<const std::vector<glm::vec4>&>(&Tiny::Buffer::set<glm::vec4>));
+ // Value Retrieval
+ //.def("get", py::overload_cast<std::vector<int>&>(&Tiny::Buffer::get<int>))
+ //.def("get", py::overload_cast<std::vector<float>&>(&Tiny::Buffer::get<float>))
+ //.def("get", py::overload_cast<std::vector<uint32_t>&>(&Tiny::Buffer::get<uint32_t>))
+ //.def("get", py::overload_cast<std::vector<glm::vec3>&>(&Tiny::Buffer::get<glm::vec3>))
+ //.def("get", py::overload_cast<std::vector<glm::vec4>&>(&Tiny::Buffer::get<glm::vec4>));
 
 //Shader Class
 

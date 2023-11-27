@@ -1,7 +1,7 @@
 import tinyengine as tiny
 
 tiny.view.linewidth = 2.0
-tiny.window("Python Test", 1200, 800)
+tiny.window("Python Test", 400, 400)
 
 gizmoshader = tiny.Shader(['shader/gizmo.vs', 'shader/gizmo.fs']);
 gizmo = tiny.Gizmo();
@@ -15,7 +15,6 @@ def pipeline():
 
     gizmoshader.use();
     gizmoshader.uniform("vp", tiny.cam.vp());
-    #gizmo.render()
     gizmo.render(tiny.GL.lines);
 
 def loop():
@@ -28,7 +27,7 @@ tiny.cam.zoomrate(5.0);
 tiny.cam.moverate(0.1);
 tiny.cam.near(-100.0);
 tiny.cam.far(100.0);
-tiny.cam.init(50.0, tiny.cam.type.ORTHO)
+tiny.cam.init(100.0, tiny.cam.type.ORTHO)
 
 tiny.loop(loop);
 tiny.quit()

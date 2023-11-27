@@ -10,12 +10,12 @@ cube = [0.0, 0.0, 0.0,
         1.0, 1.0, 1.0];
 
 tiny.view.pointsize = 5.0;
-tiny.window("Pointcloud Test", 1200, 800)
+tiny.window("Pointcloud Test", 400, 400)
 
 tiny.cam.near(-10.0)
 tiny.cam.far(10.0)
 tiny.cam.zoomrate(10.0);
-tiny.cam.init(250)
+tiny.cam.init(50)
 
 particleshader = tiny.Shader(['shader/particle.vs', 'shader/particle.fs'], ['in_Position', 'in_Color']);
 

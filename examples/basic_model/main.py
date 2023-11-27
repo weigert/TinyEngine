@@ -17,7 +17,7 @@ tiny.cam.far(10.0)
 tiny.cam.zoomrate(10.0);
 tiny.cam.init(250)
 
-particleshader = tiny.Shader(['examples/shader/particle.vs', 'examples/shader/particle.fs'], ['in_Position', 'in_Color']);
+particleshader = tiny.Shader(['shader/particle.vs', 'shader/particle.fs'], ['in_Position', 'in_Color']);
 
 # Prepare Data, Buffers, Model
 

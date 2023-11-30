@@ -33,44 +33,59 @@ template<camera_projection P, camera_control C>
       this->update();
     }
 
+  void update(){
+    this->control.update();
+    this->projection.update();
+    this->_vp = projection.proj()*control.view();
+  }
+
   const std::function<void()> handler = [&](){
     control.handler();
+    projection.handler();
+    this->update();
   };
 
   const inline glm::mat4 vp(){
     return this->_vp;
   }
 
-  void update(){
-    this->control.update();
-    this->_vp = projection.proj()*control.view();
-  }
-
   control_type control;
-private:
   projection_type projection;
+private:
   glm::mat4 _vp;
 };
 
 template<>
 struct cam_projection<camera_projection::ORTHOGONAL> {
 
-  //cam_projection(float rad){
-  //  this->_proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
-  //}
+  cam_projection(const float& W, const float& H, const float& rad, const float& near, const float& far):
+    W(W),H(H),rad(rad),near(near),far(far){
+    this->update();
+  }
 
-  cam_projection(const glm::mat4& _proj):
-    _proj(_proj){}
+  void handler(){
+    if(Tiny::event.scroll.posy)
+      this->rad += 0.1;
+    if(Tiny::event.scroll.negy)
+      this->rad -= 0.1;
+    if(Tiny::event.windowEventTrigger){
+      this->W = Tiny::view.WIDTH;
+      this->H = Tiny::view.HEIGHT;
+    }
+  }
+
+  void update(){
+    this->_proj = glm::ortho(-W/rad, W/rad, -H/rad, H/rad, near, far);
+  }
 
   inline const glm::mat4 proj() const {
     return this->_proj;
   }
 
 private:
+  float W, H, rad, near, far;
   glm::mat4 _proj;
 };
-
-
 
 template<>
 struct cam_control<camera_control::ORBIT> {
@@ -79,7 +94,7 @@ struct cam_control<camera_control::ORBIT> {
 
   cam_control(glm::vec3 _pos, glm::vec3 _look = glm::vec3(0)):
     _pos(_pos),_look(_look){
-      // this->update();
+      this->update();
       // r = ;
       // phi = ;
       // theta = ;
@@ -109,47 +124,37 @@ struct cam_control<camera_control::ORBIT> {
     phi += inc;
     if(phi > tau) phi -= tau;
     if(phi < 0) phi += tau;
-    this->update();
   }
 
-  /*
   void zoom(const float& inc){
     r += inc;
-    this->update();
   }
 
   void tilt(const float& inc){
     theta += inc;
     if(theta >=  0.25*tau) theta =  0.25*tau - inc;
     if(theta <= -0.25*tau) theta = -0.25*tau - inc;
-    this->update();
   }
 
   void stride(const float& inc){
     _look.x += inc*sin(phi);
     _look.z -= inc*cos(phi);
-    this->update();
   }
 
   void strafe(const float& inc){
     _look.x += inc*cos(phi);
     _look.z += inc*sin(phi);
-    this->update();
   }
 
   void rise(const float& inc){
     _look.y += inc;
-    this->update();
   }
 
   const float zoomrate = 0.1;
-  const float moverate = 0.1;
+  const float moverate = 0.05;
   const float turnrate = 0.1;
-  */
 
   void handler(){
-
-    /*
 
     if(Tiny::event.scroll.posy)
       this->zoom( zoomrate);
@@ -164,16 +169,16 @@ struct cam_control<camera_control::ORBIT> {
       this->pan(-turnrate);
 
     if(Tiny::event.active[SDLK_UP])
-      this->tilt(turnrate);
+      this->tilt(0.01*turnrate);
 
     if(Tiny::event.active[SDLK_DOWN])
-      this->tilt(-turnrate);
+      this->tilt(-0.01*turnrate);
 
     if(Tiny::event.active[SDLK_LEFT])
-      this->pan(turnrate);
+      this->pan(-0.01*turnrate);
 
     if(Tiny::event.active[SDLK_RIGHT])
-      this->pan(-turnrate);
+      this->pan(0.01*turnrate);
 
     if(Tiny::event.active[SDLK_c])
       this->rise(-moverate);
@@ -192,7 +197,6 @@ struct cam_control<camera_control::ORBIT> {
 
     if(Tiny::event.active[SDLK_a])
       this->strafe(moverate);
-      */
   }
 
 private:

@@ -89,12 +89,14 @@ struct Indexed: Model {
 
   Indexed(std::vector<std::string> nbinding, Buffer& _index):
     _index(_index),
-    Model(nbinding){}
+    Model(nbinding){
+      set(_index);
+    }
 
-  template<typename T>
+  template<typename T = int>
   void set(Buffer& b){
     _index = b;
-    _size = _index.size()/sizeof(T);
+    _size = _index.size<T>();
   }
 
   void render(const GLenum primitive) {

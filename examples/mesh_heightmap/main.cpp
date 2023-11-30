@@ -11,13 +11,14 @@ int main( int argc, char* args[] ) {
 	Tiny::view.vsync = false;
 	Tiny::window("Heightmap Render", 1200, 800);			//Open Window
 
-	cam::near = -100.0f;
-	cam::far = 100.0f;
-	cam::rot = 45.0f;
-	cam::roty = 45.0f;
-	cam::init(10, cam::ORTHO);
+	Tiny::cam_projection<Tiny::camera_projection::ORTHOGONAL> ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, 10.0f, -100.0f, 100.0f);
+	Tiny::cam_control<Tiny::camera_control::ORBIT> orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
 
-	Tiny::event.handler = cam::handler;								//Event Handler
+	Tiny::camera cam(ortho, orbit);
+	cam.projection.update();
+	cam.update();
+
+	Tiny::event.handler = cam.handler;								//Event Handler
 	Tiny::view.interface = [&](){ /* ... */ };				//No Interface
 
 	setup();																					//Prepare Model Stuff
@@ -26,10 +27,10 @@ int main( int argc, char* args[] ) {
 	Tiny::Buffer indices;
 	construct(positions, normals, indices);						//Call algorithm to fill buffers
 
-	Tiny::Model mesh({"in_Position", "in_Normal"});					//Create Model with 2 Properties
-	mesh.bind<glm::vec3>("in_Position", &positions);	//Bind Buffer to Property
-	mesh.bind<glm::vec3>("in_Normal", &normals);
-	mesh.index(&indices);
+	Tiny::Indexed mesh({"in_Position", "in_Normal"}, indices);					//Create Model with 2 Properties
+	mesh.bind<glm::vec3>("in_Position", positions);	//Bind Buffer to Property
+	mesh.bind<glm::vec3>("in_Normal", normals);
+
 	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
 
 	Tiny::Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});
@@ -40,7 +41,7 @@ int main( int argc, char* args[] ) {
 
 		defaultShader.use();														//Prepare Shader
 		defaultShader.uniform("model", model);					//Set Model Matrix
-		defaultShader.uniform("vp", cam::vp);						//View Projection Matrix
+		defaultShader.uniform("vp", cam.vp());						//View Projection Matrix
 		mesh.render(GL_LINES);													//Render Model with Lines
 
 	};

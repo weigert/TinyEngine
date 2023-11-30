@@ -65,7 +65,7 @@ template<typename T>
 void Buffer::set(const size_t size, const T* data){
   this->operator()();
   _size = size*sizeof(T);                                       // Set Buffer Size to Number of Bytes
-  glBufferData(GL_ARRAY_BUFFER, _size, data, GL_DYNAMIC_DRAW);  // Fill the Buffer w. Raw Memory Data
+  glBufferData(GL_ARRAY_BUFFER, _size, data, GL_STATIC_DRAW);   // Fill the Buffer w. Raw Memory Data
   glBindBuffer(GL_ARRAY_BUFFER, 0);                             // Un-Bind the Buffer Index
 }
 

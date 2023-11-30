@@ -49,9 +49,9 @@ struct Instance {
   const inline size_t size()  const { return _size; }   //!< Retrieve Number of Attribute Elements
 
 private:
-  M& _model;      //!< Model Reference
-  size_t _size;   //!< Number of Attribute Elements
-  size_t _count;  //!< Number of Attribute Divisors
+  M& _model;          //!< Model Reference
+  size_t _size;       //!< Number of Attribute Elements
+  size_t _count = 0;  //!< Number of Attribute Divisors
 };
 
 // Attribute Divisor Binding / Configuration

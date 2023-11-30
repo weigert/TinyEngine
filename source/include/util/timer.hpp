@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_HELPER_TIMER
-#define TINYENGINE_HELPER_TIMER
+#ifndef TINYENGINE_UTIL_TIMER
+#define TINYENGINE_UTIL_TIMER
 
 #include <chrono>
 #include <thread>

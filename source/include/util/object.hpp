@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_HELPER_OBJECT
-#define TINYENGINE_HELPER_OBJECT
+#ifndef TINYENGINE_UTIL_OBJECT
+#define TINYENGINE_UTIL_OBJECT
 
 #include <fstream>
 #include <sstream>

@@ -1,167 +1,209 @@
-#ifndef TINYENGINE_HELPER_CAMERA
-#define TINYENGINE_HELPER_CAMERA
+#ifndef TINYENGINE_UTIL_CAMERA
+#define TINYENGINE_UTIL_CAMERA
 
-namespace cam {
-enum camtype {ORTHO, PROJ};
+namespace Tiny {
 
-using namespace glm;
+//! Camera Control Type Enumerator
+enum camera_control {
+  FREE,
+  ORBIT
+};
 
-  float rad = 20.0f;     //Camera Distance to Viewpoint
-  float rot = 0.0f;     //Camera Rotation around Y-Axis
-  float roty = 0.0f;    //Camera Rotation around X/Z-Axis
+//! Camera Projetion Type Enumerator
+enum camera_projection {
+  ORTHOGONAL,
+  PERSPECTIVE
+};
 
-  float near = 0.01f;    //Clipping Planes
-  float far = 10.0f;
-  float FOV = 1.0f;       //Field of View
+template<camera_control C>
+struct cam_control;
 
-  vec3 pos = vec3(cos(glm::radians(roty))*sin(glm::radians(rot)), sin(glm::radians(roty)), -cos(glm::radians(roty))*cos(glm::radians(rot)));
+template<camera_projection P>
+struct cam_projection;
 
-  vec3 look = vec3(0);
+//! Camera Type, Composed of Controls and Projection
+template<camera_projection P, camera_control C>
+  struct camera {
 
-  float zoomrate = 0.5f;
-  float moverate = 1.0f;
-  float turnrate = 1.5f;
+  typedef cam_projection<P> projection_type;
+  typedef cam_control<C> control_type;
 
-  bool moved = true;
-
-  camtype type = PROJ;
-
-  //Matrices
-  mat4 proj, view, vp, invview;
-
-  //Pathing Matrix Setting
-  void move(mat4 v){ view = v; vp = proj*view; }
-  void shift(mat4 rt){ view = rt*view; vp = proj*view; }
-
-  void update(){
-//    vec3 pos = vec3(sin(glm::radians(rot)), sin(glm::radians(roty)), cos(glm::radians(rot)));
-
-    pos = vec3(cos(glm::radians(roty))*sin(glm::radians(rot)), sin(glm::radians(roty)), -cos(glm::radians(roty))*cos(glm::radians(rot)));
-
-    if(type == PROJ) view = lookAt(look+rad*pos, look, vec3(0,1,0));
-    if(type == ORTHO) view = lookAt(look+pos, look, vec3(0,1,0));
-    invview = inverse(view);
-
-    vp = proj*view;
-  }
-
-  void init(float r = 5.0f, camtype t = PROJ){
-    type = t;
-    rad = r;
-
-    if(type == PROJ) proj = glm::perspective(FOV, (float)Tiny::view.WIDTH/(float)Tiny::view.HEIGHT, near, far);
-    if(type == ORTHO) proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
-
-    if(type == PROJ) view = lookAt(look+rad*pos, look, vec3(0,1,0));
-    if(type == ORTHO) view = lookAt(look+pos, look, vec3(0,1,0));
-    invview = inverse(view);
-
-    vp = proj*view;
-  }
-
-  /* Rotations */
-
-  void zoom(float inc){
-    rad += inc;
-    if(type == ORTHO) proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
-    update();
-    moved = true;
-  }
-
-  void pan(float inc){
-    rot = (rot+inc+360.0f)-(int)((rot+inc+360.0f)/360.0f)*360.0f;
-    update();
-    moved = true;
-  }
-
-  void tilt(float inc){
-    roty += inc;
-    if(roty >= 90.0f) roty = 90.0f-inc;
-    if(roty <= -90.0f) roty = -90.0f-inc;
-    update();
-    moved = true;
-  }
-
-  /* Translations */
-
-  void stride(float inc){
-    look.x += inc*sin(glm::radians(rot));
-    look.z -= inc*cos(glm::radians(rot));
-    update();
-    moved = true;
-  }
-
-  void strafe(float inc){
-    look.x += inc*cos(glm::radians(rot));
-    look.z += inc*sin(glm::radians(rot));
-    update();
-    moved = true;
-  }
-
-  void rise(float inc){
-    look.y += inc;
-    update();
-    moved = true;
-  }
-
-
-  std::function<bool()> handler = [](){
-
-    moved = false;
-
-    if(Tiny::event.scroll.posy)
-      cam::zoom(cam::zoomrate);
-
-    if(Tiny::event.scroll.negy)
-      cam::zoom(-cam::zoomrate);
-
-    if(Tiny::event.scroll.posx)
-      cam::pan(cam::turnrate);
-
-    if(Tiny::event.scroll.negx)
-      cam::pan(-cam::turnrate);
-
-    if(Tiny::event.active[SDLK_UP])
-      cam::tilt(cam::turnrate);
-
-    if(Tiny::event.active[SDLK_DOWN])
-      cam::tilt(-cam::turnrate);
-
-    if(Tiny::event.active[SDLK_LEFT])
-      cam::pan(cam::turnrate);
-
-    if(Tiny::event.active[SDLK_RIGHT])
-      cam::pan(-cam::turnrate);
-
-    if(Tiny::event.active[SDLK_c])
-      cam::rise(-cam::moverate);
-
-    if(Tiny::event.active[SDLK_v])
-      cam::rise(cam::moverate);
-
-    if(Tiny::event.active[SDLK_w])
-      cam::stride(-cam::moverate);
-
-    if(Tiny::event.active[SDLK_s])
-      cam::stride(cam::moverate);
-
-    if(Tiny::event.active[SDLK_d])
-      cam::strafe(-cam::moverate);
-
-    if(Tiny::event.active[SDLK_a])
-      cam::strafe(cam::moverate);
-
-    if(Tiny::event.windowEventTrigger){
-      if(type == PROJ) cam::proj = glm::perspective(FOV, (float)Tiny::view.WIDTH/(float)Tiny::view.HEIGHT, near, far);
-      if(type == ORTHO) proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
-      cam::vp = cam::view*cam::proj;
-      moved = true;
-      update();
+  camera(const projection_type& projection, const control_type& control):
+    projection(projection),control(control){
+      this->update();
     }
 
-    return moved;
-
+  const std::function<void()> handler = [&](){
+    control.handler();
   };
+
+  const inline glm::mat4 vp(){
+    return this->_vp;
+  }
+
+  void update(){
+    this->control.update();
+    this->_vp = projection.proj()*control.view();
+  }
+
+  control_type control;
+private:
+  projection_type projection;
+  glm::mat4 _vp;
+};
+
+template<>
+struct cam_projection<camera_projection::ORTHOGONAL> {
+
+  //cam_projection(float rad){
+  //  this->_proj = glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far);
+  //}
+
+  cam_projection(const glm::mat4& _proj):
+    _proj(_proj){}
+
+  inline const glm::mat4 proj() const {
+    return this->_proj;
+  }
+
+private:
+  glm::mat4 _proj;
+};
+
+
+
+template<>
+struct cam_control<camera_control::ORBIT> {
+
+  static constexpr float tau = 2.0*3.14159265;
+
+  cam_control(glm::vec3 _pos, glm::vec3 _look = glm::vec3(0)):
+    _pos(_pos),_look(_look){
+      // this->update();
+      // r = ;
+      // phi = ;
+      // theta = ;
+    }
+
+  void update(){
+    this->_pos = _look + this->r*glm::vec3(cos(theta)*sin(phi), sin(theta), cos(theta)*cos(phi));
+    this->_view = glm::lookAt(_pos, _look, glm::vec3(0,1,0));
+    this->_invview = glm::inverse(_view);
+  }
+
+  inline const glm::vec3 pos() const {
+    return this->_pos;
+  }
+
+  inline const glm::mat4 view() const {
+    return this->_view;
+  }
+
+  inline const glm::mat4 invview() const {
+    return this->_invview;
+  }
+
+  // Implementations
+
+  void pan(const float& inc){
+    phi += inc;
+    if(phi > tau) phi -= tau;
+    if(phi < 0) phi += tau;
+    this->update();
+  }
+
+  /*
+  void zoom(const float& inc){
+    r += inc;
+    this->update();
+  }
+
+  void tilt(const float& inc){
+    theta += inc;
+    if(theta >=  0.25*tau) theta =  0.25*tau - inc;
+    if(theta <= -0.25*tau) theta = -0.25*tau - inc;
+    this->update();
+  }
+
+  void stride(const float& inc){
+    _look.x += inc*sin(phi);
+    _look.z -= inc*cos(phi);
+    this->update();
+  }
+
+  void strafe(const float& inc){
+    _look.x += inc*cos(phi);
+    _look.z += inc*sin(phi);
+    this->update();
+  }
+
+  void rise(const float& inc){
+    _look.y += inc;
+    this->update();
+  }
+
+  const float zoomrate = 0.1;
+  const float moverate = 0.1;
+  const float turnrate = 0.1;
+  */
+
+  void handler(){
+
+    /*
+
+    if(Tiny::event.scroll.posy)
+      this->zoom( zoomrate);
+
+    if(Tiny::event.scroll.negy)
+      this->zoom(-zoomrate);
+
+    if(Tiny::event.scroll.posx)
+      this->pan( turnrate);
+
+    if(Tiny::event.scroll.negx)
+      this->pan(-turnrate);
+
+    if(Tiny::event.active[SDLK_UP])
+      this->tilt(turnrate);
+
+    if(Tiny::event.active[SDLK_DOWN])
+      this->tilt(-turnrate);
+
+    if(Tiny::event.active[SDLK_LEFT])
+      this->pan(turnrate);
+
+    if(Tiny::event.active[SDLK_RIGHT])
+      this->pan(-turnrate);
+
+    if(Tiny::event.active[SDLK_c])
+      this->rise(-moverate);
+
+    if(Tiny::event.active[SDLK_v])
+      this->rise(moverate);
+
+    if(Tiny::event.active[SDLK_w])
+      this->stride(-moverate);
+
+    if(Tiny::event.active[SDLK_s])
+      this->stride(moverate);
+
+    if(Tiny::event.active[SDLK_d])
+      this->strafe(-moverate);
+
+    if(Tiny::event.active[SDLK_a])
+      this->strafe(moverate);
+      */
+  }
+
+private:
+  float r = 1.0f;
+  float phi = 0.0f;
+  float theta = 0.0f;
+  glm::vec3 _pos;
+  glm::vec3 _look;
+  glm::mat4 _view;
+  glm::mat4 _invview;
+};
 
 }
 

@@ -6,11 +6,20 @@
 int main( int argc, char* args[] ) {
 
 	Tiny::window("Particle System", 800, 800);
-	cam::near = -10.0f;
-	cam::far = 10.0f;
-	cam::init(5);
+	//cam::near = -10.0f;
+	//cam::far = 10.0f;
+	//cam::init(5);
 
-	Tiny::event.handler = cam::handler;
+	float near = -10.0f;
+	float far = 10.0f;
+	float rad = 5.0;
+
+	Tiny::cam_control<Tiny::camera_control::ORBIT> orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+	Tiny::cam_projection<Tiny::camera_projection::ORTHOGONAL> ortho(glm::ortho(-(float)Tiny::view.WIDTH/rad, (float)Tiny::view.WIDTH/rad, -(float)Tiny::view.HEIGHT/rad, (float)Tiny::view.HEIGHT/rad, near, far));
+
+	Tiny::camera<Tiny::camera_projection::ORTHOGONAL, Tiny::camera_control::ORBIT> cam(ortho, orbit);
+
+	Tiny::event.handler = cam.handler;
 	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
 
 	Tiny::Square3D model;									//Model we want to instance render!
@@ -34,13 +43,14 @@ int main( int argc, char* args[] ) {
 
 		particleShader.use();
 		particleShader.texture("spriteTexture", tex);
-		particleShader.uniform("vp", cam::vp);
+		particleShader.uniform("vp", cam.vp());
 		particle.render();
 
 	};
 
 	Tiny::loop([&](){ //Autorotate Camera
-		cam::pan(0.1f);
+		cam.control.pan(0.1f);
+		cam.update();
 	});
 
 	Tiny::quit();

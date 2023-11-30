@@ -75,7 +75,7 @@ install:
 # TinyEngine Helpers #
 ######################
 
-HELPERS = camera color math image object timer parse log
+HELPERS = camera image object timer
 
 .PHONY: helpers
 helpers:

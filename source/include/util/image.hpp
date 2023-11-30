@@ -1,5 +1,5 @@
-#ifndef TINYENGINE_HELPER_IMAGE
-#define TINYENGINE_HELPER_IMAGE
+#ifndef TINYENGINE_UTIL_IMAGE
+#define TINYENGINE_UTIL_IMAGE
 
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>

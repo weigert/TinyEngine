@@ -119,11 +119,15 @@ void loop(F function, Args&&... args){
 
     if(Tiny::audio.enabled) audio.process();      //Audio Processor
 
+   // timer::measure<std::chrono::microseconds> m;
+
     function(args...);      //User-defined Game Loop
 
     if(Tiny::view.enabled){
       view.render();         //Render View
     }
+
+   // glFlush();
 
   }
 

@@ -169,16 +169,16 @@ struct cam_control<camera_control::ORBIT> {
       this->pan(-turnrate);
 
     if(Tiny::event.active[SDLK_UP])
-      this->tilt(0.01*turnrate);
+      this->tilt(0.1*turnrate);
 
     if(Tiny::event.active[SDLK_DOWN])
-      this->tilt(-0.01*turnrate);
+      this->tilt(-0.1*turnrate);
 
     if(Tiny::event.active[SDLK_LEFT])
-      this->pan(-0.01*turnrate);
+      this->pan(-0.1*turnrate);
 
     if(Tiny::event.active[SDLK_RIGHT])
-      this->pan(0.01*turnrate);
+      this->pan(0.1*turnrate);
 
     if(Tiny::event.active[SDLK_c])
       this->rise(-moverate);

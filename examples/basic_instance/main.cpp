@@ -7,11 +7,14 @@ int main( int argc, char* args[] ) {
 
 	Tiny::window("Particle System", 800, 800);
 
-	Tiny::cam_projection<Tiny::camera_projection::ORTHOGONAL> ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, 5.0f, -10.0f, 10.0f);
-	Tiny::cam_control<Tiny::camera_control::ORBIT> orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+	// Create Camera
 
-	Tiny::camera cam(ortho, orbit);
-	cam.projection.update();
+	Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -10.0f, 10.0f, 5.0f);
+	Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+	ortho.update();
+	orbit.update();
+
+	Tiny::cam::camera cam(ortho, orbit);
 
 	Tiny::event.handler = cam.handler;
 	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
@@ -43,8 +46,8 @@ int main( int argc, char* args[] ) {
 	};
 
 	Tiny::loop([&](){ //Autorotate Camera
-		cam.control.pan(0.1f);
-		//cam.projection.update();
+		//cam.control.pan(0.1f);
+		cam.projection.update();
 		cam.update();
 	});
 

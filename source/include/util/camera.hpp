@@ -2,76 +2,22 @@
 #define TINYENGINE_UTIL_CAMERA
 
 namespace Tiny {
+namespace cam {
 
-//! Camera Control Type Enumerator
-enum camera_control {
-  FREE,
-  ORBIT
+//! Camera Projection Type Concept
+template<typename T>
+concept projection_t = requires(T t){
+  { t.update() };
+  { t.hander() };
 };
 
-//! Camera Projetion Type Enumerator
-enum camera_projection {
-  ORTHOGONAL,
-  PERSPECTIVE
-};
+// Camera Projection Implementations
 
-template<camera_control C>
-struct cam_control;
+struct ortho {
 
-template<camera_projection P>
-struct cam_projection;
-
-//! Camera Type, Composed of Controls and Projection
-template<camera_projection P, camera_control C>
-  struct camera {
-
-  typedef cam_projection<P> projection_type;
-  typedef cam_control<C> control_type;
-
-  camera(const projection_type& projection, const control_type& control):
-    projection(projection),control(control){
-      this->update();
-    }
-
-  void update(){
-    this->control.update();
-    this->projection.update();
-    this->_vp = projection.proj()*control.view();
-  }
-
-  const std::function<void()> handler = [&](){
-    control.handler();
-    projection.handler();
+  ortho(const float& W, const float& H, const float& near, const float& far, const float& scale):
+    W(W),H(H),near(near),far(far),rad(scale){
     this->update();
-  };
-
-  const inline glm::mat4 vp(){
-    return this->_vp;
-  }
-
-  control_type control;
-  projection_type projection;
-private:
-  glm::mat4 _vp;
-};
-
-template<>
-struct cam_projection<camera_projection::ORTHOGONAL> {
-
-  cam_projection(const float& W, const float& H, const float& rad, const float& near, const float& far):
-    W(W),H(H),rad(rad),near(near),far(far){
-    this->update();
-  }
-
-  void handler(){
-    if(Tiny::event.scroll.posy)
-      this->rad += 0.1;
-    if(Tiny::event.scroll.negy)
-      this->rad -= 0.1;
-    if(Tiny::event.windowEventTrigger){
-      this->W = Tiny::view.WIDTH;
-      this->H = Tiny::view.HEIGHT;
-    }
   }
 
   void update(){
@@ -82,17 +28,40 @@ struct cam_projection<camera_projection::ORTHOGONAL> {
     return this->_proj;
   }
 
+  void handler(){
+
+    if(Tiny::event.scroll.posy) this->rad += 0.1;
+    if(Tiny::event.scroll.negy) this->rad -= 0.1;
+    
+    if(Tiny::event.active[SDLK_PAGEUP])   this->rad += 0.1;
+    if(Tiny::event.active[SDLK_PAGEDOWN]) this->rad -= 0.1;
+
+    if(Tiny::event.windowEventTrigger){
+      this->W = Tiny::view.WIDTH;
+      this->H = Tiny::view.HEIGHT;
+    }
+
+  }
+
 private:
   float W, H, rad, near, far;
   glm::mat4 _proj;
 };
 
-template<>
-struct cam_control<camera_control::ORBIT> {
+//! Camera Control Type Concept
+template<typename T>
+concept control_t = requires(T t){
+  { T() } -> std::same_as<T>;
+
+};
+
+// Camera Control Implementations
+
+struct orbit {
 
   static constexpr float tau = 2.0*3.14159265;
 
-  cam_control(glm::vec3 _pos, glm::vec3 _look = glm::vec3(0)):
+  orbit(glm::vec3 _pos, glm::vec3 _look = glm::vec3(0)):
     _pos(_pos),_look(_look){
       this->update();
       // r = ;
@@ -197,6 +166,12 @@ struct cam_control<camera_control::ORBIT> {
 
     if(Tiny::event.active[SDLK_a])
       this->strafe(moverate);
+
+    if(Tiny::event.active[SDLK_PAGEUP])
+      this->zoom( zoomrate);
+
+    if(Tiny::event.active[SDLK_PAGEDOWN])
+      this->zoom(-zoomrate);
   }
 
 private:
@@ -209,6 +184,46 @@ private:
   glm::mat4 _invview;
 };
 
+
+//! Camera Type, Composed of Controls and Projection
+template<typename P, typename C>
+  struct camera {
+
+  typedef P projection_type;
+  typedef C control_type;
+
+  camera(const projection_type& projection, const control_type& control):
+    projection(projection),control(control){
+      this->update();
+    }
+
+  void update(){
+    this->control.update();
+    this->projection.update();
+    this->_vp = projection.proj()*control.view();
+  }
+
+  const std::function<void()> handler = [&](){
+    control.handler();
+    projection.handler();
+    this->update();
+  };
+
+  const inline glm::mat4 vp(){
+    return this->_vp;
+  }
+
+  control_type control;
+  projection_type projection;
+private:
+  glm::mat4 _vp;
+};
+
+// Unimplemented
+struct perspective{};
+struct free{};
+
+}
 }
 
 #endif

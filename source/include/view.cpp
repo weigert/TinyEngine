@@ -63,6 +63,7 @@ bool View::init(std::string _name, int W, int H){
   glPointSize(pointSize);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
   printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
   return true;
 }

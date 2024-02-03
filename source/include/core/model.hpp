@@ -67,12 +67,12 @@ template<typename T>
 void Model::bind(const std::string attribute, Buffer& buffer){
   this->operator()();                             // Bind Model
   buffer.operator()();                            // Bind Buffer
-  _size = buf.size<T>();                          // Update Model Size
+  _size = buffer.size<T>();                       // Update Model Size
   const int index = this->attributes[attribute];  // Attribute Binding Index
   #ifdef TINYENGINE_OS_MAC
   glVertexAttribPointer(index, sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0, 0 );
   #else
-  glBindVertexBuffer(index, buf.index(), 0, sizeof(T));
+  glBindVertexBuffer(index, buffer.index(), 0, sizeof(T));
   glVertexAttribFormat(index, sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
   #endif
 }

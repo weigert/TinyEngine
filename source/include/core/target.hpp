@@ -5,97 +5,122 @@
 
 namespace Tiny {
 
-class Target {
+//! Target is ...
+//!
+struct Target {
+protected:
+  //! Allocated GPU Frame Buffer Object
+  Target(){
+    glGenFramebuffers(1, &_index);
+  }
+
 public:
-  Target(int W, int H){
-    WIDTH = W; HEIGHT = H;
-    glGenFramebuffers(1, &fbo);
+  //! De-Allocate GPU Frame Buffer Object
+  ~Target(){ 
+    glDeleteFramebuffers(1, &_index); 
   }
 
-  ~Target(){ glDeleteFramebuffers(1, &fbo); }           //Default destructor
-
-  unsigned int WIDTH, HEIGHT;
-  GLuint fbo;                                           //FBO (OpenGL: everything is an int)
-
-  std::vector<GLenum> attached;
-  bool hasdepth = false;
-
-  template<typename T>
-  void bind(T& t, GLenum attach = GL_COLOR_ATTACHMENT0){  //Bind a texture to the FBO
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, attach, t.texture, 0);
-    if(attach != GL_DEPTH_ATTACHMENT){
-      attached.push_back(attach);
-      glDrawBuffers(attached.size(), &attached[0]);
-    } else {
-      hasdepth = true;
-      if(attached.empty())      // Optimization: Attach depth buffer, but no color
-        glDrawBuffer(GL_NONE);  // Don't Output Fragment Shader Stuff
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  //! Construct a Target w. Width and Height
+  Target(const size_t width, const size_t height):Target(){
+    this->_width = width;
+    this->_height = height;
   }
 
-  bool check(){
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-      return false;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    return true;
-  }
+  //! Attach a Texture to the Target
+  void bind(Texture& texture, const GLenum attachment = GL_COLOR_ATTACHMENT0);
+  void target();                                              //!< Set this Target as the Current Render Target
+  void clear(const glm::vec4 color = glm::vec4{0, 0, 0, 1});  //!< Clear this Target (Optional Clear Color)
+  bool valid();                                               //!< Validate FBO Setup Status
 
-  void target(bool t = true){          //This FBO as a render target (no clearing)
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glViewport(0, 0, WIDTH, HEIGHT);
-    if(t) glClear( GL_DEPTH_BUFFER_BIT );
-    if(t) glClear( GL_COLOR_BUFFER_BIT );
-  }
+  void operator()() const { glBindFramebuffer(GL_FRAMEBUFFER, this->index()); } //!< Bind the Framebuffer
 
-  template<typename T> void target(T a){
-    glClearColor(a[0], a[1], a[2], 1.0f);
-    target();
-  }
+  inline const uint32_t index() const { return this->_index; }  //!< Retrieve Target Frame Buffer Index
+  inline const size_t width()   const { return this->_width; }  //!< Retrieve Target Width
+  inline const size_t height()  const { return this->_height; } //!< Retrieve Target Height
 
-  template<typename T>                 //Raw Buffer Sampling
-  void sample(T* m, glm::vec2 p, glm::vec2 d, GLenum ATTACH = GL_COLOR_BUFFER_BIT, GLenum FORMAT = GL_RGBA){
-    if(d.x <= 0 || d.y <= 0 || p.x+d.x > WIDTH || p.y+d.y > HEIGHT) return;
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo); glReadBuffer(ATTACH);
-    glReadPixels(p.x, p.y, d.x, d.y, FORMAT, GL_UNSIGNED_BYTE, m);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  }
+private:
+  uint32_t _index;                  //!< Local Frame Buffer Object Index
+  size_t _width;                    //!< Local Target Width
+  size_t _height;                   //!< Local Target Height
+  std::vector<GLenum> attachments;  //!< Local Attachment Map
 };
+
+void Target::bind(Texture& texture, const GLenum attachment){  
+  this->operator()();
+  glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture.index(), 0);
+  this->attachments.push_back(attachment);
+  if(attachment != GL_DEPTH_ATTACHMENT)
+    glDrawBuffer(attachment);
+  else if(attachments.empty())
+    glDrawBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Target::clear(const glm::vec4 color){
+  this->operator()();
+  glClearColor(color[0], color[1], color[2], color[3]);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Target::target(){
+  this->operator()();
+  glViewport(0, 0, width(), height());
+}
+
+bool Target::valid(){
+  this->operator()();
+  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    return false;
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  return true;
+}
+
+/*
+template<typename T>
+void Target::sample(T* m, glm::vec2 p, glm::vec2 d, GLenum ATTACH = GL_COLOR_BUFFER_BIT, GLenum FORMAT = GL_RGBA){
+  if(d.x <= 0 || d.y <= 0 || p.x+d.x > width() || p.y+d.y > height()) return;
+  this->operator()();
+  glReadBuffer(ATTACH);
+  glReadPixels(p.x, p.y, d.x, d.y, FORMAT, GL_UNSIGNED_BYTE, m);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+*/
 
 //! Billboard is a Target with RGBA-Color and Depth-Buffers.
 struct Billboard: Target {
-  Texture texture, depth;         //Two normal textures
-  Billboard(int _W, int _H):
-  texture(_W, _H), depth(_W, _H), Target(_W, _H){
-    texture.setup({GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
-    bind(texture, GL_COLOR_ATTACHMENT0);
-    depth.setup({GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE});
-    bind(depth, GL_DEPTH_ATTACHMENT);
-  }
-  ~Billboard(){ glDeleteFramebuffers(1, &fbo); }             //Default destructor
 
-  Billboard(SDL_Surface* s):      //Render target preloaded with an image
-  Billboard(s->w, s->h){
-    texture.raw(s);               //Construct the texture from raw surface data
-    bind(texture, GL_COLOR_ATTACHMENT0);         //Bind it to the billboard as color texture
+  Billboard(const size_t width, const size_t height):Target(width, height),
+  _color(width, height, Texture::RGBA8U),
+  _depth(width, height, Texture::DEPTH8U){
+    bind(_color, GL_COLOR_ATTACHMENT0);
+    bind(_depth, GL_DEPTH_ATTACHMENT);
   }
 
+  inline Texture& color() { return this->_color; }
+  inline Texture& depth() { return this->_depth; }
+
+private:
+  Texture _color; //!< Billboard Color Attachment (RGBA8U)
+  Texture _depth; //!< Billboard Depth Attachment (DEPTH8U)
 };
 
 //! Cubemap is a Target with an RGBA-Color and Depth-Buffres
-struct Cubemap: Target {
-public:
-  Cubetexture texture, depth;     //Two cubemap textures
+struct CubeMap: Target {
 
-  Cubemap(int _W, int _H):
-  texture(_W, _H), depth(_W, _H), Target(_W, _H) {
-    texture.setup({GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
-    bind(texture, GL_COLOR_ATTACHMENT0);
-    depth.setup({GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE});
-    bind(depth, GL_DEPTH_ATTACHMENT);
+  CubeMap(const size_t width, const size_t height):Target(width, height),
+  _color(width, height, Texture::RGBA8U),
+  _depth(width, height, Texture::DEPTH8U){
+    bind(_color, GL_COLOR_ATTACHMENT0);
+    bind(_depth, GL_DEPTH_ATTACHMENT);
   }
+
+  inline CubeTexture& color() { return this->_color; }
+  inline CubeTexture& depth() { return this->_depth; }
+
+private:
+  CubeTexture _color;  //!< CubeMap Color Attachment (RGBA8U)
+  CubeTexture _depth;  //!< CubeMap Depth Attachment (DEPTH8U)
 };
 
 } // end of namespace Tiny

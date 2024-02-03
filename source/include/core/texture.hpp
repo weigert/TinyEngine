@@ -5,72 +5,107 @@
 
 namespace Tiny {
 
-class Texture;
-using tfunc = std::function<void(Texture*)>; //Arbitrary function operating on texture pointer
-
-struct TextureConfig {
-  GLenum internal = GL_RGBA;
-  GLenum format = GL_RGBA;
-  GLenum type = GL_UNSIGNED_BYTE;
+//! Layout specifies the Data Format of GPU Textures.
+struct Layout {
+  GLenum internal;  //!< Defines number of Components
+  GLenum format;    //!< Defines Pixel Components
+  GLenum type;      //!< Defines Pixel Component Format
 };
 
-class Texture{
+//! Texture is GPU Texture of a fixed size and data Layout.
+//!
+//! A Texture makes multi-dimensional data available to shaders
+//! for sampling with built-in interpolation and boundary handling.
+//!
+//! Note that textures are read-only. In order to write to textures,
+//! they can be bound to a Target, which can be rendered onto using shaders.
+//!
+struct Texture {
+protected:
+  //! Allocate GPU Texture
+  Texture(){
+    glGenTextures(1, &_index);
+  };
+  
 public:
-  Texture(){ glGenTextures( 1, &texture ); };       //Default constructor
-  Texture(int _W, int _H):Texture(){ W = _W; H = _H; };   //Construct w. Size
-  Texture(SDL_Surface* s):Texture(s->w, s->h){ raw(s); }; //Load raw surface data into texture
-  Texture(int _W, int _H, TextureConfig TC, void* data = NULL):Texture(_W, _H){
-    setup(TC, data);
+  //! De-Allocate GPU Texture
+  ~Texture(){ 
+    glDeleteTextures(1, &_index); 
   }
 
-  ~Texture(){ glDeleteTextures(1, &texture); }
-
-  GLuint texture;               //Texture int (OpenGL: everything is an int!)
-  GLenum type = GL_TEXTURE_2D;  //Texture type (default is this)
-  int W, H;                     //Texture Width, Height
-  static tfunc parameter;       //Texture Parameter Setter!
-
-  void setup(TextureConfig TC, void* data = NULL);
-  void raw(SDL_Surface* s);
-
-};
-
-void Texture::setup(TextureConfig TC, void* data){
-  glBindTexture( type, texture );
-  glTexImage2D( type, 0, TC.internal, W, H, 0, TC.format, TC.type, data );
-  Texture::parameter(this);
-}
-
-void Texture::raw(SDL_Surface* s){  //Generate a texture from raw surface data
-  setup({GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE}, s->pixels);
-  SDL_FreeSurface(s);
-}
-
-//Default parameter setting function!
-//Note that you can pass your own to the texture building functions above!z
-tfunc Texture::parameter = [](Texture* t){
-  glTexParameteri(t->type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(t->type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//  glTexParameteri(t->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//  glTexParameteri(t->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//  glTexParameteri(t->type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-};
-
-class Cubetexture: public Texture {
-public:
-  Cubetexture():Texture(){ type = GL_TEXTURE_CUBE_MAP; };
-  Cubetexture(int _W, int _H):Cubetexture(){ W = _W; H = _H; };
-  Cubetexture(int _W, int _H, TextureConfig TC, void* data = NULL):Cubetexture(_W, _H){
-    setup(TC, data);
+  //! Allocate GPU Texture with Size
+  Texture(const size_t width, const size_t height):
+  Texture(){
+    this->_width = width;
+    this->_height = height;
   }
-  void setup(TextureConfig TC, void* data = NULL);
+
+  //! Construct Texture width Size, Layout and Data
+  Texture(const size_t width, const size_t height, Layout layout, const void* data = NULL):
+  Texture(width, height){
+    this->set(layout, data);
+  }
+
+  //! Construct Texture directly from an SDL Surface (Deprecate)
+  Texture(SDL_Surface* s):Texture(s->w, s->h, RGBA8U, s->pixels){};
+
+  void set(Layout layout, const void* data = NULL);                               //!< Fill Texture with Layout of Data
+  void operator()() const { glBindTexture(GL_TEXTURE_2D, this->index()); }        //!< Bind the Texture
+
+  inline const uint32_t index()  const { return this->_index; }                   //!< Retrieve Texture Index
+  inline const size_t width()    const { return this->_width; }                   //!< Retrieve Texture Width
+  inline const size_t height()   const { return this->_height; }                  //!< Retrieve Texture Height
+  inline const glm::ivec2 size() const { return glm::ivec2(width(), height()); }  //!< Retrieve Texture Size
+  
+  // Static Layout Specifications
+
+  static constexpr Layout R8U{GL_R8, GL_RED, GL_UNSIGNED_BYTE}; 
+  static constexpr Layout RGBA8U{GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE}; 
+  static constexpr Layout RGBA32F{GL_RGBA32F, GL_RGBA, GL_FLOAT};
+  static constexpr Layout DEPTH8U{GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE};
+
+protected:
+  uint32_t _index;  //!< Local Texture Index
+  size_t _width;    //!< Texture Width (Pixels)
+  size_t _height;   //!< Texture Height (Pixels)
 };
 
-void Cubetexture::setup(TextureConfig TC, void* data){
-  glBindTexture( type, texture );
+void Texture::set(Layout layout, const void* data){
+  this->operator()();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexImage2D(GL_TEXTURE_2D, 0, layout.internal, width(), height(), 0, layout.format, layout.type, data);
+}
+
+// CubeTexture Specialization
+
+//! CubeTexture is a combination of 6 Textures, which can be
+//! easily sampled in a shader by a direction vector.
+//!
+//! This allows for e.g. sampling of directional information.
+//!
+struct CubeTexture: Texture {
+protected:
+  CubeTexture():Texture(){};
+
+public:
+
+  CubeTexture(const size_t width, const size_t height):Texture(width, height){}
+  CubeTexture(const size_t width, const size_t height, Layout layout, void* data = NULL):
+  CubeTexture(width, height){
+    this->set(layout, data);
+  }
+
+  void set(Layout layout, const void* data = NULL);                               //!< Fill CubeTexture with Layout of Data
+  void operator()() const { glBindTexture(GL_TEXTURE_CUBE_MAP, this->index()); }  //!< Bind the CubeTexture
+};
+
+void CubeTexture::set(Layout layout, const void* data){
+  this->operator()();
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   for(unsigned int i = 0; i < 6; i++)
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, TC.internal, W, H, 0, TC.format, TC.type, data);
-  Texture::parameter(this);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, layout.internal, width(), height(), 0, layout.format, layout.type, data);
 }
 
 } // end of namespace Tiny

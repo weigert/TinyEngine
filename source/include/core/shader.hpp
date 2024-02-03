@@ -197,7 +197,7 @@ template<> void ShaderBase::uniform(std::string name, const std::vector<glm::mat
 template<typename T>
 void ShaderBase::texture(std::string name, const T& t){
   glActiveTexture(GL_TEXTURE0 + boundtextures);
-  glBindTexture(t.type, t.texture);
+  t.operator()();
   uniform(name, boundtextures++);
 }
 

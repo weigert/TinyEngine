@@ -20,8 +20,8 @@ int main( int argc, char* args[] ) {
 			else return glm::vec4(0.0, 0.0, 0.0, 1.0);
 		}, glm::ivec2(1200, 800));
 
-	Tiny::Texture textureA(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE}, s->pixels);
-	Tiny::Texture textureB(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
+	Tiny::Texture textureA(1200, 800, Tiny::Texture::R8U, s->pixels);
+	Tiny::Texture textureB(1200, 800, Tiny::Texture::R8U);
 
 	Tiny::Target targetA(1200, 800);
 	targetA.bind(textureA, GL_COLOR_ATTACHMENT0);
@@ -41,14 +41,14 @@ int main( int argc, char* args[] ) {
 
 		if(!paused){
 			if(flip){
-				targetB.target(false);		//Use target as the render target (no clearing)!
+				targetB.target();		//Use target as the render target (no clearing)!
 				automata.use();																				//Use the Automata Shader
 				automata.texture("imageTexture", textureA);		//Target texture!
 				automata.uniform("model", glm::mat4(1));
 				flat.render();			//Render target texture to itself using primitive and automata shader
 			}
 			else{
-				targetA.target(false);		//Use target as the render target (no clearing)!
+				targetA.target();		//Use target as the render target (no clearing)!
 				automata.use();																				//Use the Automata Shader
 				automata.texture("imageTexture", textureB);		//Target texture!
 				automata.uniform("model", glm::mat4(1));

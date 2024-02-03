@@ -11,13 +11,13 @@ int main( int argc, char* args[] ) {
 	Tiny::window("3D Quadratic ODE", 1000, 800);
 	glPointSize(1.5f);
 
-  cam::near = -200.0f;
-	cam::far = 200.0f;
-	cam::zoomrate = 5.0f;
-	cam::look = glm::vec3(0, 10, 0);
-	cam::init(50, cam::ORTHO);
-	cam::rot = -45.0f;
-	cam::update();
+  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -200.0f, 200.0f, 5.0f);
+  Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+  ortho.update();
+  orbit.update();
+
+  Tiny::cam::camera cam(ortho, orbit);
+  cam.update();
 
 	Tiny::view.interface = [&](){};
 
@@ -25,7 +25,7 @@ int main( int argc, char* args[] ) {
 	bool streak = false;
   Tiny::event.handler = [&](){
 
-		cam::handler();
+		cam.handler();
 
 		if(Tiny::event.active[SDLK_SPACE]) streak = true;
 		else streak = false;
@@ -43,9 +43,9 @@ int main( int argc, char* args[] ) {
 	for(int i = 0; i < NPARTICLES; i++)
 		position.push_back(glm::vec4(randf(),randf(),randf(), 1));
 
-	Tiny::Buffer<glm::vec4> posbuf(position);
-	Tiny::Buffer<glm::vec4> colbuf;
-	colbuf.fill<glm::vec4>(NPARTICLES, NULL);
+	Tiny::Buffer posbuf(position);
+	Tiny::Buffer colbuf;
+	colbuf.set<glm::vec4>(NPARTICLES, NULL);
 
   //Compute Shader
 	Tiny::Compute compute("shader/ODE.cs", {"position", "color"});
@@ -56,9 +56,8 @@ int main( int argc, char* args[] ) {
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos", "in_Col"});
 
 	Tiny::Model particles({"position", "color"});
-	particles.bind("position", &posbuf);
-	particles.bind("color", &colbuf);
-	particles.SIZE = NPARTICLES;
+	particles.bind<glm::vec4>("position", posbuf);
+	particles.bind<glm::vec4>("color", colbuf);
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){
@@ -66,9 +65,9 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(glm::vec3(0), !streak);	//Clear Screen to white
 
 		particleShader.use();
-		particleShader.uniform("vp", cam::vp);
+		particleShader.uniform("vp", cam.vp());
 		particleShader.uniform("op", ((streak)?0.3f:1.0f));
-		particles.render(GL_POINTS);
+		particles.render(GL_POINTS, NPARTICLES);
 
 	};
 

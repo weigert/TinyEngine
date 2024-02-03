@@ -10,23 +10,13 @@
 
 int main( int argc, char* args[] ) {
 
-  //Initialize the Compute Shader System
-//	Tiny::benchmark = true;
 	Tiny::view.vsync = false;
 	Tiny::view.antialias = 0;
 	Tiny::window("N-Ball Collisions", 800, 400);
-  cam::near = -200.0f;
-	cam::far = 200.0f;
-	cam::zoomrate = 15.0f;
-	cam::init(500, cam::ORTHO);
-
-//	glPointSize(2.0f);
 
 	bool paused = true;
 	Tiny::view.interface = [&](){};
   Tiny::event.handler = [&](){
-
-		cam::handler();
 
 		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
 			paused = !paused;
@@ -64,11 +54,11 @@ int main( int argc, char* args[] ) {
 	}
 
 	//3 Buffers
-	Tiny::Buffer<glm::vec4> posbufA(position);
-	Tiny::Buffer<glm::vec4> posbufB(position);
-	Tiny::Buffer<glm::vec4> velbufA(velocity);
-	Tiny::Buffer<glm::vec4> velbufB(velocity);
-	Tiny::Buffer<float> massbuf(mass);
+	Tiny::Buffer posbufA(position);
+	Tiny::Buffer posbufB(position);
+	Tiny::Buffer velbufA(velocity);
+	Tiny::Buffer velbufB(velocity);
+	Tiny::Buffer massbuf(mass);
 
   //Compute Shader with SSBO Binding Points
 	Tiny::Compute compute("shader/collide.cs", {"positionA", "positionB", "velocityA", "velocityB"});
@@ -80,9 +70,8 @@ int main( int argc, char* args[] ) {
 	compute.bind("velocityB", &velbufB);
 
 	Tiny::Square2D flat;
-	Tiny::Instance particles(&flat);
-	particles.bind("in_Pos", &posbufA);
-	particles.SIZE = position.size();
+	Tiny::Instance particles(flat);
+	particles.bind<glm::vec4>(posbufA);
 
 	//Visualization Shader, does not need attributes
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Pos"}, {"velocityA", "velocityB"});
@@ -95,7 +84,7 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(glm::vec3(1));	//Clear Screen to white
     particleShader.use();
 		particleShader.uniform("R", RADIUS);
-		particles.render(GL_TRIANGLE_STRIP);
+		particles.render(GL_TRIANGLE_STRIP, NPARTICLES);
 
 	};
 
@@ -105,7 +94,7 @@ int main( int argc, char* args[] ) {
 		if(paused) return;
 
 		compute.use();
-		compute.uniform("size", (int)particles.SIZE);
+		compute.uniform("size", (int)NPARTICLES);
 		compute.uniform("R", RADIUS);
 
 		compute.uniform("collide", true);

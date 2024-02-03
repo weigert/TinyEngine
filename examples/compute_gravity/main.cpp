@@ -7,14 +7,15 @@
 
 int main( int argc, char* args[] ) {
 
-  //Initialize the Compute Shader System
-	Tiny::benchmark = true;
 	Tiny::view.vsync = false;
 	Tiny::window("N-Body Gravity", 1200, 800);
-  cam::near = -200.0f;
-	cam::far = 200.0f;
-	cam::zoomrate = 15.0f;
-	cam::init(500, cam::ORTHO);
+
+  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -200.0f, 200.0f, 500.0f);
+  Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0));
+  ortho.update();
+  orbit.update();
+
+  Tiny::cam::camera cam(ortho, orbit);
 
 //	glPointSize(2.0f);
 
@@ -22,7 +23,7 @@ int main( int argc, char* args[] ) {
 	Tiny::view.interface = [&](){};
   Tiny::event.handler = [&](){
 
-		cam::handler();
+		cam.handler();
 
 		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
 			paused = !paused;
@@ -40,9 +41,9 @@ int main( int argc, char* args[] ) {
 	}
 
 	//3 Buffers
-	Tiny::Buffer<glm::vec4> posbuf(position);
-	Tiny::Buffer<glm::vec4> velbuf(velocity);
-	Tiny::Buffer<float> massbuf(mass);
+	Tiny::Buffer posbuf(position);
+	Tiny::Buffer velbuf(velocity);
+	Tiny::Buffer massbuf(mass);
 
   //Compute Shader with SSBO Binding Points
 	Tiny::Compute compute_v("shader/gravity_v.cs", {"position", "velocity", "mass"});
@@ -57,8 +58,7 @@ int main( int argc, char* args[] ) {
 
 	//Use the Buffer as an Attribute of a Model VAO
 	Tiny::Model particles({"in_Pos"});
-	particles.bind("in_Pos", &posbuf);
-	particles.SIZE = NPARTICLES;
+	particles.bind<glm::vec4>("in_Pos", posbuf);
 
 	//Visualization Shader, does not need attributes
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos"});
@@ -68,8 +68,8 @@ int main( int argc, char* args[] ) {
 
 		Tiny::view.target(glm::vec3(0));	//Clear Screen to white
     particleShader.use();
-		particleShader.uniform("vp", cam::vp);
-		particles.render(GL_POINTS);
+		particleShader.uniform("vp", cam.vp());
+		particles.render(GL_POINTS, NPARTICLES);
 
 	};
 

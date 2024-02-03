@@ -153,7 +153,7 @@ glm::vec3 Branch::leafdensity(int searchdepth){
 Branch* root;
 
 
-void construct(Tiny::Buffer<glm::vec3>& positions, Tiny::Buffer<glm::vec3>& normals, Tiny::Buffer<glm::vec4>& colors, Tiny::Buffer<int>& indices){
+void construct(Tiny::Buffer& positions, Tiny::Buffer& normals, Tiny::Buffer& colors, Tiny::Buffer& indices){
 
   std::vector<int> indbuf;
   std::vector<float> posbuf, norbuf, colbuf;
@@ -216,10 +216,10 @@ void construct(Tiny::Buffer<glm::vec3>& positions, Tiny::Buffer<glm::vec3>& norm
   //Recursive add Branches
   addBranch(root, glm::vec3(0.0));
 
-  positions.fill<float>(posbuf);
-  normals.fill<float>(norbuf);
-  colors.fill<float>(colbuf);
-  indices.fill<int>(indbuf);
+  positions.set(posbuf);
+  normals.set(norbuf);
+  colors.set(colbuf);
+  indices.set(indbuf);
 
 };
 

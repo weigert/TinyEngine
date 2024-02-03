@@ -26,7 +26,7 @@ int main( int argc, char* args[] ) {
 		sdf.uniform("zoom", zoom);
 		sdf.uniform("converge", glm::vec4(cc[0], cc[1], cc[2], cc[3]));
 		sdf.uniform("diverge", glm::vec4(dc[0], dc[1], dc[2], dc[3]));
-		sdf.uniform("model", flat.model);
+		sdf.uniform("model", glm::mat4(1.0f));
 		flat.render();
 
 	};

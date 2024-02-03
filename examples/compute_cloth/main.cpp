@@ -16,16 +16,18 @@ int main( int argc, char* args[] ) {
 
   glDisable(GL_CULL_FACE);
 
-  cam::near = 0.01f;
-  cam::far = 500.0f;
-  cam::zoomrate = 15.0f;
-  cam::init(250, cam::PROJ);
+  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -100.0f, 100.0f, 20.0f);
+  Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(RES/2, RES/2, 0));
+  ortho.update();
+  orbit.update();
+
+  Tiny::cam::camera cam(ortho, orbit);
 
   bool paused = true;
 	Tiny::view.interface = [&](){};
   Tiny::event.handler = [&](){
 
-		cam::handler();
+		cam.handler();
 
 		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
 			paused = !paused;
@@ -44,18 +46,15 @@ int main( int argc, char* args[] ) {
     vertices[3*RES*RES + i*RES + j] = vertices[i*RES + j] ;
   }
 
-  cam::look = glm::vec3(RES/2, RES/2, 0);
-
-
-  Tiny::Buffer<glm::vec4> verticebuf(vertices);
+  Tiny::Buffer verticebuf(vertices);
 
   // Raw Point Model
 
   Tiny::Shader pointShader({"shader/point.vs", "shader/point.fs"}, {"in_Pos"});
 
   Tiny::Model verticemodel({"in_Pos"});
-  verticemodel.bind("in_Pos", &verticebuf);
-  verticemodel.SIZE = RES*RES;
+  verticemodel.bind<glm::vec4>("in_Pos", verticebuf);
+ // verticemodel.SIZE = RES*RES;
 
   // Raw Surface Model
 
@@ -70,13 +69,13 @@ int main( int argc, char* args[] ) {
     indices.emplace_back( (i)*RES + j,  (i+1)*RES + j+1, (i+1)*RES + j, 1);
   }
 
-  Tiny::Buffer<glm::ivec4> indexbuf(indices);
+  Tiny::Buffer indexbuf(indices);
 
   Tiny::Shader surfaceShader({"shader/surface.vs", "shader/surface.fs"}, {"in_Pos", "in_Index"}, {"vertices"});
 
   Tiny::Triangle triangle;
-	Tiny::Instance triangleinstance(&triangle);
-  triangleinstance.bind("in_Index", &indexbuf);
+	Tiny::Instance triangleinstance(triangle);
+  triangleinstance.bind<glm::vec4>(indexbuf);
 
 	surfaceShader.bind("vertices", &verticebuf);
 
@@ -86,11 +85,11 @@ int main( int argc, char* args[] ) {
 
   int t = 0;
 
-  std::vector<glm::vec4> velocityvec(2*RES*RES, glm::vec4(0));
-  std::vector<glm::vec4> forcevec(2*RES*RES, glm::vec4(0));
+  std::vector velocityvec(2*RES*RES, glm::vec4(0));
+  std::vector forcevec(2*RES*RES, glm::vec4(0));
 
-  Tiny::Buffer<glm::vec4> velocitybuf(velocityvec);
-  Tiny::Buffer<glm::vec4> forcebuf(forcevec);
+  Tiny::Buffer velocitybuf(velocityvec);
+  Tiny::Buffer forcebuf(forcevec);
 
   Tiny::Compute shift_f("shader/shift_f.cs", {"vertices", "velocity", "force"});
   shift_f.bind("vertices", &verticebuf);
@@ -112,8 +111,8 @@ int main( int argc, char* args[] ) {
   //  verticemodel.render(GL_POINTS);
 
     surfaceShader.use();
-    surfaceShader.uniform("vp", cam::vp);
-    triangleinstance.render(GL_LINE_STRIP);
+    surfaceShader.uniform("vp", cam.vp());
+    triangleinstance.render(GL_LINE_STRIP, indices.size());
 
 	};
 

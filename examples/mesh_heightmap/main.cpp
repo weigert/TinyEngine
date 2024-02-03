@@ -8,15 +8,14 @@
 
 int main( int argc, char* args[] ) {
 
-	Tiny::view.vsync = false;
 	Tiny::window("Heightmap Render", 1200, 800);			//Open Window
 
-	Tiny::cam_projection<Tiny::camera_projection::ORTHOGONAL> ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, 10.0f, -100.0f, 100.0f);
-	Tiny::cam_control<Tiny::camera_control::ORBIT> orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+	Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -50.0f, 50.0f, 10.0f);
+	Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+	ortho.update();
+	orbit.update();
 
-	Tiny::camera cam(ortho, orbit);
-	cam.projection.update();
-	cam.update();
+	Tiny::cam::camera cam(ortho, orbit);
 
 	Tiny::event.handler = cam.handler;								//Event Handler
 	Tiny::view.interface = [&](){ /* ... */ };				//No Interface

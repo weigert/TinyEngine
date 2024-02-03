@@ -1,7 +1,7 @@
 # TinyEngine Makefile
 # Compiler Configuration
 
-CC = g++ -std=c++17
+CC = g++ -std=c++20
 CF = -Wfatal-errors -O
 LF = -I$(HOME)/.local/include -L$(HOME)/.local/lib
 

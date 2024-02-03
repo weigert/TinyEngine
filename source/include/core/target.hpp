@@ -5,7 +5,14 @@
 
 namespace Tiny {
 
-//! Target is ...
+//! Target is a frame-buffer wrapper that can be targeted 
+//! for off-screen rendering. 
+//!
+//! A target can bind multiple textures as depth or color
+//! attachments, which can be individually rendered to
+//! during the fragment shader stage.
+//!
+//! This allows for multi-stage rendering pipelines.
 //!
 struct Target {
 protected:
@@ -77,25 +84,15 @@ bool Target::valid(){
   return true;
 }
 
-/*
-template<typename T>
-void Target::sample(T* m, glm::vec2 p, glm::vec2 d, GLenum ATTACH = GL_COLOR_BUFFER_BIT, GLenum FORMAT = GL_RGBA){
-  if(d.x <= 0 || d.y <= 0 || p.x+d.x > width() || p.y+d.y > height()) return;
-  this->operator()();
-  glReadBuffer(ATTACH);
-  glReadPixels(p.x, p.y, d.x, d.y, FORMAT, GL_UNSIGNED_BYTE, m);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-*/
-
 //! Billboard is a Target with RGBA-Color and Depth-Buffers.
+//!
 struct Billboard: Target {
 
   Billboard(const size_t width, const size_t height):Target(width, height),
   _color(width, height, Texture::RGBA8U),
   _depth(width, height, Texture::DEPTH8U){
-    bind(_color, GL_COLOR_ATTACHMENT0);
-    bind(_depth, GL_DEPTH_ATTACHMENT);
+    this->bind(_color, GL_COLOR_ATTACHMENT0);
+    this->bind(_depth, GL_DEPTH_ATTACHMENT);
   }
 
   inline Texture& color() { return this->_color; }
@@ -107,13 +104,14 @@ private:
 };
 
 //! Cubemap is a Target with an RGBA-Color and Depth-Buffres
+//!
 struct CubeMap: Target {
 
   CubeMap(const size_t width, const size_t height):Target(width, height),
   _color(width, height, Texture::RGBA8U),
   _depth(width, height, Texture::DEPTH8U){
-    bind(_color, GL_COLOR_ATTACHMENT0);
-    bind(_depth, GL_DEPTH_ATTACHMENT);
+    this->bind(_color, GL_COLOR_ATTACHMENT0);
+    this->bind(_depth, GL_DEPTH_ATTACHMENT);
   }
 
   inline CubeTexture& color() { return this->_color; }
@@ -122,6 +120,35 @@ struct CubeMap: Target {
 private:
   CubeTexture _color;  //!< CubeMap Color Attachment (RGBA8U)
   CubeTexture _depth;  //!< CubeMap Depth Attachment (DEPTH8U)
+};
+
+//! GBUffer is a Target with multiple color attachments,
+//! intended for deferred rendering purposes. This struct
+//! can be used to correctly set up a GBUffer target.
+//!
+struct GBuffer: Target {
+
+  GBuffer(const size_t width, const size_t height):Target(width, height),
+  _position(width, height, Texture::RGBA16F),
+  _normal(width, height, Texture::RGBA16F),
+  _color(width, height, Texture::RGBA8U),
+  _depth(width, height, Texture::DEPTH8U){
+    this->bind(_position, GL_COLOR_ATTACHMENT0);
+    this->bind(_normal, GL_COLOR_ATTACHMENT1);
+    this->bind(_color, GL_COLOR_ATTACHMENT2);
+    this->bind(_depth, GL_DEPTH_ATTACHMENT);
+  }
+
+  inline Texture& position() { return this->_position; }
+  inline Texture& normal() { return this->_normal; }
+  inline Texture& color() { return this->_color; }
+  inline Texture& depth() { return this->_depth; }
+
+private:
+  Texture _position;  //!< GBuffer Position Attachment (RGBA16F)
+  Texture _normal;    //!< GBuffer Normal Attachment (RGBA16F)
+  Texture _color;     //!< GBuffer Color Attachment (RGBA8U)
+  Texture _depth;     //!< GBuffer Depth Attachment (DEPTH8U)
 };
 
 } // end of namespace Tiny

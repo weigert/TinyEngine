@@ -21,16 +21,7 @@ int main( int argc, char* args[] ) {
   
   // Setup gBuffer
 
-  Tiny::Texture gPosition(WIDTH, HEIGHT, {GL_RGBA16F, GL_RGBA, GL_FLOAT});
-  Tiny::Texture gNormal(WIDTH, HEIGHT, {GL_RGBA16F, GL_RGBA, GL_FLOAT});
-  Tiny::Texture gColor(WIDTH, HEIGHT, {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE});
-  Tiny::Texture gDepth(WIDTH, HEIGHT, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE});
-
-  Tiny::Target gBuffer(WIDTH, HEIGHT);
-  gBuffer.bind(gPosition, GL_COLOR_ATTACHMENT0);
-  gBuffer.bind(gNormal, GL_COLOR_ATTACHMENT1);
-  gBuffer.bind(gColor, GL_COLOR_ATTACHMENT2);
-  gBuffer.bind(gDepth, GL_DEPTH_ATTACHMENT);
+  Tiny::GBuffer gBuffer(WIDTH, HEIGHT);
 
   // Setup SSAO Texture
   std::uniform_real_distribution<GLfloat> randomFloats(-1.0, 1.0); // generates random floats between 0.0 and 1.0
@@ -136,8 +127,8 @@ int main( int argc, char* args[] ) {
     for (unsigned int i = 0; i < 64; ++i)
       ssaoshader.uniform("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
     ssaoshader.uniform("projection", cam.projection.proj());
-    ssaoshader.texture("gPosition", gPosition);
-    ssaoshader.texture("gNormal", gNormal);
+    ssaoshader.texture("gPosition", gBuffer.position());
+    ssaoshader.texture("gNormal", gBuffer.normal());
     ssaoshader.texture("texNoise", noisetex);
     ssaoshader.uniform("radius", ssaoradius);
     flat.render();
@@ -146,10 +137,10 @@ int main( int argc, char* args[] ) {
 
     Tiny::view.target(glm::vec3(0));    //Prepare Target
     imageshader.use();
-    imageshader.texture("gPosition", gPosition);
-    imageshader.texture("gNormal", gNormal);
-    imageshader.texture("gColor", gColor);
-    imageshader.texture("gDepth", gDepth);
+    imageshader.texture("gPosition", gBuffer.position());
+    imageshader.texture("gNormal", gBuffer.normal());
+    imageshader.texture("gColor", gBuffer.color());
+    imageshader.texture("gDepth", gBuffer.depth());
     imageshader.texture("ssaoTex", ssaotex);
     imageshader.uniform("view", cam.control.view());
     flat.render();

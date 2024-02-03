@@ -1,11 +1,10 @@
 #ifndef TINYENGINE_CORE_TEXTURE
 #define TINYENGINE_CORE_TEXTURE
 
-#include <functional>
-
 namespace Tiny {
 
 //! Layout specifies the Data Format of GPU Textures.
+//!
 struct Layout {
   GLenum internal;  //!< Defines number of Components
   GLenum format;    //!< Defines Pixel Components
@@ -61,6 +60,7 @@ public:
 
   static constexpr Layout R8U{GL_R8, GL_RED, GL_UNSIGNED_BYTE}; 
   static constexpr Layout RGBA8U{GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE}; 
+  static constexpr Layout RGBA16F{GL_RGBA16F, GL_RGBA, GL_FLOAT};
   static constexpr Layout RGBA32F{GL_RGBA32F, GL_RGBA, GL_FLOAT};
   static constexpr Layout DEPTH8U{GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE};
 

@@ -48,9 +48,10 @@ private:
 void Target::bind(Texture& texture, const GLenum attachment){  
   this->operator()();
   glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture.index(), 0);
-  this->attachments.push_back(attachment);
-  if(attachment != GL_DEPTH_ATTACHMENT)
-    glDrawBuffer(attachment);
+  if(attachment != GL_DEPTH_ATTACHMENT){
+    this->attachments.push_back(attachment);
+    glDrawBuffers(attachments.size(), &attachments[0]);
+  }
   else if(attachments.empty())
     glDrawBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

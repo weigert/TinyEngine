@@ -75,6 +75,14 @@ struct orbit {
     this->_invview = glm::inverse(_view);
   }
 
+  inline const glm::vec3 look() const {
+    return this->_look;
+  }
+
+  inline const float _phi() const {
+    return this->phi;
+  }
+
   inline const glm::vec3 pos() const {
     return this->_pos;
   }

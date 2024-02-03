@@ -62,13 +62,13 @@ std::function<void()> interfaceFunc = [](){
   ImGui::SliderFloat3("Attenuation", attenuation, 0.0f, 25.0f);
   ImGui::Checkbox("On Switch", &on);
   ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f);
-  ImGui::SliderFloat3("Position", &plightpos[0], -25.0f, 25.0f);
+  ImGui::SliderFloat3("Position", &plightpos[0], -50.0f, 50.0f);
   lightupdate = true;
 
   ImGui::End();
 };
 
-Tiny::Model* construct_room(){
+Tiny::Indexed* construct_room(){
 
   std::vector<glm::vec3> positions = {
     {-1.0, 0.0, -1.0},
@@ -212,12 +212,11 @@ Tiny::Model* construct_room(){
     colors.emplace_back(ceilingcolor, 1.0);
   }
 
-  Tiny::Model* model = new Tiny::Model({"in_Position", "in_Normal", "in_Color"});
-  model->bind("in_Position", new Tiny::Buffer<glm::vec3>(positions));
-  model->bind("in_Normal", new Tiny::Buffer<glm::vec3>(normals));
-  model->bind("in_Color", new Tiny::Buffer<glm::vec4>(colors));
-  model->SIZE = positions.size();
-  model->index(new Tiny::Buffer<int>(indices));
+  auto indbuf = new Tiny::Buffer(indices);
+  Tiny::Indexed* model = new Tiny::Indexed({"in_Position", "in_Normal", "in_Color"}, *indbuf);
+  model->bind<glm::vec3>("in_Position", *(new Tiny::Buffer(positions)));
+  model->bind<glm::vec3>("in_Normal", *(new Tiny::Buffer(normals)));
+  model->bind<glm::vec4>("in_Color", *(new Tiny::Buffer(colors)));
   return model;
 
 }

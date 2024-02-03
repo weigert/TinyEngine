@@ -8,30 +8,29 @@
 
 namespace Tiny {
 
-//! Object is a Model type for loading .obj and .mtl
-//! files directly into a renderable object.
+//! Object is a renderable Model type,
+//! for loading .obj and .mtl files.
 //!
 struct Object: Model {
 
-  using Model::render;
-
+  //! Construct an Object from a Filename
   Object(const std::string filename):
   Model({"in_Position", "in_Normal", "in_Color"}){
     this->load_material(filename + ".mtl");
     this->load_geometry(filename + ".obj");
     this->bind<glm::vec3>("in_Position", b_positions);
     this->bind<glm::vec3>("in_Normal", b_normals);
-    this->bind<glm::vec3>("in_Color", b_colors);
+    this->bind<glm::vec4>("in_Color", b_colors);
   }
 
   void load_geometry(const std::string filename); //!< Load the Geometry from ".obj"
   void load_material(const std::string filename); //!< Load the Materials from ".mtl"
 
 private:
-  std::unordered_map<std::string, glm::vec3> materials;
-  Buffer b_positions;
-  Buffer b_normals;
-  Buffer b_colors;
+  std::unordered_map<std::string, glm::vec3> materials; //!< Materials Map
+  Buffer b_positions; //!< Positions Buffer
+  Buffer b_normals;   //!< Normals Buffer
+  Buffer b_colors;    //!< Colors Buffer
 };
 
 // Implementations

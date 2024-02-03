@@ -19,29 +19,31 @@ int main( int argc, char* args[] ) {
 
 	std::string path = "object/";
 
-	Tiny::Model* lamp = obj::load(path+"Lamp");
-	Tiny::Model* chair = obj::load(path+"Chair");
-	Tiny::Model* table = obj::load(path+"Table");
-	Tiny::Model* shelf =  obj::load(path+"Shelf");
-	Tiny::Model* frame =  obj::load(path+"Frame");
+	Tiny::Object lamp(path+"Lamp");
+	Tiny::Object chair(path+"Chair");
+	Tiny::Object table(path+"Table");
+	Tiny::Object shelf(path+"Shelf");
+	Tiny::Object frame(path+"Frame");
 
-	lamp->model = glm::translate(glm::mat4(1.0f), glm::vec3(2,5,2));
-	table->model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,2));
-	chair->model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-2));
-	shelf->model = glm::translate(glm::mat4(1.0f), glm::vec3(24,0,0));
-	frame->model = glm::translate(glm::mat4(1.0f), glm::vec3(-25,15,0));
-	frame->model = glm::rotate(frame->model, glm::radians(90.0f), glm::vec3(0,1,0));
+	glm::mat4 lampmodel = glm::translate(glm::mat4(1.0f), glm::vec3(2,5,2));
+	glm::mat4 tablemodel = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,2));
+	glm::mat4 chairmodel = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-2));
+	glm::mat4 shelfmodel = glm::translate(glm::mat4(1.0f), glm::vec3(24,0,0));
+	glm::mat4 framemodel = glm::translate(glm::mat4(1.0f), glm::vec3(-25,15,0));
+	framemodel = glm::rotate(framemodel, glm::radians(90.0f), glm::vec3(0,1,0));
 
-  Tiny::Model* room = construct_room();
-	room->model = glm::scale(glm::mat4(1.0f), glm::vec3(25));
+  Tiny::Indexed* room = construct_room();
+	glm::mat4 roommodel = glm::scale(glm::mat4(1.0f), glm::vec3(25));
 
 	//Shadow Map
-	Tiny::Cubemap pointshadow(1000, 1000);
+	Tiny::CubeMap pointshadow(1000, 1000);
 
 	Tiny::view.pipeline = [&](){
 
 		//Point Shadow Map
 		if(lightupdate){ //Only do it if necessary
+
+			pointshadow.clear();
 			pointshadow.target();
 			cubedepth.use();
 			cubedepth.uniform("vp", views);
@@ -49,16 +51,16 @@ int main( int argc, char* args[] ) {
 			cubedepth.uniform("lightPos", plightpos);
 			cubedepth.uniform("far", pointfar);
 
-			cubedepth.uniform("model", lamp->model);
-			lamp->render(GL_TRIANGLES);
-			cubedepth.uniform("model", table->model);
-			table->render(GL_TRIANGLES);
-			cubedepth.uniform("model", chair->model);
-			chair->render(GL_TRIANGLES);
-			cubedepth.uniform("model", shelf->model);
-			shelf->render(GL_TRIANGLES);
-			cubedepth.uniform("model", frame->model);
-			frame->render(GL_TRIANGLES);
+			cubedepth.uniform("model", lampmodel);
+			lamp.render(GL_TRIANGLES, lamp.size());
+			cubedepth.uniform("model", tablemodel);
+			table.render(GL_TRIANGLES, table.size());
+			cubedepth.uniform("model", chairmodel);
+			chair.render(GL_TRIANGLES, chair.size());
+			cubedepth.uniform("model", shelfmodel);
+			shelf.render(GL_TRIANGLES, shelf.size());
+			cubedepth.uniform("model", framemodel);
+			frame.render(GL_TRIANGLES, frame.size());
 
 			lightupdate = false;
 		}
@@ -71,7 +73,7 @@ int main( int argc, char* args[] ) {
 		shader.uniform("camera", pos);
 
 		//Point Shadow
-		shader.texture("pointshadowMap", pointshadow.depth);
+		shader.texture("pointshadowMap", pointshadow.depth());
 		shader.uniform("pointlightpos", plightpos);
 		shader.uniform("pointlightfar", pointfar);
 		shader.uniform("pointlighton", on);
@@ -79,19 +81,19 @@ int main( int argc, char* args[] ) {
 		shader.uniform("brightness", brightness);
 		shader.uniform("attenuation", attenuation);
 
-		shader.uniform("model", room->model);
+		shader.uniform("model", roommodel);
 		room->render(GL_TRIANGLES);
 
-		shader.uniform("model", lamp->model);
-		lamp->render(GL_TRIANGLES);
-		shader.uniform("model", table->model);
-		table->render(GL_TRIANGLES);
-		shader.uniform("model", chair->model);
-		chair->render(GL_TRIANGLES);
-		shader.uniform("model", shelf->model);
-		shelf->render(GL_TRIANGLES);
-		shader.uniform("model", frame->model);
-		frame->render(GL_TRIANGLES);
+		shader.uniform("model", lampmodel);
+		lamp.render(GL_TRIANGLES, lamp.size());
+		shader.uniform("model", tablemodel);
+		table.render(GL_TRIANGLES, table.size());
+		shader.uniform("model", chairmodel);
+		chair.render(GL_TRIANGLES, chair.size());
+		shader.uniform("model", shelfmodel);
+		shelf.render(GL_TRIANGLES, shelf.size());
+		shader.uniform("model", framemodel);
+		frame.render(GL_TRIANGLES, frame.size());
 
 	};
 

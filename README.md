@@ -225,7 +225,6 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
     - OpenGL3: apt-get install libglu1-mesa-dev
     - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev
     - GLEW:    apt-get install libglew-dev
-    - Boost:   apt-get install libboost-system-dev libboost-filesystem-dev
     - GLM:     apt-get install libglm-dev
 
     - DearImGUI (already included!)
@@ -238,7 +237,7 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
 In a single command:
 
 ```bash
-sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libboost-system-dev libboost-filesystem-dev libglm-dev
+sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libglew-dev libglm-dev
 ```
 
 #### Fedora / DNF Package Manager Systems
@@ -246,7 +245,7 @@ sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-
 For systems with `dnf` as package manager, the dependencies can be installed using:
 
 ```bash
-sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel boost-devel glm-devel eigen3-devel
+sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel glm-devel eigen3-devel
 ```
 
 #### MacOS (+Apple M1)
@@ -269,7 +268,6 @@ brew install sdl2_image
 brew install sdl2_mixer
 brew install sld2_ttf
 brew install glm
-brew install boost
 ```
 
 Note that MacOS only supports a specific OpenGL version, giving access to GLSL versions 330 to 410 (including core profiles). This affects which examples can be run, depending on what GLSL versions they need. Be aware of this when writing your own programs.

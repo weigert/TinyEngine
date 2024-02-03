@@ -1,37 +1,41 @@
 #define PI 3.14159265f
 
-struct Icosphere: Tiny::Model {
+struct Icosphere: Tiny::Indexed {
 
   std::vector<glm::vec3> positions;
   std::vector<glm::uvec3> indices;
-  Tiny::Buffer<glm::vec3> pos;
-  Tiny::Buffer<glm::uvec3> ind;
 
-  Icosphere():Model({"in_Position", "in_Tex"}){
+  Icosphere():Tiny::Indexed({"in_Position", "in_Tex"}, this->ind){
 
     build();
     split();
 
-    pos.fill(positions);
-    ind.fill(indices);
+    pos.set<glm::vec3>(positions);
+    ind.set<glm::uvec3>(indices);
 
-    bind("in_Position", &pos);
-    index(&ind);
-    SIZE = indices.size()*3;
+    bind<glm::vec3>("in_Position", pos);
+    set<glm::uvec3>(this->ind);
+    //index(&ind);
+    this->_size = indices.size()*3;
 
   }
 
   void build();
   void split();
   void sort(){
+    /*
     std::sort(indices.begin(), indices.end(), [&](const glm::uvec3& a, const glm::uvec3& b){
       glm::vec3 ap = cam::vp*glm::vec4((positions[a.x] + positions[a.y] + positions[a.z])/3.0f, 1.0);
       glm::vec3 bp = cam::vp*glm::vec4((positions[b.x] + positions[b.y] + positions[b.z])/3.0f, 1.0);
       return ap.z > bp.z;
     });
     ind.fill(indices);
+    */
   }
 
+private:
+  Tiny::Buffer pos;
+  Tiny::Buffer ind;
 };
 
 void Icosphere::build(){

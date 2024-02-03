@@ -23,7 +23,7 @@ int main( int argc, char* args[] ) {
 
   Tiny::Texture gPosition(WIDTH, HEIGHT, {GL_RGBA16F, GL_RGBA, GL_FLOAT});
   Tiny::Texture gNormal(WIDTH, HEIGHT, {GL_RGBA16F, GL_RGBA, GL_FLOAT});
-  Tiny::Texture gColor(WIDTH, HEIGHT, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
+  Tiny::Texture gColor(WIDTH, HEIGHT, {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE});
   Tiny::Texture gDepth(WIDTH, HEIGHT, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE});
 
   Tiny::Target gBuffer(WIDTH, HEIGHT);
@@ -33,15 +33,17 @@ int main( int argc, char* args[] ) {
   gBuffer.bind(gDepth, GL_DEPTH_ATTACHMENT);
 
   // Setup SSAO Texture
+  std::uniform_real_distribution<GLfloat> randomFloats(-1.0, 1.0); // generates random floats between 0.0 and 1.0
+  std::default_random_engine generator;
 
   Tiny::Target ssaofbo(WIDTH, HEIGHT);
+
   Tiny::Texture ssaotex(WIDTH, HEIGHT, {GL_R16F, GL_RED, GL_FLOAT});
+
   ssaofbo.bind(ssaotex, GL_COLOR_ATTACHMENT0);
 
   // generate sample kernel
   // ----------------------
-  std::uniform_real_distribution<GLfloat> randomFloats(-1.0, 1.0); // generates random floats between 0.0 and 1.0
-  std::default_random_engine generator;
   std::vector<glm::vec3> ssaoKernel;
   for (unsigned int i = 0; i < 64; ++i){
       glm::vec3 sample(randomFloats(generator), randomFloats(generator), 0.5f*randomFloats(generator)+0.5f);
@@ -61,13 +63,12 @@ int main( int argc, char* args[] ) {
       ssaoNoise.push_back(noise);
   }
 
-  Tiny::Texture noisetex(4, 4, {GL_RGBA32F, GL_RGB, GL_FLOAT}, &ssaoNoise[0]);
-  glBindTexture(GL_TEXTURE_2D, noisetex.texture);
+  Tiny::Texture noisetex(4, 4, {GL_RGBA32F, GL_RGBA, GL_FLOAT}, &ssaoNoise[0]);
+  glBindTexture(GL_TEXTURE_2D, noisetex.index());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
 
   Tiny::Square2D flat;
 
@@ -119,18 +120,18 @@ int main( int argc, char* args[] ) {
 
   Tiny::view.pipeline = [&](){
 
-    gBuffer.target(glm::vec3(0));
-
+    gBuffer.clear(glm::vec4(0,0,0,1));
+    gBuffer.target();
     modelshader.use();
     modelshader.uniform("proj", cam.projection.proj());
     modelshader.uniform("view", cam.control.view());
     modelshader.uniform("color", glm::vec3(1.0f));
     treeparticle.render(GL_TRIANGLES, treemodels.size());
 
-
     // SSAO Texture
 
-    ssaofbo.target(glm::vec3(1));
+    ssaofbo.target();
+    ssaofbo.clear(glm::vec4(0));
     ssaoshader.use();
     for (unsigned int i = 0; i < 64; ++i)
       ssaoshader.uniform("samples[" + std::to_string(i) + "]", ssaoKernel[i]);

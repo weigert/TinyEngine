@@ -135,5 +135,5 @@ void main() {
 
 */
   fragColor = vec4(vec3(ao), 1);
-  //fragColor = texture(gNormal, ex_Tex);
+  //fragColor = texture(gPosition, ex_Tex);
 }

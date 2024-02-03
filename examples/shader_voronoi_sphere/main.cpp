@@ -27,10 +27,13 @@ int main( int argc, char* args[] ) {
 
   // Camera for Viewing Sphere
 
-  cam::near = -100.0f;
-  cam::far = 100.0f;
-  cam::zoomrate *= 10.0f;
-  cam::init(500.0f, cam::ORTHO);
+  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -100.0f, 100.0f, 500.0f);
+  Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+  ortho.update();
+  orbit.update();
+
+  Tiny::cam::camera cam(ortho, orbit);
+  cam.update();
 
   // Shader, Model for Rendering Sphere / Sampling from Cubemap
 
@@ -40,7 +43,7 @@ int main( int argc, char* args[] ) {
   // Cubemap and Cube Voronoi Shader
 
   Tiny::Shader cubevoronoi({"shader/cubevoronoi.vs", "shader/cubevoronoi.gs", "shader/cubevoronoi.fs"}, {"in_Position"});
-  Tiny::Cubemap voronoi(512, 512);
+  Tiny::CubeMap voronoi(512, 512);
 
   // View Matrices for Cubemap Geometry Shader
 
@@ -68,31 +71,32 @@ int main( int argc, char* args[] ) {
 
   // Buffer and Instance of Flat
 
-  Tiny::Buffer<glm::vec3> centroidbuf(offsets);
+  Tiny::Buffer centroidbuf(offsets);
 
   Tiny::Square3D flat;
-  Tiny::Instance instance(&flat);
-  instance.bind("in_Centroid", &centroidbuf);
+  Tiny::Instance instance(flat);
+  instance.bind<glm::vec3>(centroidbuf);
 
   // Loop
 
   const float R = 0.05f;
 
-  Tiny::event.handler = cam::handler;
+  Tiny::event.handler = cam.handler;
   Tiny::view.pipeline = [&](){
 
+    voronoi.clear();
     voronoi.target();
     cubevoronoi.use();
     cubevoronoi.uniform("vp", views);
     cubevoronoi.uniform("R", R);
-    instance.render();
+    instance.render(GL_TRIANGLE_STRIP, 3*centroids.size());
 
     Tiny::view.target(glm::vec3(0));
 
     sphere.use();
-    sphere.uniform("vp", cam::vp);	//View Projection Matrix
-    sphere.texture("voronoicolor", voronoi.texture);
-    sphere.texture("voronoidepth", voronoi.depth);
+    sphere.uniform("vp", cam.vp());	//View Projection Matrix
+    sphere.texture("voronoicolor", voronoi.color());
+    sphere.texture("voronoidepth", voronoi.depth());
     icosahedron.render(GL_TRIANGLES);							  //Render Model with Lines
 
   };
@@ -111,7 +115,6 @@ int main( int argc, char* args[] ) {
 
   Tiny::loop([&](){											//Extra Stuff (every tick)
 
-
     t += 0.01f;
 
     for(unsigned int i = 0; i < offsets.size(); i++){
@@ -119,8 +122,7 @@ int main( int argc, char* args[] ) {
       offsets[i].y = centroids[i].y + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, -t);
       offsets[i].z = centroids[i].z + 0.5f*R*noise.GetNoise(centroids[i].x, centroids[i].y, t);
     }
-    centroidbuf.fill(offsets);
-
+    centroidbuf.set(offsets);
 
   });
 

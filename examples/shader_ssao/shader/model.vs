@@ -1,16 +1,16 @@
 #version 430 core
 
-layout(location = 0) in vec4 in_Position;
-layout(location = 1) in vec3 in_Normal;
-layout(location = 2) in mat4 in_Model;
-
-uniform mat4 proj;
-uniform mat4 view;
+layout (location = 0) in vec4 in_Position;
+layout (location = 1) in vec3 in_Normal;
+layout (location = 2) in mat4 in_Model;
 
 out vec4 ex_Position;
 out vec3 ex_Normal;
 
-void main(void) {
+uniform mat4 proj;
+uniform mat4 view;
+
+void main(){
 
 	const vec4 v_Position = view * in_Model * in_Position;
 	ex_Position = v_Position;

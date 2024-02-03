@@ -56,7 +56,7 @@ int main( int argc, char* args[] ) {
 	//Generate Set of Centroids
 	sample::disc(centroids, K, glm::vec2(-1), glm::vec2(1));
 	offset = centroids;
-	Tiny::Buffer<glm::vec2> centroidbuf(centroids);
+	Tiny::Buffer centroidbuf(centroids);
 
 	//Utility Classes
 	Tiny::Square2D flat;
@@ -74,8 +74,8 @@ int main( int argc, char* args[] ) {
 	mosaic.bind("centroids", &centroidbuf);
 
 	//Prepare instance render of flat, per-centroid
-	Tiny::Instance instance(&flat);
-	instance.bind("in_Centroid", &centroidbuf);
+	Tiny::Instance instance(flat);
+	instance.bind<glm::vec2>(centroidbuf);
 
 	Tiny::Texture tex(image::load("starry_night.png")); //Load Texture with Image
 
@@ -95,14 +95,15 @@ int main( int argc, char* args[] ) {
 
 		auto start = std::chrono::high_resolution_clock::now(); //Start Timer
 
-		billboard.target(color::black);
+		billboard.clear();
+		billboard.target();
 		voronoi.use();
 		voronoi.uniform("R", R);
 		voronoi.uniform("drawcenter", drawcenter);
 		voronoi.uniform("style", drawstyle);
 		voronoi.uniform("metric", metric);
 		voronoi.uniform("twist", twist);
-		instance.render();
+		instance.render(GL_TRIANGLE_STRIP, centroids.size());
 
 		glFlush();						//Finish Pass
 
@@ -120,26 +121,26 @@ int main( int argc, char* args[] ) {
 		//Pick a shader, pass textures, render as a quad.
 		if(drawstyle == 3){
 			bubble.use();
-			bubble.texture("voronoi", billboard.texture);
+			bubble.texture("voronoi", billboard.color());
 			bubble.texture("image", tex);
 			bubble.uniform("R", R);
-			bubble.uniform("model", flat.model);
+			bubble.uniform("model", glm::mat4(1.0f));
 			flat.render();
 		}
 
 		else if(drawstyle == 2) {
 			mosaic.use();
-			mosaic.texture("voronoi", billboard.texture);
+			mosaic.texture("voronoi", billboard.color());
 			mosaic.texture("image", tex);
 			mosaic.uniform("R", R);
-			mosaic.uniform("model", flat.model);
+			mosaic.uniform("model", glm::mat4(1.0f));
 			flat.render();
 		}
 
 		else {
 			billboardshader.use();
-			billboardshader.texture("imageTexture", billboard.texture);
-			billboardshader.uniform("model", flat.model);
+			billboardshader.texture("imageTexture", billboard.color());
+			billboardshader.uniform("model", glm::mat4(1.0f));
 			flat.render();
 		}
 	};
@@ -159,13 +160,12 @@ int main( int argc, char* args[] ) {
 			}
 
 			//Centroids have moved, so we update the instance buffer
-			centroidbuf.fill<glm::vec2>(offset);
+			centroidbuf.set<glm::vec2>(offset);
 
 		}
 
 		if(updated){ //Update the data in the buffers!
-			centroidbuf.fill<glm::vec2>(centroids);
-			instance.SIZE = centroids.size();
+			centroidbuf.set<glm::vec2>(centroids);
 			updated = false;
 		}
 

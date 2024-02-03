@@ -1,4 +1,5 @@
 #version 430 core
+
 layout (location = 0) out vec4 gPosition;
 layout (location = 1) out vec4 gNormal;
 layout (location = 2) out vec4 gColor;
@@ -10,8 +11,8 @@ uniform vec3 color;
 
 void main(){
 
-  gColor = vec4(1);
   gPosition = ex_Position;
   gNormal = vec4(normalize(ex_Normal), 1);
+  gColor = vec4(1);
 
 }

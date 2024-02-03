@@ -44,11 +44,11 @@ struct Instance {
   void render(const GLenum, const size_t) const;  //!< Render the Instance w. Primitive, Number of Instances
   void render() const;                            //!< Default Primitive, Size
 
-  const inline M& model() const { return _model; }      //!< Retrieve the Model Reference
+  const inline M& model()     const { return _model; }  //!< Retrieve the Model Reference
   const inline size_t count() const { return _count; }  //!< Retrieve Number of Attribute Divisors
   const inline size_t size()  const { return _size; }   //!< Retrieve Number of Attribute Elements
 
-private:
+protected:
   M& _model;          //!< Model Reference
   size_t _size;       //!< Number of Attribute Elements
   size_t _count = 0;  //!< Number of Attribute Divisors

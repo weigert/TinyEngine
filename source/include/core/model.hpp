@@ -9,21 +9,26 @@
 
 namespace Tiny {
 
-//! A Model binds multiple Buffers into a single renderable form,
-//! while informing OpenGL how to interpret the raw memory buffer.
+//! A Model binds multiple Buffers to named Attributes, to make them
+//! jointly renderable as the vertices of a primitive.
 //!
+//! The named Attributes of the Model are declared at construction time.
+//! A single Buffer can then be bound to each named Attribute, by
+//! declaring how the data in the buffer should be interpreted.
+//! 
 //! When a Model is rendered as a primitive type, the bound buffers
 //! are assumed to be in full array form. If you want your primitive
 //! to utilized an indexed draw / elements array, then utilized the
 //! indexed derived class.
 //!
 struct Model {
-
+protected:
   //! Allocate GPU Model (Vertex Array Object)
   Model(){
     glGenVertexArrays(1, &_vao);
   }
 
+public:
   //! De-Allocate GPU Model
   ~Model(){
     glDisableVertexAttribArray(_vao);
@@ -31,41 +36,44 @@ struct Model {
   }
 
   //! Allocate GPU Model and Enable Buffer Binding Points
-  Model(std::vector<std::string> nbinding):Model(){
+  Model(const std::vector<std::string> attributes):Model(){
     this->operator()();
-    for(auto& b: nbinding){
-      bindings[b] = bindings.size();
-      glEnableVertexAttribArray(bindings[b]);
+    for(auto& attr: attributes){
+      this->attributes[attr] = this->attributes.size();
+      glEnableVertexAttribArray(this->attributes[attr]);
     }
   }
 
-  // Data Setting / Getting
+  //! Bind a Buffer to a named Attribute, while declaring how
+  //! the data should be interpreted for each primitive.
+  //!
+  template<typename T> void bind(const std::string attribute, Buffer& buffer);
+  
+  void render(const GLenum, const size_t) const;  //!< Render the Model as Primitive, Number of Primitives
+  void render() const;                            //!< Default Primitive, Size (Full Buffer)
 
-  template<typename T> void bind(std::string binding, Buffer& buf);
-  void render(const GLenum, const size_t) const;  //!< Render the Instance w. Primitive, Number of Instances
-  void render() const;                            //!< Default Primitive, Size
-
-  inline const uint32_t vao() const { return _vao; }            //!< Retrieve Vertex Array Object Index
-  inline const size_t size()  const { return _size; }           //!< Retrieve Number of Vertices
-  inline const size_t count() const { return bindings.size(); } //!< Retrieve Binding Count
-  void operator()() const { glBindVertexArray(this->vao()); }   //!< Bind the Vertex Array Object
+  inline const uint32_t vao() const { return _vao; }              //!< Retrieve Vertex Array Object Index
+  inline const size_t size()  const { return _size; }             //!< Retrieve Number of Vertices
+  inline const size_t count() const { return attributes.size(); } //!< Retrieve Binding Count
+  void operator()() const { glBindVertexArray(this->vao()); }     //!< Bind the Vertex Array Object
 
 protected:
-  uint32_t _vao;                                  //!< Vertex Array Object Index
-  size_t _size;                                   //!< Number of Vertices
-  std::unordered_map<std::string, int> bindings;  //!< Binding Count
+  uint32_t _vao;                                    //!< Vertex Array Object Index
+  size_t _size;                                     //!< Number of Vertices
+  std::unordered_map<std::string, int> attributes;  //!< Local Attribute Map
 };
 
 template<typename T>
-void Model::bind(std::string binding, Buffer& buf){  //Bind a specific buffer to a binding point
-  this->operator()();
-  buf.operator()();
-  _size = buf.size<T>();
+void Model::bind(const std::string attribute, Buffer& buffer){
+  this->operator()();                             // Bind Model
+  buffer.operator()();                            // Bind Buffer
+  _size = buf.size<T>();                          // Update Model Size
+  const int index = this->attributes[attribute];  // Attribute Binding Index
   #ifdef TINYENGINE_OS_MAC
-  glVertexAttribPointer(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0, 0 );
+  glVertexAttribPointer(index, sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0, 0 );
   #else
-  glBindVertexBuffer(bindings[binding], buf.index(), 0, sizeof(T));
-  glVertexAttribFormat(bindings[binding], sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
+  glBindVertexBuffer(index, buf.index(), 0, sizeof(T));
+  glVertexAttribFormat(index, sizeof(T)/sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
   #endif
 }
 
@@ -80,16 +88,20 @@ void Model::render() const {
 
 // Indexed Model
 
-//! Indexed is a Model with an index buffer, which is used
+//! Indexed is a Model with an additional index buffer, which is used
 //! as the element array buffer when drawing primitives.
 //!
+//! The element array buffer maps the vertices of a primitive
+//! to the elements in the attribute buffers.
+//!
 struct Indexed: Model {
-
+protected:
   using Model::Model;
 
-  Indexed(std::vector<std::string> nbinding, Buffer& _index):
+public:
+  Indexed(const std::vector<std::string> attributes, Buffer& _index):
     _index(_index),
-    Model(nbinding){
+    Model(attributes){
       set(_index);
     }
 
@@ -99,18 +111,18 @@ struct Indexed: Model {
     _size = _index.size<T>();
   }
 
-  void render(const GLenum primitive) {
+  void render(const GLenum primitive){
     this->operator()();
     _index(GL_ELEMENT_ARRAY_BUFFER);
     glDrawElements(primitive, this->size(), GL_UNSIGNED_INT, 0);
   }
 
-  inline Buffer& index() const      { return _index; }
-  inline const size_t size() const  { return _size; }
+  inline const Buffer& index() const  { return _index; }
+  inline const size_t size()   const  { return _size; }
 
-  size_t _size;
-private:
+protected:
   Buffer& _index;
+  size_t _size;
 };
 
 // Model-Type Instantiations

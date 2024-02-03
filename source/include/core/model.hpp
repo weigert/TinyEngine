@@ -83,7 +83,7 @@ void Model::render(const GLenum primitive, const size_t size) const {
 }
 
 void Model::render() const {
-  render(GL_TRIANGLE_STRIP, this->size());
+  this->render(GL_TRIANGLE_STRIP, this->size());
 }
 
 // Indexed Model
@@ -105,25 +105,33 @@ public:
       set(_index);
     }
 
+  //! Set the index Buffer with an index type
   template<typename T = int>
-  void set(Buffer& b){
-    _index = b;
-    _size = _index.size<T>();
+  void set(Buffer& _index){
+    this->_index = _index;
+    _size = this->_index.size<T>();
   }
 
-  void render(const GLenum primitive){
-    this->operator()();
-    _index(GL_ELEMENT_ARRAY_BUFFER);
-    glDrawElements(primitive, this->size(), GL_UNSIGNED_INT, 0);
-  }
+  void render(const GLenum, const size_t) const;  //!< Render as Primitive, Manual Size
+  void render(const GLenum) const;                //!< Render as Primitive, Size is Index Buffer Size
 
-  inline const Buffer& index() const  { return _index; }
-  inline const size_t size()   const  { return _size; }
+  inline const Buffer& index() const  { return _index; }  //!< Retrieve the Index Buffer
+  inline const size_t size()   const  { return _size; }   //!< Retrieve the Index Buffer Size
 
 protected:
-  Buffer& _index;
-  size_t _size;
+  Buffer& _index; //!< Index Buffer Reference
+  size_t _size;   //!< Index Buffer Size
 };
+
+void Indexed::render(const GLenum primitive, const size_t size) const {
+  this->operator()();               // Bind the VAO
+  _index(GL_ELEMENT_ARRAY_BUFFER);  // Bind the Index Buffer
+  glDrawElements(primitive, size, GL_UNSIGNED_INT, 0);
+}
+
+void Indexed::render(const GLenum primitive) const {
+  this->render(primitive, this->size());
+}
 
 // Model-Type Instantiations
 

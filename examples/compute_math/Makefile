@@ -7,7 +7,7 @@ LF = -I$(HOME)/.local/include -L$(HOME)/.local/lib -I/usr/include/eigen3
 
 # General Linking
 
-TINYLINK = -lpthread -lSDL2 -lpng  -lGLEW 
+TINYLINK = -lSDL2 -lpng  -lGLEW 
 
 # OS Specific Linking
 

@@ -7,7 +7,7 @@ LF = -I$(HOME)/.local/include -L$(HOME)/.local/lib
 
 # General Linking
 
-TINYLINK = -lpthread -lSDL2 -lpng  -lGLEW -lpng
+TINYLINK = -lSDL2 -lpng -lGLEW
 
 # OS Specific Linking
 

@@ -9,12 +9,12 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 
 	LINES OF CODE (without unreasonable compression):
 
-		Main File: 198
-		Main Classes: 313
-		Utility Classes: 743
-		Helpers Namespaces: 733
-		Core Total: 1254
-		Total: 1987
+		Main File: 110
+		Main Classes: 293
+		Core Classes: 1050
+		Helpers Classes: 730
+		Core Total: 1453
+		Total: 2183
 
 	History:
 		12. Apr 2020: 885
@@ -27,7 +27,7 @@ Simple generated perlin-noise heightmap rendered with normal vectors as colors (
 		26. Jan 2022: 1969
 		26. Nov 2022: 1928
 		20. Mar 2023: 1987
-
+		04. Feb 2024: 2183 (w. new Docstrings)
 
 `Note`: If you are using TinyEngine for any projects, please let me know!
 
@@ -47,13 +47,12 @@ As I continue to build projects using this engine, I plan on slowly expanding it
 Animated Julia-Set (Example 4). See my blog [here](https://nickmcd.me/2020/04/14/animated-multi-julia-sets/).
 
 ## Structure
-The main engine interface is wrapped in a namespace `Tiny`. This namespace has three (global) static members, which are its main component classes:
+The main engine interface is wrapped in a namespace `Tiny`. This namespace has two (global) static members, which are its main component classes:
 
 	- View Class (Tiny::view):       Window handling, rendering, GUI interface
 	- Event Class (Tiny::event):     Event handling for keyboard and mouse, window resizing
-	- Audio Class (Tiny::audio):     Audio interface for playing / looping sounds
 
-A number of utility classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
+A number of core classes wrap typical OpenGL features into easily useable structures. These have simple constructors and destructors that wrap the necessary OpenGL so you don't have to worry about it:
 
 	- Texture:      OpenGL texture wrapper with constructors for different data types (e.g. algorithm, raw image, ...)
 	- Shader:       Load, compile, link and use shader programs (vertex, fragment, geometry) easily, pass SSBO.
@@ -136,26 +135,24 @@ int main( int argc, char* args[] ) {
 Check the [TinyEngine Wiki](https://github.com/weigert/TinyEngine/wiki) for more information on how to construct a basic program. Read the example programs to see how the utility classes are combined to create interactive 2D and 3D programs using OpenGL in very little code.
 
 ### Compiling and Linking
+
 As of 2021, TinyEngine is built as a statically linked library for easier inclusion in your project. This has a number of benefits:
 - TinyEngine does not need to be copied into your project directory
 - Easier continuous maintenance and updating
 - Faster compilation times
 
-The installation process occurs in the makefile (valid for all operating systems):
+The installation process occurs in the `Makefile` (valid for all operating systems):
 
 ```bash
-make setup     #Copy Core Header Files to Install Location
-make helpers   #Copy Helper Headers
-make install   #Compile TinyEngine and Copy to Install Location
-make all       #All of the above! Run this for easy install.
+make source
 make examples
 ```
 
 The default install locations are `$(HOME)/.local/lib` for the compiled library and `$(HOME)/.local/include` for the header files.
 
-Check the (brief!) makefile for options (e.g. install location, compiler flags).
+Check the (brief!) `Makefile` for options (e.g. install location, compiler flags).
 
-Note that the installation has only been tested on GNU/Linux and install locations might need tuning for your system.
+Note that the installation has only been tested on GNU/Linux and MacOSX and install locations might need tuning for your system.
 
 #### Building a Project
 Building a project by default only requires inclusion of the TinyEngine header
@@ -245,7 +242,7 @@ sudo apt-get install libglu1-mesa-dev libsdl2-dev libglew-dev libglm-dev
 For systems with `dnf` as package manager, the dependencies can be installed using:
 
 ```bash
-sudo dnf install make gcc-c++ glew-devel SDL2-devel glm-devel eigen3-devel
+sudo dnf install make gcc-c++ SDL2-devel glew-devel glm-devel
 ```
 
 #### MacOS (+Apple M1)

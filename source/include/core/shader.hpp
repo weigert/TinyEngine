@@ -142,9 +142,7 @@ struct ShaderProgram {
 
   void use(){
     glUseProgram(this->index());
-    for(auto& s: sbpi){
-      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, s.second, bssbo[s.second]);
-    }
+    _storages = 0;
     _textures = 0;
   }
 
@@ -152,41 +150,20 @@ struct ShaderProgram {
 
   template<typename T> void uniform(std::string name, const T u);
   template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
-  void texture(std::string name, const Texture& texture);
+  template<typename T> void texture(const std::string name, const T& texture);
+  void storage(const std::string name, const Buffer& buffer);
 
   inline const uint32_t valid()    const { return this->_valid; }    //!< Check Shader Validity
   inline const uint32_t index()    const { return this->_index; }    //!< Retrieve Program Index
   inline const uint32_t textures() const { return this->_textures; } //!< Retrieve Number of Active Textures
-
-  // SSBO and Buffer Binding Methods
-  std::unordered_map<GLuint, GLuint> bssbo;
-  std::unordered_map<std::string, GLuint> sbpi;
-  std::unordered_map<std::string, GLuint> sbpc;
-  void ssbo(std::string name);                  //Define an SSBO by name
-
- // void interface(std::string name);                    //Add SSBO to permitted interface blocks
-  void bind(std::string name, Buffer* buf);
+  inline const uint32_t storages() const { return this->_storages; } //!< Retrieve Number of Active Storage Blocks
 
 private:
   GLint _valid;       //!< Validity of Linked Program
   uint32_t _index;    //!< Index of the Multi-Stage Program
   uint32_t _textures; //!< Number of Bound Textures
+  uint32_t _storages; //!< Numbre of Bound Storage Blocks
 };
-
-// Set of Buffer SSBO Indices???
-//std::unordered_map<GLuint, GLuint> ShaderProgram::bssbo;
-
-void ShaderProgram::ssbo(std::string name){
-  if(sbpi.find(name) != sbpi.end()) return; //Named Binding Point Exists
-  sbpi[name] = sbpi.size();
-  sbpc[name] = glGetProgramResourceIndex(this->index(), GL_SHADER_STORAGE_BLOCK, name.c_str());
-  glShaderStorageBlockBinding(this->index(), sbpc[name], sbpi[name]);  
-}
-
-void ShaderProgram::bind(std::string name, Buffer* buf){
-  if(sbpi.find(name) == sbpi.end()) return; //Named Binding Point Exists
-  bssbo[sbpi[name]] = buf->index();
-}
 
 // Multi-Stage Shader Implementations
 
@@ -225,10 +202,6 @@ public:
   
   }
 
-  Shader(const std::vector<std::string> shaders, const std::vector<std::string> in, const std::vector<std::string> buf):Shader(shaders, in){
-    for(auto& b: buf) ssbo(b);
-  }
-
 private:
   ShaderStage vertexShader;
   ShaderStage geometryShader;
@@ -248,10 +221,6 @@ public:
     computeShader.load(shader);
     this->attach(computeShader);
     this->link();
-  }
-
-  Compute(const std::string shader, std::vector<std::string> buf):Compute(shader){
-    for(auto& b: buf) ssbo(b);
   }
 
   void dispatch(int x = 1, int y = 1, int z = 1, bool block = true){
@@ -315,10 +284,18 @@ template<> void ShaderProgram::uniform(std::string name, const glm::mat4 u){
 template<> void ShaderProgram::uniform(std::string name, const std::vector<glm::mat4> u){
   glUniformMatrix4fv(glGetUniformLocation(this->index(), name.c_str()), u.size(), GL_FALSE, &u[0][0][0]); }
 
-void ShaderProgram::texture(std::string name, const Texture& texture){
+template<typename T>
+void ShaderProgram::texture(const std::string name, const T& texture){
   glActiveTexture(GL_TEXTURE0 + _textures);
   texture.operator()();
   uniform(name, _textures++);
+}
+
+void ShaderProgram::storage(const std::string name, const Buffer& buffer){
+  uint32_t binding = glGetProgramResourceIndex(this->index(), GL_SHADER_STORAGE_BLOCK, name.c_str());
+  glShaderStorageBlockBinding(this->index(), binding, _storages);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, _storages, buffer.index());
+  _storages++;
 }
 
 /*

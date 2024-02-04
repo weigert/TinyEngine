@@ -4,13 +4,6 @@
 namespace Tiny {
 namespace cam {
 
-//! Camera Projection Type Concept
-template<typename T>
-concept projection_t = requires(T t){
-  { t.update() };
-  { t.hander() };
-};
-
 // Camera Projection Implementations
 
 struct ortho {
@@ -46,13 +39,6 @@ struct ortho {
 private:
   float W, H, rad, near, far;
   glm::mat4 _proj;
-};
-
-//! Camera Control Type Concept
-template<typename T>
-concept control_t = requires(T t){
-  { T() } -> std::same_as<T>;
-
 };
 
 // Camera Control Implementations

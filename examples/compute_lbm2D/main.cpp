@@ -15,21 +15,18 @@ int main(int argc, char* argv[]){
 
   // Initialize our Arrays
 
-  Tiny::Buffer<float> f(NX*NY*Q, (float*)NULL);      //Raw F Buffer
-  Tiny::Buffer<float> fprop(NX*NY*Q, (float*)NULL);  //Raw FProp Buffer
-  Tiny::Buffer<float> b(NX*NY, (float*)NULL);        //Boundary Condition
+  Tiny::Buffer f(NX*NY*Q, (float*)NULL);      //Raw F Buffer
+  Tiny::Buffer fprop(NX*NY*Q, (float*)NULL);  //Raw FProp Buffer
+  Tiny::Buffer b(NX*NY, (float*)NULL);        //Boundary Condition
 
   // Computed Quantities (For Efficiency)
 
-  Tiny::Buffer<float> rho(NX*NY, (float*)NULL);
-  Tiny::Buffer<glm::vec2> v(NX*NY, (glm::vec2*)NULL);
+  Tiny::Buffer rho(NX*NY, (float*)NULL);
+  Tiny::Buffer v(NX*NY, (glm::vec2*)NULL);
 
   // Initialization Shader
 
-  Tiny::Compute init("shader/init.cs", {"f", "fprop", "b"});
-  init.bind("f", &f);
-  init.bind("fprop", &fprop);
-  init.bind("b", &b);
+  Tiny::Compute init("shader/init.cs");
 
   // Initialize the Boundary Condition (if you like!)
   float* boundary = new float[NX*NY];
@@ -71,30 +68,17 @@ int main(int argc, char* argv[]){
 
     }
   }
-  b.fill(NX*NY, boundary);
+  b.set(NX*NY, boundary);
 
   // Collision and Streaming Compute Shaders
 
-  Tiny::Compute collide("shader/collide.cs", {"f", "fprop", "b", "rho", "v"});
-  collide.bind("f", &f);
-  collide.bind("fprop", &fprop);
-  collide.bind("b", &b);
-  collide.bind("rho", &rho);
-  collide.bind("v", &v);
-
-  Tiny::Compute stream("shader/stream.cs", {"f", "fprop", "b"});
-  stream.bind("f", &f);
-  stream.bind("fprop", &fprop);
-  stream.bind("b", &b);
+  Tiny::Compute collide("shader/collide.cs");
+  Tiny::Compute stream("shader/stream.cs");
 
   // Visualization Shader (Flat2D, Samples SSBO)
 
-  Tiny::Shader view({"shader/view.vs", "shader/view.fs"}, {"in_Quad", "in_Tex"}, {"f", "fprop", "b", "rho", "v"});
-  view.bind("f", &f);
-  view.bind("fprop", &fprop);
-  view.bind("b", &b);
-  view.bind("rho", &rho);
-  view.bind("v", &v);
+  Tiny::Shader view({"shader/view.vs", "shader/view.fs"}, {"in_Quad", "in_Tex"});
+
   Tiny::Square2D flat;
 
   // Initialize!
@@ -102,6 +86,9 @@ int main(int argc, char* argv[]){
   init.use();
   init.uniform("NX", NX);
   init.uniform("NY", NY);
+  init.storage("f", f);
+  init.storage("fprop", fprop);
+  init.storage("b", b);
   init.dispatch(NX/32, NY/32);
 
   // Loop
@@ -120,6 +107,11 @@ int main(int argc, char* argv[]){
     view.use(); 																		//Setup Shader
     view.uniform("NX", NX);
     view.uniform("NY", NY);
+    view.storage("f", f);
+    view.storage("fprop", fprop);
+    view.storage("b", b);
+    view.storage("rho", rho);
+    view.storage("v", v);
     flat.render();
 
   };
@@ -131,11 +123,19 @@ int main(int argc, char* argv[]){
     collide.use();
     collide.uniform("NX", NX);
     collide.uniform("NY", NY);
+    collide.storage("f", f);
+    collide.storage("fprop", fprop);
+    collide.storage("b", b);
+    collide.storage("rho", rho);
+    collide.storage("v", v);
     collide.dispatch(NX/32, NY/32);
 
     stream.use();
     stream.uniform("NX", NX);
     stream.uniform("NY", NY);
+    stream.storage("f", f);
+    stream.storage("fprop", fprop);
+    stream.storage("b", b);
     stream.dispatch(NX/32, NY/32);
 
   });

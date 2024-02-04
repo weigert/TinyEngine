@@ -54,7 +54,6 @@ int main( int argc, char* args[] ) {
 
   Tiny::Model verticemodel({"in_Pos"});
   verticemodel.bind<glm::vec4>("in_Pos", verticebuf);
- // verticemodel.SIZE = RES*RES;
 
   // Raw Surface Model
 
@@ -71,13 +70,12 @@ int main( int argc, char* args[] ) {
 
   Tiny::Buffer indexbuf(indices);
 
-  Tiny::Shader surfaceShader({"shader/surface.vs", "shader/surface.fs"}, {"in_Pos", "in_Index"}, {"vertices"});
+  Tiny::Shader surfaceShader({"shader/surface.vs", "shader/surface.fs"}, {"in_Pos", "in_Index"});
 
   Tiny::Triangle triangle;
 	Tiny::Instance triangleinstance(triangle);
   triangleinstance.bind<glm::vec4>(indexbuf);
 
-	surfaceShader.bind("vertices", &verticebuf);
 
   // Compute Shaders for Computing Forces and Updating Positions
 
@@ -91,15 +89,8 @@ int main( int argc, char* args[] ) {
   Tiny::Buffer velocitybuf(velocityvec);
   Tiny::Buffer forcebuf(forcevec);
 
-  Tiny::Compute shift_f("shader/shift_f.cs", {"vertices", "velocity", "force"});
-  shift_f.bind("vertices", &verticebuf);
-  shift_f.bind("velocity", &velocitybuf);
-  shift_f.bind("force", &forcebuf);
-
-  Tiny::Compute shift_pv("shader/shift_pv.cs", {"vertices", "velocity", "force"});
-  shift_pv.bind("vertices", &verticebuf);
-  shift_pv.bind("velocity", &velocitybuf);
-  shift_pv.bind("force", &forcebuf);
+  Tiny::Compute shift_f("shader/shift_f.cs");
+  Tiny::Compute shift_pv("shader/shift_pv.cs");
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){
@@ -112,6 +103,8 @@ int main( int argc, char* args[] ) {
 
     surfaceShader.use();
     surfaceShader.uniform("vp", cam.vp());
+    surfaceShader.storage("vertices", verticebuf);
+
     triangleinstance.render(GL_LINE_STRIP, indices.size());
 
 	};
@@ -126,6 +119,10 @@ int main( int argc, char* args[] ) {
     shift_f.uniform("res", RES);
     shift_f.uniform("t", t);
     shift_f.uniform("rk", 0);
+    shift_f.storage("vertices", verticebuf);
+    shift_f.storage("velocity", velocitybuf);
+    shift_f.storage("force", forcebuf);
+
     shift_f.dispatch(RES/32, RES/32);
 
     shift_pv.use();
@@ -133,6 +130,10 @@ int main( int argc, char* args[] ) {
     shift_pv.uniform("res", RES);
     shift_pv.uniform("t", t);
     shift_pv.uniform("rk", 0);
+    shift_pv.storage("vertices", verticebuf);
+    shift_pv.storage("velocity", velocitybuf);
+    shift_pv.storage("force", forcebuf);
+
     shift_pv.dispatch(RES/32, RES/32);
 
     t++;

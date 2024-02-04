@@ -48,9 +48,7 @@ int main( int argc, char* args[] ) {
 	colbuf.set<glm::vec4>(NPARTICLES, NULL);
 
   //Compute Shader
-	Tiny::Compute compute("shader/ODE.cs", {"position", "color"});
-	compute.bind("position", &posbuf);
-	compute.bind("color", &colbuf);
+	Tiny::Compute compute("shader/ODE.cs");
 
 	//Visualization Shader
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos", "in_Col"});
@@ -79,8 +77,9 @@ int main( int argc, char* args[] ) {
 
 		compute.use();
 		compute.uniform("size", NPARTICLES);
+		compute.storage("position", posbuf);
+		compute.storage("color", colbuf);
 		compute.dispatch(SPARTICLES/32, SPARTICLES/32);
-
 
 	});
 

@@ -66,12 +66,8 @@ int main( int argc, char* args[] ) {
 	Tiny::Shader billboardshader({"shader/billboard.vs", "shader/billboard.fs"}, {"in_Quad", "in_Tex"});
 
 	//Filter Effects
-	Tiny::Shader bubble({"shader/bubble.vs", "shader/bubble.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
-	Tiny::Shader mosaic({"shader/mosaic.vs", "shader/mosaic.fs"}, {"in_Quad", "in_Tex", "in_Centroid"}, {"centroids"});
-
-	//SSBO Centroids into Filters
-	bubble.bind("centroids", &centroidbuf);
-	mosaic.bind("centroids", &centroidbuf);
+	Tiny::Shader bubble({"shader/bubble.vs", "shader/bubble.fs"}, {"in_Quad", "in_Tex", "in_Centroid"});
+	Tiny::Shader mosaic({"shader/mosaic.vs", "shader/mosaic.fs"}, {"in_Quad", "in_Tex", "in_Centroid"});
 
 	//Prepare instance render of flat, per-centroid
 	Tiny::Instance instance(flat);
@@ -121,6 +117,7 @@ int main( int argc, char* args[] ) {
 		//Pick a shader, pass textures, render as a quad.
 		if(drawstyle == 3){
 			bubble.use();
+			bubble.storage("centroids", centroidbuf);
 			bubble.texture("voronoi", billboard.color());
 			bubble.texture("image", tex);
 			bubble.uniform("R", R);
@@ -130,6 +127,7 @@ int main( int argc, char* args[] ) {
 
 		else if(drawstyle == 2) {
 			mosaic.use();
+			mosaic.storage("centroids", centroidbuf);
 			mosaic.texture("voronoi", billboard.color());
 			mosaic.texture("image", tex);
 			mosaic.uniform("R", R);

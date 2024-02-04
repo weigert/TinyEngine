@@ -61,22 +61,14 @@ int main( int argc, char* args[] ) {
 	Tiny::Buffer massbuf(mass);
 
   //Compute Shader with SSBO Binding Points
-	Tiny::Compute compute("shader/collide.cs", {"positionA", "positionB", "velocityA", "velocityB"});
-
-	//Link Buffers to the SSBO Binding Points
-	compute.bind("positionA", &posbufA);
-	compute.bind("positionB", &posbufB);
-	compute.bind("velocityA", &velbufA);
-	compute.bind("velocityB", &velbufB);
+	Tiny::Compute compute("shader/collide.cs");
 
 	Tiny::Square2D flat;
 	Tiny::Instance particles(flat);
 	particles.bind<glm::vec4>(posbufA);
 
 	//Visualization Shader, does not need attributes
-	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Pos"}, {"velocityA", "velocityB"});
-	particleShader.bind("velocityA", &velbufA);
-	particleShader.bind("velocityB", &velbufB);
+	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Pos"});
 
 	//Define the rendering pipeline
 	Tiny::view.pipeline = [&](){
@@ -84,6 +76,8 @@ int main( int argc, char* args[] ) {
 		Tiny::view.target(glm::vec3(1));	//Clear Screen to white
     particleShader.use();
 		particleShader.uniform("R", RADIUS);
+		particleShader.storage("velocityA", velbufA);
+		particleShader.storage("velocityB", velbufB);
 		particles.render(GL_TRIANGLE_STRIP, NPARTICLES);
 
 	};
@@ -96,6 +90,10 @@ int main( int argc, char* args[] ) {
 		compute.use();
 		compute.uniform("size", (int)NPARTICLES);
 		compute.uniform("R", RADIUS);
+		compute.storage("positionA", posbufA);
+		compute.storage("positionB", posbufB);
+		compute.storage("velocityA", velbufA);
+		compute.storage("velocityB", velbufB);
 
 		compute.uniform("collide", true);
 		compute.dispatch(1+SPARTICLESX/32, 1+SPARTICLESY/32);

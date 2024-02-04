@@ -13,12 +13,13 @@ int main( int argc, char* args[] ) {
 	Tiny::view.vsync = false;
 	Tiny::window("Lattice Boltzmann Method 3D, Terrain BC", 800, 800);			//Open Window
 
-	cam::near = -100.0f;
-	cam::far = 100.0f;
-	cam::rot = 45.0f;
-	cam::roty = 45.0f;
-	cam::init(10, cam::ORTHO);
-	cam::update();
+  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -100.0f, 100.0f, 10.0f);
+  Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
+  ortho.update();
+  orbit.update();
+
+  Tiny::cam::camera cam(ortho, orbit);
+  cam.update();
 
 	bool paused = true;
 
@@ -27,7 +28,7 @@ int main( int argc, char* args[] ) {
 		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
 			paused = !paused;
 			
-		cam::handler();
+		cam.handler();
 
 	};								//Event Handler
 	Tiny::view.interface = [&](){ /* ... */ };				//No Interface
@@ -41,8 +42,6 @@ int main( int argc, char* args[] ) {
 	Tiny::Indexed mesh({"in_Position", "in_Normal"}, indices);					//Create Model with 2 Properties
 	mesh.bind<glm::vec3>("in_Position", positions);	//Bind Buffer to Property
 	mesh.bind<glm::vec3>("in_Normal", normals);
-  //mesh.set<int>(indices);
-  mesh._size = indices.size();
 
 	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-GRIDSIZE/2, -15.0, -GRIDSIZE/2));
 
@@ -98,32 +97,23 @@ int main( int argc, char* args[] ) {
 
   // Initialization Compute Shader
 
-  Tiny::Compute init("shader/LBM/init.cs", {"f", "fprop", "b", "rho", "v"});
-  init.bind("f", &f);
-  init.bind("fprop", &fprop);
-  init.bind("b", &b);
-  init.bind("rho", &rho);
-  init.bind("v", &dirbuf);
+  Tiny::Compute init("shader/LBM/init.cs");
 
   init.use();
   init.uniform("NX", NX);
   init.uniform("NY", NY);
   init.uniform("NZ", NZ);
+  init.storage("f", f);
+  init.storage("fprop", fprop);
+  init.storage("b", b);
+  init.storage("rho", rho);
+  init.storage("v", dirbuf);
   init.dispatch(NX/16, NY, NZ/16);
 
   // Collision and Streaming Compute Shaders
 
-  Tiny::Compute collide("shader/LBM/collide.cs", {"f", "fprop", "b", "rho", "v"});
-  collide.bind("f", &f);
-  collide.bind("fprop", &fprop);
-  collide.bind("b", &b);
-  collide.bind("rho", &rho);
-  collide.bind("v", &dirbuf);
-
-  Tiny::Compute stream("shader/LBM/stream.cs", {"f", "fprop", "b"});
-  stream.bind("f", &f);
-  stream.bind("fprop", &fprop);
-  stream.bind("b", &b);
+  Tiny::Compute collide("shader/LBM/collide.cs");
+  Tiny::Compute stream("shader/LBM/stream.cs");
 
   /*
   =========================================
@@ -158,23 +148,7 @@ int main( int argc, char* args[] ) {
 
   // Shader to Move Particles Along
 
-  Tiny::Compute move("shader/move.cs", {"b", "v", "p"});
-  move.bind("b", &b);
-  move.bind("v", &dirbuf);
-  move.bind("p", &posbuf);
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Tiny::Compute move("shader/move.cs");
 
 	Tiny::view.pipeline = [&](){											//Setup Drawing Pipeline
 
@@ -184,14 +158,14 @@ int main( int argc, char* args[] ) {
 
 		defaultShader.use();														//Prepare Shader
 		defaultShader.uniform("model", model);			//Set Model Matrix
-		defaultShader.uniform("vp", cam::vp);						//View Projection Matrix
+		defaultShader.uniform("vp", cam.vp());						//View Projection Matrix
 		mesh.render(GL_LINES);													//Render Model with Lines
 
 		glLineWidth(2.0f);
 
 		streamshader.use();
 		streamshader.uniform("model", model);			//Set Model Matrix
-		streamshader.uniform("vp", cam::vp);
+		streamshader.uniform("vp", cam.vp());
 		streamshader.uniform("NX", NX);
 		streamshader.uniform("NY", NY);
 		streamshader.uniform("NZ", NZ);
@@ -212,6 +186,11 @@ int main( int argc, char* args[] ) {
     collide.uniform("NX", NX);
     collide.uniform("NY", NY);
     collide.uniform("NZ", NZ);
+    collide.storage("f", f);
+    collide.storage("fprop", fprop);
+    collide.storage("b", b);
+    collide.storage("rho", rho);
+    collide.storage("v", dirbuf);
     collide.dispatch(NX/16, NY, NZ/16);
 
 	  stream.use();
@@ -219,12 +198,18 @@ int main( int argc, char* args[] ) {
 	  stream.uniform("NY", NY);
 	  stream.uniform("NZ", NZ);
 	  stream.uniform("t", t);
+    stream.storage("f", f);
+    stream.storage("fprop", fprop);
+    stream.storage("b", b);
 	  stream.dispatch(NX/16, NY, NZ/16);
 
     move.use();
     move.uniform("NX", NX);
     move.uniform("NY", NY);
     move.uniform("NZ", NZ);
+    move.storage("b", b);
+    move.storage("v", dirbuf);
+    move.storage("p", posbuf);
     move.dispatch(NPARTICLE/1024);
 
     // Retrieve the Directions

@@ -17,8 +17,6 @@ int main( int argc, char* args[] ) {
 
   Tiny::cam::camera cam(ortho, orbit);
 
-//	glPointSize(2.0f);
-
 	bool paused = true;
 	Tiny::view.interface = [&](){};
   Tiny::event.handler = [&](){
@@ -46,15 +44,8 @@ int main( int argc, char* args[] ) {
 	Tiny::Buffer massbuf(mass);
 
   //Compute Shader with SSBO Binding Points
-	Tiny::Compute compute_v("shader/gravity_v.cs", {"position", "velocity", "mass"});
-	compute_v.bind("position", &posbuf);
-	compute_v.bind("velocity", &velbuf);
-	compute_v.bind("mass", &massbuf);
-
-	Tiny::Compute compute_p("shader/gravity_p.cs", {"position", "velocity", "mass"});
-	compute_p.bind("position", &posbuf);
-	compute_p.bind("velocity", &velbuf);
-	compute_p.bind("mass", &massbuf);
+	Tiny::Compute compute_v("shader/gravity_v.cs");
+	Tiny::Compute compute_p("shader/gravity_p.cs");
 
 	//Use the Buffer as an Attribute of a Model VAO
 	Tiny::Model particles({"in_Pos"});
@@ -80,10 +71,16 @@ int main( int argc, char* args[] ) {
 
 		compute_v.use();
 		compute_v.uniform("size", NPARTICLES);
+		compute_v.storage("position", posbuf);
+		compute_v.storage("velocity", velbuf);
+		compute_v.storage("mass", massbuf);
 		compute_v.dispatch(2, 2);
 
 		compute_p.use();
 		compute_p.uniform("size", NPARTICLES);
+		compute_p.storage("position", posbuf);
+		compute_p.storage("velocity", velbuf);
+		compute_p.storage("mass", massbuf);
 		compute_p.dispatch(2, 2);
 
 	});

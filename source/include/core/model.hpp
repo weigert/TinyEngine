@@ -9,7 +9,7 @@
 
 namespace Tiny {
 
-//! A Model binds multiple Buffers to named Attributes, to make them
+//! \brief A Model binds multiple Buffer to named Attributes, to make them
 //! jointly renderable as the vertices of a primitive.
 //!
 //! The named Attributes of the Model are declared at construction time.
@@ -88,7 +88,7 @@ void Model::render() const {
 
 // Indexed Model
 
-//! Indexed is a Model with an additional index buffer, which is used
+//! \brief Indexed is a Model with an additional index buffer, which is used
 //! as the element array buffer when drawing primitives.
 //!
 //! The element array buffer maps the vertices of a primitive
@@ -135,7 +135,7 @@ void Indexed::render(const GLenum primitive) const {
 
 // Model-Type Instantiations
 
-//! Point: Model({"vert"}):
+//! \brief Point: Model({"vert"}):
 //!   Single 3D Vertex at (0, 0, 0)
 struct Point: Model {
 private:
@@ -150,7 +150,7 @@ public:
   }
 };
 
-//! Square2D: Model({"in_Quad", "in_Tex"})
+//! \brief Square2D: Model({"in_Quad", "in_Tex"})
 //!   4x2D Vertices at Corners of [-1, 1]
 //!   4x2D UV-Coords at Corners of [0, 1] 
 struct Square2D: Model {
@@ -176,7 +176,7 @@ public:
   }
 };
 
-//! Square3D: Model({"in_Quad", "in_Tex"})
+//! \brief Square3D: Model({"in_Quad", "in_Tex"})
 //!   4x3D Vertices at Corners of [-1, 1], Z = 0
 //!   4x2D UV-Coords at Corners of [0, 1]
 struct Square3D: Model {
@@ -203,7 +203,7 @@ public:
   }
 };
 
-//! Gizmo: Model({"in_Quad", "in_Tex"})
+//! \brief Gizmo: Model({"in_Quad", "in_Tex"})
 //!   6x3D Vertices = 3x3D Line from Origin to Unit-Vector
 //!   6xRGB Color-Values (RRGGBB)
 struct Gizmo: Model {
@@ -233,6 +233,8 @@ public:
   }
 };
 
+//! \brief Triangle is an instanced storage buffer indexing Model.
+//!
 //! Triangle is a model which contains 4 raw vertices of unit-vectors, forming a loop
 //! The purpose of the unit-vectors is to be able to sub-index another buffer (e.g. SSBO)
 //! for getting the actual coordinates of the vertices of the triangle when instance
@@ -260,7 +262,7 @@ public:
 	}
 };
 
-//! Cube: Model{"in_Quad", "in_Tex"}
+//! \brief Cube: Model{"in_Quad", "in_Tex"}
 //!   Unit-Cube Mesh on Domain ([-1, 1], [-1, 1], [-1, 1])
 //!
 struct Cube: Model {

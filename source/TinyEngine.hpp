@@ -30,7 +30,7 @@
 
 #include <csignal>
 
-//! My Namespace
+//! TinyEngine's Main Namespace
 namespace Tiny {
 
 static View view;           //Window and Interface  (Requires Initialization)

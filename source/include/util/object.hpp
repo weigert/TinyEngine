@@ -8,9 +8,7 @@
 
 namespace Tiny {
 
-//! Object is a renderable Model type,
-//! for loading .obj and .mtl files.
-//!
+//! Object is a renderable Model type for loading .obj and .mtl files.
 struct Object: Model {
 
   //! Construct an Object from a Filename

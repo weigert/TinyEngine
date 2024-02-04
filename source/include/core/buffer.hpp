@@ -19,15 +19,8 @@ namespace Tiny {
 //!
 struct Buffer {
 
-  //! Allocate GPU Buffer
-  Buffer(){ 
-    glGenBuffers(1, &_index);
-  }
-
-  //! De-Allocate GPU Buffer
-  ~Buffer(){
-    glDeleteBuffers(1, &_index);
-  }
+  Buffer(){ glGenBuffers(1, &_index); }     //!< Allocate GPU Buffer
+  ~Buffer(){ glDeleteBuffers(1, &_index); } //!< De-Allocate GPU Buffer
 
   //! Allocate GPU Buffer, Fill w. Data from Vector
   template<typename T>
@@ -40,8 +33,6 @@ struct Buffer {
   Buffer(const size_t size, const T* data):Buffer(){
     set(size, data);
   }
-
-  // Data Setting / Getting
 
   template<typename T> void set(const size_t size, const T* data);  //!< Set Data from Raw Memory
   template<typename T> void set(const std::vector<T>& buf);         //!< Set Data from Vector
@@ -63,10 +54,10 @@ private:
 
 template<typename T>
 void Buffer::set(const size_t size, const T* data){
-  this->operator()();
+  this->operator()();                                           // Bind this Buffer
   _size = size*sizeof(T);                                       // Set Buffer Size to Number of Bytes
   glBufferData(GL_ARRAY_BUFFER, _size, data, GL_STATIC_DRAW);   // Fill the Buffer w. Raw Memory Data
-  glBindBuffer(GL_ARRAY_BUFFER, 0);                             // Un-Bind the Buffer Index
+  glBindBuffer(GL_ARRAY_BUFFER, 0);                             // Un-Bind this Buffer
 }
 
 template<typename T>
@@ -76,9 +67,9 @@ void Buffer::set(const std::vector<T>& buf){
 
 template<typename T>
 void Buffer::get(const size_t size, T* data) const {
-  this->operator()();
-  glGetBufferSubData(GL_ARRAY_BUFFER, 0, size*sizeof(T), data);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  this->operator()();                                           // Bind this Buffer
+  glGetBufferSubData(GL_ARRAY_BUFFER, 0, size*sizeof(T), data); // Load the Data to Pointer
+  glBindBuffer(GL_ARRAY_BUFFER, 0);                             // Un-Bind this Buffer
 }
 
 template<typename T>

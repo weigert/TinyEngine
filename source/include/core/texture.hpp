@@ -21,16 +21,10 @@ struct Layout {
 //!
 struct Texture {
 protected:
-  //! Allocate GPU Texture
-  Texture(){
-    glGenTextures(1, &_index);
-  };
+  Texture(){ glGenTextures(1, &_index); };    //!< Allocate GPU Texture
   
 public:
-  //! De-Allocate GPU Texture
-  ~Texture(){ 
-    glDeleteTextures(1, &_index); 
-  }
+  ~Texture(){ glDeleteTextures(1, &_index); } //!< De-Allocate GPU Texture
 
   //! Allocate GPU Texture with Size
   Texture(const size_t width, const size_t height):

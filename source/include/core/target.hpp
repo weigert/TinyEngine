@@ -16,16 +16,10 @@ namespace Tiny {
 //!
 struct Target {
 protected:
-  //! Allocated GPU Frame Buffer Object
-  Target(){
-    glGenFramebuffers(1, &_index);
-  }
+  Target(){ glGenFramebuffers(1, &_index); }      //!< Allocated GPU Frame Buffer Object
 
 public:
-  //! De-Allocate GPU Frame Buffer Object
-  ~Target(){ 
-    glDeleteFramebuffers(1, &_index); 
-  }
+  ~Target(){ glDeleteFramebuffers(1, &_index); }  //! De-Allocate GPU Frame Buffer Object
 
   //! Construct a Target w. Width and Height
   Target(const size_t width, const size_t height):Target(){
@@ -83,6 +77,8 @@ bool Target::valid(){
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   return true;
 }
+
+// Implementations
 
 //! Billboard is a Target with RGBA-Color and Depth-Buffers.
 //!

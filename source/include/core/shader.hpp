@@ -72,30 +72,15 @@ void printProgramError(uint32_t index){
 //!
 struct ShaderStage {
 
-  ShaderStage(GLenum shaderType){
-    this->_index = glCreateShader(shaderType);
-  }
-
-  ~ShaderStage(){
-    glDeleteShader(this->index());
-  }
+  ShaderStage(GLenum shaderType){ this->_index = glCreateShader(shaderType); }
+  ~ShaderStage(){ glDeleteShader(this->index()); }
 
   ShaderStage(GLenum shaderType, const std::string filename):
   ShaderStage(shaderType){
     this->load(filename);
   }
 
-  //! Load the GLSL Source into the Shader Stage by Filename,
-  //! compile the source and handle compilation errors.
-  void load(const std::string filename){
-    int32_t size;
-    const std::string result = readGLSLFile(filename, size);
-    char* src = const_cast<char*>(result.c_str());
-    glShaderSource(this->index(), 1, &src, &size);
-    glCompileShader(this->index());
-    glGetShaderiv(this->index(), GL_COMPILE_STATUS, &_valid);
-    if(!this->valid()) printShaderError(this->index(), filename);
-  }
+  void load(const std::string filename);  //!< Load and Compile Source File into ShaderStage
 
   inline const uint32_t valid() const { return this->_valid; }  //!< Check Shader Validity
   inline const uint32_t index() const { return this->_index; }  //!< Retrieve Shader Stage Index
@@ -105,53 +90,37 @@ private:
   uint32_t _index; //!< Index of the Shader Stage
 };
 
+void ShaderStage::load(const std::string filename){
+  int32_t size;
+  const std::string result = readGLSLFile(filename, size);
+  char* src = const_cast<char*>(result.c_str());
+  glShaderSource(this->index(), 1, &src, &size);
+  glCompileShader(this->index());
+  glGetShaderiv(this->index(), GL_COMPILE_STATUS, &_valid);
+  if(!this->valid()) printShaderError(this->index(), filename);
+}
+
 //! ShaderProgram is an executable combination of multiple shader stages.
 //!
 //! An arbitrary set of ShaderStage can be attached to a ShaderProgram.
-//! ShaderProgram provides a templated interface for providing uniforms
-//! and textures to the shader stages.
-//!
-//! Additionally, a ShaderProgram can have ShaderStorageBufferObjects
-//! attached as interface blocks, for non-texture generic data.
+//! ShaderProgram provides a simple interface for providing named uniforms,
+//! textures and storage blocks to the shader.
+//! Note that the shader must be active to bind these objects.
 //!
 struct ShaderProgram {
 
-  ShaderProgram(){
-    this->_index = glCreateProgram();
-  }
+  ShaderProgram(){ this->_index = glCreateProgram(); }
+  ~ShaderProgram(){ glDeleteProgram(this->index()); }
 
-  ~ShaderProgram(){
-    glDeleteProgram(this->index());
-  }
+  void attributes(const std::vector<std::string> attributes); //!< Set the Program's Attributes
+  void attach(ShaderStage& stage);                            //!< Attach a ShaderStage
+  void link();                                                //!< Link all attached ShaderStages
+  void use();                                                 //!< Use / Activate the Program
 
-  void attributes(const std::vector<std::string> attributes){
-    for(int i = 0; i < attributes.size(); i++)
-      glBindAttribLocation(this->index(), i, attributes[i].c_str());
-  }
-
-  void attach(ShaderStage& stage){
-    if(stage.valid())
-      glAttachShader(this->index(), stage.index());
-  }
-
-  void link(){
-    glLinkProgram(this->index());
-    glGetProgramiv(this->index(), GL_LINK_STATUS, &_valid);
-    if(!this->valid()) printProgramError(this->index());
-  }
-
-  void use(){
-    glUseProgram(this->index());
-    _storages = 0;
-    _textures = 0;
-  }
-
-  // Templated Member Functions
-
-  template<typename T> void uniform(std::string name, const T u);
-  template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
-  template<typename T> void texture(const std::string name, const T& texture);
-  void storage(const std::string name, const Buffer& buffer);
+  template<typename T> void uniform(std::string name, const T u);                 //!< Bind a Uniform Value
+  template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]); //!< Bind a Uniform Value (Array)
+  template<typename T> void texture(const std::string name, const T& texture);    //!< Bind a Texture
+  void storage(const std::string name, const Buffer& buffer);                     //!< Bind a Storage Block Buffer
 
   inline const uint32_t valid()    const { return this->_valid; }    //!< Check Shader Validity
   inline const uint32_t index()    const { return this->_index; }    //!< Retrieve Program Index
@@ -165,9 +134,34 @@ private:
   uint32_t _storages; //!< Numbre of Bound Storage Blocks
 };
 
+void ShaderProgram::attributes(const std::vector<std::string> attrs){
+  for(int i = 0; i < attrs.size(); i++)
+    glBindAttribLocation(this->index(), i, attrs[i].c_str()); // Activate the Attribute
+}
+
+void ShaderProgram::attach(ShaderStage& stage){
+  if(stage.valid()) glAttachShader(this->index(), stage.index()); // Attach Shader if Valid (Compiled Succesfully)
+}
+
+void ShaderProgram::link(){
+  glLinkProgram(this->index()); // Link this Program (all attached ShaderStages)
+  glGetProgramiv(this->index(), GL_LINK_STATUS, &_valid); // Get Success State
+  if(!this->valid()) printProgramError(this->index());
+}
+
+void ShaderProgram::use(){
+  glUseProgram(this->index());  // Activate the Program
+  _textures = 0;                // Reset Bound Texture State
+  _storages = 0;                // Reset Bound Storage Block State
+}
+
 // Multi-Stage Shader Implementations
 
-//! 
+//! Shader is a ShaderProgram that supports a vertex shader,
+//! fragment shader and optional geoemtry shader stage.
+//!
+//! Note that this is just a convenience wrapper class.
+//!
 struct Shader: ShaderProgram {
 private:
   Shader():
@@ -208,7 +202,10 @@ private:
   ShaderStage fragmentShader;
 };
 
-//! Compute
+//! Compute is a ShaderProgram with a single computer shader stage.
+//! It provides a convenient dispatch function for executing the
+//! compute shader. Note that to provide data to the compute shader,
+//! one must bind buffers as storage blocks before dispatch.
 //!
 struct Compute: ShaderProgram {
 private:

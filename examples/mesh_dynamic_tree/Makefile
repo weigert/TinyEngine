@@ -1,13 +1,13 @@
 # TinyEngine Makefile
 # Compiler Configuration
 
-CC = g++ -std=c++20
+CC = g++ -std=c++17
 CF = -Wfatal-errors -O
 LF = -I$(HOME)/.local/include -L$(HOME)/.local/lib
 
 # General Linking
 
-TINYLINK = -lpthread -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lGLEW -lpng
+TINYLINK = -lpthread -lSDL2 -lpng -lSDL2_mixer -lSDL2_ttf -lGLEW -lpng
 
 # OS Specific Linking
 
@@ -22,7 +22,7 @@ endif
 ifeq ($(UNAME), Darwin)
 TINYLINK += -framework OpenGL -DTINYENGINE_OS_MAC
 LF += -I/opt/homebrew/include -L/opt/homebrew/lib
-CC = g++-12 -std=c++20
+CC = g++-12 -std=c++17
 endif
 
 all: main.cpp

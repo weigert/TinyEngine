@@ -5,7 +5,7 @@
 
 namespace Tiny {
 
-//! Target is a frame-buffer wrapper that can be targeted 
+//! \brief Target is a Frame-Buffer wrapper that can be targeted 
 //! for off-screen rendering. 
 //!
 //! A target can bind multiple textures as depth or color
@@ -80,8 +80,7 @@ bool Target::valid(){
 
 // Implementations
 
-//! Billboard is a Target with RGBA-Color and Depth-Buffers.
-//!
+//! \brief Billboard is a 2D Target with an RGBA-Color and Depth Texture
 struct Billboard: Target {
 
   Billboard(const size_t width, const size_t height):Target(width, height),
@@ -99,8 +98,7 @@ private:
   Texture _depth; //!< Billboard Depth Attachment (DEPTH8U)
 };
 
-//! Cubemap is a Target with an RGBA-Color and Depth-Buffres
-//!
+//! \brief CubeMap is a 3D Target with an RGBA-Color and Depth Texture
 struct CubeMap: Target {
 
   CubeMap(const size_t width, const size_t height):Target(width, height),
@@ -110,21 +108,22 @@ struct CubeMap: Target {
     this->bind(_depth, GL_DEPTH_ATTACHMENT);
   }
 
-  inline CubeTexture& color() { return this->_color; }
-  inline CubeTexture& depth() { return this->_depth; }
+  inline CubeTexture& color() { return this->_color; }  //!< Retrieve Color CubeTexture Attachment (Texture::RGBA8U)
+  inline CubeTexture& depth() { return this->_depth; }  //!< Retrieve Depth CubeTexture Attachment (Texture::DEPTH8U)
 
 private:
   CubeTexture _color;  //!< CubeMap Color Attachment (RGBA8U)
   CubeTexture _depth;  //!< CubeMap Depth Attachment (DEPTH8U)
 };
 
-//! GBUffer is a Target with multiple color attachments,
-//! intended for deferred rendering purposes. This struct
-//! can be used to correctly set up a GBUffer target.
+//! \brief GBuffer is a Target with multiple Texture color attachments
 //!
+//! This struct is a correctly constructed Framebuffer for deffered rendering.
 struct GBuffer: Target {
 
-  GBuffer(const size_t width, const size_t height):Target(width, height),
+  //! Construct GBuffer with width, height
+  GBuffer(const size_t width, const size_t height):
+  Target(width, height),
   _position(width, height, Texture::RGBA16F),
   _normal(width, height, Texture::RGBA16F),
   _color(width, height, Texture::RGBA8U),
@@ -135,10 +134,10 @@ struct GBuffer: Target {
     this->bind(_depth, GL_DEPTH_ATTACHMENT);
   }
 
-  inline Texture& position() { return this->_position; }
-  inline Texture& normal() { return this->_normal; }
-  inline Texture& color() { return this->_color; }
-  inline Texture& depth() { return this->_depth; }
+  inline Texture& position() { return this->_position; }  //!< Retrieve Position Texture Attachment (Texture::RGBA16F)
+  inline Texture& normal() { return this->_normal; }      //!< Retrieve Normal Texture Attachment (Texture::RGBA16F)
+  inline Texture& color() { return this->_color; }        //!< Retrieve Color Texture Attachment (Texture::RGBA8U)
+  inline Texture& depth() { return this->_depth; }        //!< Retrieve Depth Texture Attachment (Texture::DEPTH8U)
 
 private:
   Texture _position;  //!< GBuffer Position Attachment (RGBA16F)

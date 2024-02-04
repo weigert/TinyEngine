@@ -1,6 +1,6 @@
 # TinyEngine
 
-Small OpenGL based 2D/3D Engine / Wrapper in C++
+Small OpenGL based 2D/3D Engine / Wrapper in C++17
 
 Supported on GNU/Linux and MacOS
 

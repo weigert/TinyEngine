@@ -7,7 +7,7 @@
 
 namespace Tiny {
 
-//! A Buffer is an opaque OpenGL Array Buffer Object Reference
+//! \brief A Buffer is an opaque OpenGL array buffer object reference
 //! 
 //! Construction and Destruction of the Buffer will allocate
 //! and de-allocate the GPU enabled buffer.

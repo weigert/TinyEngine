@@ -3,14 +3,6 @@
 
 namespace Tiny {
 
-//! Layout specifies the Data Format of GPU Textures.
-//!
-struct Layout {
-  GLenum internal;  //!< Defines number of Components
-  GLenum format;    //!< Defines Pixel Components
-  GLenum type;      //!< Defines Pixel Component Format
-};
-
 //! Texture is GPU Texture of a fixed size and data Layout.
 //!
 //! A Texture makes multi-dimensional data available to shaders
@@ -20,6 +12,15 @@ struct Layout {
 //! they can be bound to a Target, which can be rendered onto using shaders.
 //!
 struct Texture {
+
+  //! Layout specifies the Data Format of GPU Textures.
+  //!
+  struct Layout {
+    GLenum internal;  //!< Defines number of Components
+    GLenum format;    //!< Defines Pixel Components
+    GLenum type;      //!< Defines Pixel Component Format
+  };
+
 protected:
   Texture(){ glGenTextures(1, &_index); };    //!< Allocate GPU Texture
   

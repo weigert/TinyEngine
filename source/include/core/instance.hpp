@@ -28,9 +28,9 @@ template<> void config<glm::mat4>(const size_t index){
 
 }
 
-//! An Instance is a combination of a Model (Reference) and an Attribute Buffer, which
-//! allow for the instanced rendering of the Model, once per Attribute Buffer-Element.
+//! \brief Instance is a combination of a Model (Reference) and an Attribute Buffer
 //!
+//! This allows for the instanced rendering of the Model, once per Attribute Buffer-Element.
 template<typename M = Tiny::Model>
 struct Instance {
 

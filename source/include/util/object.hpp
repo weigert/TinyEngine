@@ -153,6 +153,6 @@ void Object::load_geometry(const std::string filename){
 
 }
 
-};  // end of namespace Tiny
+} // end of namespace Tiny
 
 #endif

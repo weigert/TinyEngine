@@ -5,7 +5,8 @@
 #include <thread>
 #include <atomic>
 
-namespace timer {
+namespace Tiny {
+
 typedef std::chrono::milliseconds ms;
 
   template<typename D, typename F, typename... Args>
@@ -98,6 +99,6 @@ typedef std::chrono::milliseconds ms;
     }
   };
 
-}
+} // end of namespace Tiny
 
 #endif

@@ -2,7 +2,40 @@
 #define TINYENGINE_UTIL_CAMERA
 
 namespace Tiny {
-namespace cam {
+
+//! Camera Type, Composed of Controls and Projection
+template<typename P, typename C>
+struct camera {
+
+  typedef P projection_type;
+  typedef C control_type;
+
+  camera(const projection_type& projection, const control_type& control):
+    projection(projection),control(control){
+      this->update();
+    }
+
+  void update(){
+    this->control.update();
+    this->projection.update();
+    this->_vp = projection.proj()*control.view();
+  }
+
+  const std::function<void()> handler = [&](){
+    control.handler();
+    projection.handler();
+    this->update();
+  };
+
+  const inline glm::mat4 vp(){
+    return this->_vp;
+  }
+
+  control_type control;
+  projection_type projection;
+private:
+  glm::mat4 _vp;
+};
 
 // Camera Projection Implementations
 
@@ -178,46 +211,10 @@ private:
   glm::mat4 _invview;
 };
 
-
-//! Camera Type, Composed of Controls and Projection
-template<typename P, typename C>
-  struct camera {
-
-  typedef P projection_type;
-  typedef C control_type;
-
-  camera(const projection_type& projection, const control_type& control):
-    projection(projection),control(control){
-      this->update();
-    }
-
-  void update(){
-    this->control.update();
-    this->projection.update();
-    this->_vp = projection.proj()*control.view();
-  }
-
-  const std::function<void()> handler = [&](){
-    control.handler();
-    projection.handler();
-    this->update();
-  };
-
-  const inline glm::mat4 vp(){
-    return this->_vp;
-  }
-
-  control_type control;
-  projection_type projection;
-private:
-  glm::mat4 _vp;
-};
-
 // Unimplemented
 struct perspective{};
 struct free{};
 
-}
-}
+} // end of namespace Tiny
 
 #endif

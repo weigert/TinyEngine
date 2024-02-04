@@ -239,6 +239,6 @@ bool png<T>::write(const char *filename) {
 
 }
 
-}
+} // end of namespace Tiny
 
 #endif

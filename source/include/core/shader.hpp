@@ -10,371 +10,10 @@
 
 namespace Tiny {
 
-//! ShaderStage represents a single stage
-//! of a multi-stage shader program.
-//!
-struct ShaderStage {
+namespace {
 
-  ShaderStage(GLenum shaderType){
-    this->_index = glCreateShader(shaderType);
-  }
-
-  ShaderStage(GLenum shaderType, const std::string filename):
-  ShaderStage(shaderType){
-    this->setup(filename);
-  }
-
-  ~ShaderStage(){
-    glDeleteShader(_index);
-  }
-
-  void setup(const std::string filename){
-    this->load(filename);
-    this->compile();
-  }
-
-  //! Load the GLSL Source
-  void load(const std::string filename){
-    int32_t size;
-    const std::string result = readGLSLFile(filename, size);
-    char* src = const_cast<char*>(result.c_str());
-    glShaderSource(this->index(), 1, &src, &size);
-  }
-
-  //! Compile the GLSL Source
-  void compile(){
-    glCompileShader(this->index());
-    glGetShaderiv(this->index(), GL_COMPILE_STATUS, &_valid);
-  }
-
-  static std::string readGLSLFile(const std::string filename, int32_t &size);
-
-  inline const uint32_t valid() const { return this->_valid; }
-  inline const uint32_t index() const { return this->_index; }
-
-private:
-  GLint _valid;    //!< ShaderStage Validity Status
-  uint32_t _index; //!< Index of the Shader Stage
-};
-
-struct Shader {
-private:
-
-  Shader():
-  vertexShader(GL_VERTEX_SHADER),
-  fragmentShader(GL_FRAGMENT_SHADER),
-  geometryShader(GL_GEOMETRY_SHADER){
-    _index = glCreateProgram();
-  }
-
-public:
-
-  ~Shader(){
-    glDeleteProgram(this->index());
-  }
-
-  Shader(const std::vector<std::string> shaders, const std::vector<std::string> in):Shader(){
-
-    if(shaders.size() == 2){
-      
-      vertexShader.setup(shaders[0]);
-      if(!vertexShader.valid()){
-        error(vertexShader.index(), true, shaders[0]);
-        return;
-      } else {
-        glAttachShader(this->index(), vertexShader.index());
-      }
-
-      fragmentShader.setup(shaders[1]);
-      if(!fragmentShader.valid()){
-        error(fragmentShader.index(), true, shaders[1]);
-        return;
-      } else {
-        glAttachShader(this->index(), fragmentShader.index());
-      }
-
-    }
-
-
-    else if(shaders.size() == 3){
-      vertexShader.setup(shaders[0]);
-      if(!vertexShader.valid()){
-        error(vertexShader.index(), true, shaders[0]);
-        return;
-      } else {
-        glAttachShader(this->index(), vertexShader.index());
-      }
-
-      geometryShader.setup(shaders[1]);
-      if(!geometryShader.valid()){
-        error(geometryShader.index(), true, shaders[1]);
-        return;
-      } else {
-        glAttachShader(this->index(), geometryShader.index());
-      }
-
-      fragmentShader.setup(shaders[2]);
-      if(!fragmentShader.valid()){
-        error(fragmentShader.index(), true, shaders[2]);
-        return;
-      } else {
-        glAttachShader(this->index(), fragmentShader.index());
-      }
-    }
-    else std::cout<<"Number of shaders not recognized."<<std::endl;
-
-    for(int i = 0; i < in.size(); i++)
-      glBindAttribLocation(this->index(), i, in[i].c_str());
-
-    this->link(shaders[0]);
-  }
-
-  void link(const std::string fileName){
-    glLinkProgram(this->index());
-    glGetProgramiv(this->index(), GL_LINK_STATUS, &_valid);
-    if(!_valid) error(this->index(), false, fileName);
-  }
-
-  void use(){
-    glUseProgram(this->index());
-    _textures = 0;
-  }
-
-  void error(GLuint s, bool t, std::string fileName){
-    int m;
-    if(t) glGetShaderiv(s, GL_INFO_LOG_LENGTH, &m);
-    else glGetProgramiv(s, GL_INFO_LOG_LENGTH, &m);
-    char* l = new char[m];
-    if(t) glGetShaderInfoLog(s, m, &m, l);
-    else glGetProgramInfoLog(s, m, &m, l);
-    std::cout<<"Linker Error ("<<fileName<<"): "<<l<<std::endl;
-    delete[] l;
-  }
-
-  inline const uint32_t index() const { return this->_index; }
-
-  template<typename T> void uniform(std::string name, const T u);
-  template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
-  template<typename T> void texture(std::string name, const T& t);
-
-private:
-  GLint _valid;            //!< Validity of Linked Program
-  uint32_t _index;            //!< Index of the Multi-Stage Program
-  uint32_t _textures;         //!< Number of Bound Textures
-  ShaderStage vertexShader;
-  ShaderStage geometryShader;
-  ShaderStage fragmentShader;
-};
-
-/*
-// Then, a shader is a composition of multiple shaderstages?
-
-class ShaderBase {
-public:
-
-  static std::unordered_map<std::string, GLuint> sbpi; //Shader Binding Point Index
-
-  static void ssbo(std::string name);                  //Define an SSBO by name
-  static void ssbo(std::vector<std::string> names);    //Define a list of SSBOs
-  void interface(std::string name);                    //Add SSBO to permitted interface blocks
-  void interface(std::vector<std::string> names);      //Add a list of buffers to interface
-  static void bind(std::string name, Buffer* buf);
-
-};
-
-
-std::unordered_map<std::string, GLuint> Shader::sbpi; //Shader Binding Point Index
-
-void Shader::link(std::string fileName){
-
-}
-
-
-
-void Shader::ssbo(std::string name){
-  if(sbpi.find(name) != sbpi.end()) return; //Named Binding Point Exists
-  sbpi[name] = sbpi.size();
-}
-
-void Shader::ssbo(std::vector<std::string> names){
-  for(auto& l: names) ssbo(l);
-}
-
-void Shader::interface(std::string name){
-  ssbo(name); //Make sure binding point exists
-  glShaderStorageBlockBinding(program, glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name.c_str()), sbpi[name]);
-}
-
-void Shader::interface(std::vector<std::string> names){
-  for(auto& l: names) interface(l);
-}
-
-void Shader::bind(std::string name, Buffer* buf){
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->index());
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, sbpi[name], buf->index());
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-}
-
-*/
-
-template<typename T>
-void Shader::uniform(std::string name, T u){
-  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl; }
-
-template<typename T, size_t N>
-void Shader::uniform(std::string name, const T (&u)[N]){
-  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl; }
-
-template<> void Shader::uniform(std::string name, const bool u){
-  glUniform1i(glGetUniformLocation(this->index(), name.c_str()), u); }
-
-template<> void Shader::uniform(std::string name, const int u){
-  glUniform1i(glGetUniformLocation(this->index(), name.c_str()), u); }
-
-template<> void Shader::uniform(std::string name, const float u){
-  glUniform1f(glGetUniformLocation(this->index(), name.c_str()), u); }
-
-template<> void Shader::uniform(std::string name, const double u){ //GLSL Intrinsically Single Precision
-  glUniform1f(glGetUniformLocation(this->index(), name.c_str()), (float)u); }
-
-template<> void Shader::uniform(std::string name, const glm::vec2 u){
-  glUniform2fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
-
-template<> void Shader::uniform(std::string name, const glm::ivec2 u){
-  glUniform2iv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
-
-template<> void Shader::uniform(std::string name, const glm::vec3 u){
-  glUniform3fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
-
-template<> void Shader::uniform(std::string name, const float (&u)[3]){
-  glUniform3fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
-
-template<> void Shader::uniform(std::string name, const float (&u)[4]){
-  glUniform4fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
-
-template<> void Shader::uniform(std::string name, const glm::vec4 u){
-  glUniform4fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
-
-template<> void Shader::uniform(std::string name, const glm::mat3 u){
-  glUniformMatrix3fv(glGetUniformLocation(this->index(), name.c_str()), 1, GL_FALSE, &u[0][0]); }
-
-template<> void Shader::uniform(std::string name, const glm::mat4 u){
-  glUniformMatrix4fv(glGetUniformLocation(this->index(), name.c_str()), 1, GL_FALSE, &u[0][0]); }
-
-template<> void Shader::uniform(std::string name, const std::vector<glm::mat4> u){
-  glUniformMatrix4fv(glGetUniformLocation(this->index(), name.c_str()), u.size(), GL_FALSE, &u[0][0][0]); }
-
-template<typename T>
-void Shader::texture(std::string name, const T& t){
-  glActiveTexture(GL_TEXTURE0 + _textures);
-  t.operator()();
-  uniform(name, _textures++);
-}
-
-  /*
-struct Shader {
-public:
-
-
-  template<typename... Args>
-  Shader(std::vector<std::string> shaders, std::vector<std::string> in):ShaderBase(){
-    setup(shaders);                     //Add Individual Shaders
-    for(int i = 0; i < in.size(); i++)
-      glBindAttribLocation(program, i, in[i].c_str());
-    link(shaders[0]);                        //Link the shader program!
-  }
-
-  Shader(std::vector<std::string> shaders):ShaderBase(){
-    setup(shaders);                     //Add Individual Shaders
-    link(shaders[0]);                             //Link the shader program!
-  }
-
-  Shader(std::vector<std::string> shaders, std::vector<std::string> in):ShaderBase(){
-    setup(shaders);                     //Add Individual Shaders
-    for(int i = 0; i < in.size(); i++)
-      glBindAttribLocation(program, i, in[i].c_str());
-    link(shaders[0]);                             //Link the shader program!
-  }
-
-  Shader(std::vector<std::string> shaders, std::vector<std::string> in, std::vector<std::string> buf):Shader(shaders, in){
-    ssbo(buf);
-  }
-
-  ~Shader(){
-    glDeleteShader(fragmentShader);
-    glDeleteShader(geometryShader);
-    glDeleteShader(vertexShader);
-  }
-
-  void setup(std::vector<std::string> shaders){
-    std::vector<std::string> s = shaders;
-
-    if(s.size() == 2){
-      vertexShader   = addProgram(s[0], GL_VERTEX_SHADER);
-      fragmentShader = addProgram(s[1], GL_FRAGMENT_SHADER);
-    }
-    else if(s.size() == 3){
-      vertexShader   = addProgram(s[0], GL_VERTEX_SHADER);
-      geometryShader = addProgram(s[1], GL_GEOMETRY_SHADER);
-      fragmentShader = addProgram(s[2], GL_FRAGMENT_SHADER);
-    }
-    else std::cout<<"Number of shaders not recognized."<<std::endl;
-  }
-
-
-private:
-  GLuint vertexShader, geometryShader, fragmentShader;
-
-};
-
-class Compute : public ShaderBase {
-private:
-
-  GLuint computeShader;
-
-public:
-
-  Compute(std::string shader):ShaderBase(),
-  computeShader(addProgram(shader, GL_COMPUTE_SHADER)){
-    link(shader);
-  }
-
-  Compute(std::string shader, std::vector<std::string> buf):Compute(shader){
-    ssbo(buf);
-  }
-
-  ~Compute(){
-    glDeleteShader(computeShader);
-  }
-
-  void dispatch(int x = 1, int y = 1, int z = 1, bool block = true){
-    glDispatchCompute(x, y, z);
-    if(block) glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  }
-
-  static void limits(){
-    const std::function<int(GLenum)> getInt = [](GLenum E){
-      int i; glGetIntegerv(E, &i); return i;
-    };
-    std::cout<<"Max. SSBO: "<<getInt(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS)<<std::endl;
-    std::cout<<"Max. SSBO Block-Size: "<<getInt(GL_MAX_SHADER_STORAGE_BLOCK_SIZE)<<std::endl;
-    std::cout<<"Max. Compute Shader Storage Blocks: "<<getInt(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS)<<std::endl;
-    std::cout<<"Max. Shared Storage Size: "<<getInt(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE)<<std::endl;
-
-    int m;
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &m);
-    std::cout<<"Max. Work Groups: "<<m<<std::endl;
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &m);
-    std::cout<<"Max. Local Size: "<<m<<std::endl;
-
-  }
-
-};
-  */
-
-// Implementation
-
-std::string ShaderStage::readGLSLFile(std::string file, int32_t &size){
+//! Read a GLSL File w. Include Directives
+std::string readGLSLFile(const std::string file, int32_t& size){
 
   std::filesystem::path local_dir(file);
   local_dir = local_dir.parent_path();
@@ -407,6 +46,300 @@ std::string ShaderStage::readGLSLFile(std::string file, int32_t &size){
   size = fileContent.length();  //Set the Size
   return fileContent;
 }
+
+void printShaderError(uint32_t index, const std::string filename){
+  int m;
+  glGetShaderiv(index, GL_INFO_LOG_LENGTH, &m);
+  char* l = new char[m];
+  glGetShaderInfoLog(index, m, &m, l);
+  std::cout<<"Shader Compiler Error ("<<filename<<"): "<<l<<std::endl;
+  delete[] l;
+}
+
+void printProgramError(uint32_t index){
+  int m;
+  glGetProgramiv(index, GL_INFO_LOG_LENGTH, &m);
+  char* l = new char[m];
+  glGetProgramInfoLog(index, m, &m, l);
+  std::cout<<"Shader Linker Error: "<<l<<std::endl;
+  delete[] l;
+}
+
+}
+
+//! ShaderStage represents a single stage
+//! of a multi-stage shader program.
+//!
+struct ShaderStage {
+
+  ShaderStage(GLenum shaderType){
+    this->_index = glCreateShader(shaderType);
+  }
+
+  ~ShaderStage(){
+    glDeleteShader(this->index());
+  }
+
+  ShaderStage(GLenum shaderType, const std::string filename):
+  ShaderStage(shaderType){
+    this->load(filename);
+  }
+
+  //! Load the GLSL Source into the Shader Stage by Filename,
+  //! compile the source and handle compilation errors.
+  void load(const std::string filename){
+    int32_t size;
+    const std::string result = readGLSLFile(filename, size);
+    char* src = const_cast<char*>(result.c_str());
+    glShaderSource(this->index(), 1, &src, &size);
+    glCompileShader(this->index());
+    glGetShaderiv(this->index(), GL_COMPILE_STATUS, &_valid);
+    if(!this->valid()) printShaderError(this->index(), filename);
+  }
+
+  inline const uint32_t valid() const { return this->_valid; }  //!< Check Shader Validity
+  inline const uint32_t index() const { return this->_index; }  //!< Retrieve Shader Stage Index
+
+private:
+  GLint _valid;    //!< ShaderStage Validity Status
+  uint32_t _index; //!< Index of the Shader Stage
+};
+
+//! ShaderProgram is an executable combination of multiple shader stages.
+//!
+//! An arbitrary set of ShaderStage can be attached to a ShaderProgram.
+//! ShaderProgram provides a templated interface for providing uniforms
+//! and textures to the shader stages.
+//!
+//! Additionally, a ShaderProgram can have ShaderStorageBufferObjects
+//! attached as interface blocks, for non-texture generic data.
+//!
+struct ShaderProgram {
+
+  ShaderProgram(){
+    this->_index = glCreateProgram();
+  }
+
+  ~ShaderProgram(){
+    glDeleteProgram(this->index());
+  }
+
+  void attributes(const std::vector<std::string> attributes){
+    for(int i = 0; i < attributes.size(); i++)
+      glBindAttribLocation(this->index(), i, attributes[i].c_str());
+  }
+
+  void attach(ShaderStage& stage){
+    if(stage.valid())
+      glAttachShader(this->index(), stage.index());
+  }
+
+  void link(){
+    glLinkProgram(this->index());
+    glGetProgramiv(this->index(), GL_LINK_STATUS, &_valid);
+    if(!this->valid()) printProgramError(this->index());
+  }
+
+  void use(){
+    glUseProgram(this->index());
+    for(auto& s: sbpi){
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, s.second, bssbo[s.second]);
+    }
+    _textures = 0;
+  }
+
+  // Templated Member Functions
+
+  template<typename T> void uniform(std::string name, const T u);
+  template<typename T, size_t N> void uniform(std::string name, const T (&u)[N]);
+  void texture(std::string name, const Texture& texture);
+
+  inline const uint32_t valid()    const { return this->_valid; }    //!< Check Shader Validity
+  inline const uint32_t index()    const { return this->_index; }    //!< Retrieve Program Index
+  inline const uint32_t textures() const { return this->_textures; } //!< Retrieve Number of Active Textures
+
+  // SSBO and Buffer Binding Methods
+  std::unordered_map<GLuint, GLuint> bssbo;
+  std::unordered_map<std::string, GLuint> sbpi;
+  std::unordered_map<std::string, GLuint> sbpc;
+  void ssbo(std::string name);                  //Define an SSBO by name
+
+ // void interface(std::string name);                    //Add SSBO to permitted interface blocks
+  void bind(std::string name, Buffer* buf);
+
+private:
+  GLint _valid;       //!< Validity of Linked Program
+  uint32_t _index;    //!< Index of the Multi-Stage Program
+  uint32_t _textures; //!< Number of Bound Textures
+};
+
+// Set of Buffer SSBO Indices???
+//std::unordered_map<GLuint, GLuint> ShaderProgram::bssbo;
+
+void ShaderProgram::ssbo(std::string name){
+  if(sbpi.find(name) != sbpi.end()) return; //Named Binding Point Exists
+  sbpi[name] = sbpi.size();
+  sbpc[name] = glGetProgramResourceIndex(this->index(), GL_SHADER_STORAGE_BLOCK, name.c_str());
+  glShaderStorageBlockBinding(this->index(), sbpc[name], sbpi[name]);  
+}
+
+void ShaderProgram::bind(std::string name, Buffer* buf){
+  if(sbpi.find(name) == sbpi.end()) return; //Named Binding Point Exists
+  bssbo[sbpi[name]] = buf->index();
+}
+
+// Multi-Stage Shader Implementations
+
+//! 
+struct Shader: ShaderProgram {
+private:
+  Shader():
+  vertexShader(GL_VERTEX_SHADER),
+  fragmentShader(GL_FRAGMENT_SHADER),
+  geometryShader(GL_GEOMETRY_SHADER){}
+
+public:
+
+  Shader(const std::vector<std::string> shaders, const std::vector<std::string> in):Shader(){
+
+    if(shaders.size() == 2){
+      vertexShader.load(shaders[0]);
+      this->attach(vertexShader);
+      fragmentShader.load(shaders[1]);
+      this->attach(fragmentShader);
+    }
+
+    else if(shaders.size() == 3){
+      vertexShader.load(shaders[0]);
+      this->attach(vertexShader);
+      geometryShader.load(shaders[1]);
+      this->attach(geometryShader);      
+      fragmentShader.load(shaders[2]);
+      this->attach(fragmentShader);
+    }
+
+    else std::cout<<"Number of shaders not recognized."<<std::endl;
+
+    this->attributes(in);
+    this->link();
+  
+  }
+
+  Shader(const std::vector<std::string> shaders, const std::vector<std::string> in, const std::vector<std::string> buf):Shader(shaders, in){
+    for(auto& b: buf) ssbo(b);
+  }
+
+private:
+  ShaderStage vertexShader;
+  ShaderStage geometryShader;
+  ShaderStage fragmentShader;
+};
+
+//! Compute
+//!
+struct Compute: ShaderProgram {
+private:
+  Compute():
+  computeShader(GL_COMPUTE_SHADER){}
+
+public:
+
+  Compute(const std::string shader):Compute(){
+    computeShader.load(shader);
+    this->attach(computeShader);
+    this->link();
+  }
+
+  Compute(const std::string shader, std::vector<std::string> buf):Compute(shader){
+    for(auto& b: buf) ssbo(b);
+  }
+
+  void dispatch(int x = 1, int y = 1, int z = 1, bool block = true){
+    glDispatchCompute(x, y, z);
+    if(block) glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  }
+
+private:
+  ShaderStage computeShader;
+};
+
+// Template Instantiations
+
+template<typename T>
+void ShaderProgram::uniform(std::string name, T u){
+  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl; }
+
+template<typename T, size_t N>
+void ShaderProgram::uniform(std::string name, const T (&u)[N]){
+  std::cout<<"Error: Data type not recognized for uniform "<<name<<"."<<std::endl; }
+
+template<> void ShaderProgram::uniform(std::string name, const bool u){
+  glUniform1i(glGetUniformLocation(this->index(), name.c_str()), u); }
+
+template<> void ShaderProgram::uniform(std::string name, const int u){
+  glUniform1i(glGetUniformLocation(this->index(), name.c_str()), u); }
+
+template<> void ShaderProgram::uniform(std::string name, const uint32_t u){
+  glUniform1i(glGetUniformLocation(this->index(), name.c_str()), u); }
+
+template<> void ShaderProgram::uniform(std::string name, const float u){
+  glUniform1f(glGetUniformLocation(this->index(), name.c_str()), u); }
+
+template<> void ShaderProgram::uniform(std::string name, const double u){ //GLSL Intrinsically Single Precision
+  glUniform1f(glGetUniformLocation(this->index(), name.c_str()), (float)u); }
+
+template<> void ShaderProgram::uniform(std::string name, const glm::vec2 u){
+  glUniform2fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const glm::ivec2 u){
+  glUniform2iv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const glm::vec3 u){
+  glUniform3fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const float (&u)[3]){
+  glUniform3fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const float (&u)[4]){
+  glUniform4fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const glm::vec4 u){
+  glUniform4fv(glGetUniformLocation(this->index(), name.c_str()), 1, &u[0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const glm::mat3 u){
+  glUniformMatrix3fv(glGetUniformLocation(this->index(), name.c_str()), 1, GL_FALSE, &u[0][0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const glm::mat4 u){
+  glUniformMatrix4fv(glGetUniformLocation(this->index(), name.c_str()), 1, GL_FALSE, &u[0][0]); }
+
+template<> void ShaderProgram::uniform(std::string name, const std::vector<glm::mat4> u){
+  glUniformMatrix4fv(glGetUniformLocation(this->index(), name.c_str()), u.size(), GL_FALSE, &u[0][0][0]); }
+
+void ShaderProgram::texture(std::string name, const Texture& texture){
+  glActiveTexture(GL_TEXTURE0 + _textures);
+  texture.operator()();
+  uniform(name, _textures++);
+}
+
+/*
+//! Deprecate: Move this to generic debug info
+static void Compute::limits(){
+  const std::function<int(GLenum)> getInt = [](GLenum E){
+    int i; glGetIntegerv(E, &i); return i;
+  };
+  std::cout<<"Max. SSBO: "<<getInt(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS)<<std::endl;
+  std::cout<<"Max. SSBO Block-Size: "<<getInt(GL_MAX_SHADER_STORAGE_BLOCK_SIZE)<<std::endl;
+  std::cout<<"Max. Compute Shader Storage Blocks: "<<getInt(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS)<<std::endl;
+  std::cout<<"Max. Shared Storage Size: "<<getInt(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE)<<std::endl;
+
+  int m;
+  glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &m);
+  std::cout<<"Max. Work Groups: "<<m<<std::endl;
+  glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &m);
+  std::cout<<"Max. Local Size: "<<m<<std::endl;
+
+}
+*/
 
 } // end of namespace Tiny
 

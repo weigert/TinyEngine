@@ -9,7 +9,6 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
 #include <GL/glew.h>
@@ -55,11 +54,6 @@ bool init(){
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   #endif
-
-  if( !( IMG_Init( IMG_INIT_PNG ) & IMG_INIT_PNG ) ){
-    printf( "SDL_Image could not initialize! Error: %s\n", IMG_GetError() );
-    return false;
-  }
 
   if( TTF_Init() == -1 ){ //for some reason this is -1
     printf( "SDL_ttf could not initialize! Error: %s\n", TTF_GetError() );

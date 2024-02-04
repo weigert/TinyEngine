@@ -69,7 +69,8 @@ int main( int argc, char* args[] ) {
 	Tiny::Instance particle(flat);												//Make Particle System
 	particle.bind<glm::mat4>(models);  //Add Matrices
 
-	Tiny::Texture tex(image::load("leaf.png"));
+	Tiny::png image("leaf");
+	Tiny::Texture tex(image.width(), image.height(), Tiny::Texture::RGBA8U, image.data());
 
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
 	Tiny::Shader defaultShader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal"});

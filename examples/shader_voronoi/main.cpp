@@ -73,7 +73,8 @@ int main( int argc, char* args[] ) {
 	Tiny::Instance instance(flat);
 	instance.bind<glm::vec2>(centroidbuf);
 
-	Tiny::Texture tex(image::load("starry_night.png")); //Load Texture with Image
+	Tiny::png image("starry_night.png");
+	Tiny::Texture tex(image.width(), image.height(), Tiny::Texture::RGBA8U, image.data());
 
 	//Prepare Noise for jiggling the centroids
 	FastNoiseLite noise;

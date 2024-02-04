@@ -15,12 +15,15 @@ int main( int argc, char* args[] ) {
 	};
 	Tiny::view.interface = [](){ /* ... */ }; 						//No Interface
 
-	SDL_Surface* s = image::make([&](glm::ivec2 p){
-			if(rand()%2) return glm::vec4(1.0, 1.0, 1.0, 1.0);
-			else return glm::vec4(0.0, 0.0, 0.0, 1.0);
-		}, glm::ivec2(1200, 800));
+	Tiny::image<uint8_t> image(1200, 800);
+	image.fill([&](const glm::ivec2 p){
+		if(rand()%2) return 255;
+		else return 0;
+	});
 
-	Tiny::Texture textureA(1200, 800, Tiny::Texture::R8U, s->pixels);
+	Tiny::Texture textureA(1200, 800, Tiny::Texture::R8U);
+	textureA.set(Tiny::Texture::R8U, image.data());
+
 	Tiny::Texture textureB(1200, 800, Tiny::Texture::R8U);
 
 	Tiny::Target targetA(1200, 800);

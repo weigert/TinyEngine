@@ -14,7 +14,9 @@ int main( int argc, char* args[] ) {
 
 	setup();	//Setup Model Data
 
-	Tiny::Texture textureA(image::load("canyon.png"));
+	Tiny::png image("canyon.png");
+	Tiny::Texture textureA(image.width(), image.height(), Tiny::Texture::RGBA8U, image.data());
+
 	Tiny::Texture textureB(1200, 800, {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE});
 
 	Tiny::Target targetA(1200, 800);

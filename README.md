@@ -223,7 +223,7 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
 #### Debian-Based Systems (e.g. Ubuntu)
 
     - OpenGL3: apt-get install libglu1-mesa-dev
-    - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev
+    - SDL2:    apt-get install libsdl2-dev
     - GLEW:    apt-get install libglew-dev
     - GLM:     apt-get install libglm-dev
 
@@ -237,7 +237,7 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
 In a single command:
 
 ```bash
-sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev libglew-dev libglm-dev
+sudo apt-get install libglu1-mesa-dev libsdl2-dev libglew-dev libglm-dev
 ```
 
 #### Fedora / DNF Package Manager Systems
@@ -245,7 +245,7 @@ sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-
 For systems with `dnf` as package manager, the dependencies can be installed using:
 
 ```bash
-sudo dnf install make gcc-c++ glew-devel SDL2-devel SDL2_ttf-devel SDL2_mixer-devel glm-devel eigen3-devel
+sudo dnf install make gcc-c++ glew-devel SDL2-devel glm-devel eigen3-devel
 ```
 
 #### MacOS (+Apple M1)
@@ -264,8 +264,6 @@ brew upgrade
 brew install gcc
 brew install glew
 brew install sdl2
-brew install sdl2_mixer
-brew install sld2_ttf
 brew install glm
 ```
 

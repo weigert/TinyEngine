@@ -8,14 +8,11 @@
 #define TINYENGINE_VERSION "1.8"
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_ttf.h>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <TinyEngine/Audio>
 #include <TinyEngine/Event>
 #include <TinyEngine/View>
 
@@ -35,7 +32,6 @@ namespace Tiny {
 
 static View view;           //Window and Interface  (Requires Initialization)
 static Event event;         //Event Handler
-static Audio audio;         //Audio Processor       (Requires Initialization)
 
 void sighandler(int signal){
   event.quit = true;
@@ -54,11 +50,6 @@ bool init(){
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   #endif
-
-  if( TTF_Init() == -1 ){ //for some reason this is -1
-    printf( "SDL_ttf could not initialize! Error: %s\n", TTF_GetError() );
-    return false;
-  }
 
   signal(SIGINT, &sighandler);
 
@@ -83,18 +74,11 @@ bool window(std::string windowName, int width, int height){ //Open a window
     return false;
   }
 
-  if(!audio.init()){ //Start the Audio Interface
-    std::cout<<"Failed to launch audio interface."<<std::endl;
-		return false;
-	}
-
   return true;
 }
 
 void quit(){
-  if(Tiny::view.enabled)  view.quit();
-  if(Tiny::audio.enabled) audio.quit();
-  TTF_Quit();
+  if(Tiny::view.enabled) view.quit();
   SDL_Quit();
 }
 
@@ -111,17 +95,11 @@ void loop(F function, Args&&... args){
       event.handle(view);   //Call the event-handling system
     }
 
-    if(Tiny::audio.enabled) audio.process();      //Audio Processor
-
-   // timer::measure<std::chrono::microseconds> m;
-
     function(args...);      //User-defined Game Loop
 
     if(Tiny::view.enabled){
       view.render();         //Render View
     }
-
-   // glFlush();
 
   }
 

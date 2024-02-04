@@ -34,7 +34,6 @@ setup:
 			@if [ ! -d $(INCPATH) ]; then mkdir $(INCPATH); fi;
 			@if [ ! -d $(INCPATH)/TinyEngine ]; then mkdir $(INCPATH)/TinyEngine; fi;
 			@cp TinyEngine.hpp $(INCPATH)/TinyEngine/TinyEngine
-			@cp include/audio.hpp $(INCPATH)/TinyEngine/Audio
 			@cp include/event.hpp $(INCPATH)/TinyEngine/Event
 			@cp include/view.hpp $(INCPATH)/TinyEngine/View
 			@cp include/core/buffer.hpp $(INCPATH)/TinyEngine/Buffer
@@ -59,12 +58,11 @@ IMGUI = imgui imgui_demo imgui_draw imgui_widgets imgui_impl_opengl3 imgui_impl_
 install:
 			@echo "Compiling TinyEngine ...";
 			@if [ ! -d "tmp" ]; then mkdir tmp; fi;
-			@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/audio.cpp -o tmp/audio.o
 			@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/event.cpp -o tmp/event.o
 			@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/view.cpp -o tmp/view.o
 			@$(foreach i,$(IMGUI), $(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/external/imgui/$(i).cpp -o tmp/$(i).o;)
 			@echo "Generating Static Library Archive ...";
-			@ar cr tmp/libTinyEngine.a tmp/audio.o tmp/event.o tmp/view.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
+			@ar cr tmp/libTinyEngine.a tmp/event.o tmp/view.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
 			@echo "Placing Compiled TinyEngine Library ...";
 			@if [ ! -d $(LIBPATH) ]; then mkdir $(LIBPATH); fi;
 			@cp tmp/libTinyEngine.a $(LIBPATH)/libTinyEngine.a

@@ -2,6 +2,7 @@
 #define TINYENGINE_UTIL_CAMERA
 
 namespace Tiny {
+namespace cam {
 
 //! Camera Type, Composed of Controls and Projection
 template<typename P, typename C>
@@ -215,6 +216,7 @@ private:
 struct perspective{};
 struct free{};
 
+} // end of namespace cam
 } // end of namespace Tiny
 
 #endif

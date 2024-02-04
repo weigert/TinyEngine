@@ -6,6 +6,7 @@
 #include <atomic>
 
 namespace Tiny {
+namespace timer {
 
 typedef std::chrono::milliseconds ms;
 
@@ -99,6 +100,7 @@ typedef std::chrono::milliseconds ms;
     }
   };
 
+} // end of namespace timer
 } // end of namespace Tiny
 
 #endif

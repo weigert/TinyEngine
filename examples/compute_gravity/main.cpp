@@ -10,12 +10,9 @@ int main( int argc, char* args[] ) {
 	Tiny::view.vsync = false;
 	Tiny::window("N-Body Gravity", 1200, 800);
 
-  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -200.0f, 200.0f, 500.0f);
+  Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-200.0f, 200.0f}, 500.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0));
-  ortho.update();
-  orbit.update();
-
-  Tiny::cam::camera cam(ortho, orbit);
+  Tiny::camera cam(ortho, orbit);
 
 	bool paused = true;
 	Tiny::view.interface = [&](){};

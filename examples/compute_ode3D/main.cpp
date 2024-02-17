@@ -11,12 +11,9 @@ int main( int argc, char* args[] ) {
 	Tiny::window("3D Quadratic ODE", 1000, 800);
 	glPointSize(1.5f);
 
-  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -200.0f, 200.0f, 5.0f);
+  Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-200.0f, 200.0f}, 5.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
-  ortho.update();
-  orbit.update();
-
-  Tiny::cam::camera cam(ortho, orbit);
+  Tiny::camera cam(ortho, orbit);
   cam.update();
 
 	Tiny::view.interface = [&](){};

@@ -35,7 +35,7 @@ glm::mat4 bias = glm::mat4(
     0.0, 0.0, 0.5, 0.0,
     0.5, 0.5, 0.5, 1.0
 );
-glm::mat4 lproj = glm::ortho(-300.0f, 300.0f, -300.0f, 400.0f, -200.0f, 800.0f);
+glm::mat4 lproj = glm::ortho(-600.0f, 600.0f, -600.0f, 600.0f, -600.0f, 600.0f);
 glm::mat4 lview = glm::lookAt(lightpos, glm::vec3(0), glm::vec3(0,1,0));
 
 #include "tree.h"

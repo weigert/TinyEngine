@@ -5,7 +5,6 @@ in vec2 ex_Tex;
 uniform sampler2D spriteTexture;
 uniform vec4 leafcolor;
 
-
 in vec4 ex_Shadow;
 
 
@@ -59,7 +58,7 @@ void main(void) {
   if(color.a == 0.0) discard;
 
   vec4 _light = vec4(1.0);
-  if(selfshadow) _light = directionalLight();
+  //if(selfshadow) _light = directionalLight();
   fragColor = _light*leafcolor;
 
 }

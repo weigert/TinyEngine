@@ -40,9 +40,9 @@ struct camera {
 
   inline glm::mat4 vp() const { return this->_vp; }
 
-protected:
   control_t control;
   project_t project;
+protected:
   glm::mat4 _vp;
 };
 
@@ -64,17 +64,16 @@ struct cam::orthogonal {
 
   void handler(){
 
-    if(Tiny::event.scroll.posy) this->scale += 0.1;
-    if(Tiny::event.scroll.negy) this->scale -= 0.1;
+    if(Tiny::event.scroll.posy) this->scale /= 0.98;
+    if(Tiny::event.scroll.negy) this->scale *= 0.98;
     
-    if(Tiny::event.active[SDLK_PAGEUP])   this->scale += 0.1;
-    if(Tiny::event.active[SDLK_PAGEDOWN]) this->scale -= 0.1;
+    if(Tiny::event.active[SDLK_PAGEUP])   this->scale /= 0.98;
+    if(Tiny::event.active[SDLK_PAGEDOWN]) this->scale *= 0.98;
 
     if(Tiny::event.windowEventTrigger){
       this->dim.x = Tiny::view.WIDTH;
       this->dim.y = Tiny::view.HEIGHT;
     }
-
   }
 
   inline glm::mat4 proj() const { return this->_proj; }
@@ -96,14 +95,15 @@ struct cam::orbit {
   orbit(glm::vec3 _pos, glm::vec3 _look = glm::vec3(0)):
   _pos(_pos),
   _look(_look){
-    r = glm::length(_look - _pos);
-    // phi = ;
-    // theta = ;
+    const glm::vec3 dir = _pos - _look;
+    r = glm::length(dir);
+    phi = std::atan2(dir.z, dir.x);
+    theta = std::acos(dir.y/r);
     this->update();
   }
 
   void update(){
-    this->_pos = _look + this->r*glm::vec3(cos(theta)*sin(phi), sin(theta), cos(theta)*cos(phi));
+    this->_pos = _look + this->r*glm::vec3(sin(theta)*cos(phi), cos(theta), sin(theta)*sin(phi));
     this->_view = glm::lookAt(_pos, _look, glm::vec3(0,1,0));
     this->_invview = glm::inverse(_view);
   }
@@ -137,13 +137,13 @@ struct cam::orbit {
   }
 
   void zoom(const float& inc){
-    r += inc;
+  //  r += inc;
   }
 
   void tilt(const float& inc){
     theta += inc;
-    if(theta >=  0.25*tau) theta =  0.25*tau - inc;
-    if(theta <= -0.25*tau) theta = -0.25*tau - inc;
+    if(theta >= 0.5*tau) theta =  0.5*tau - 0.00001;
+    if(theta <= 0.0f) theta = 0.00001f;
   }
 
   void stride(const float& inc){
@@ -179,16 +179,16 @@ struct cam::orbit {
       this->pan(-turnrate);
 
     if(Tiny::event.active[SDLK_UP])
-      this->tilt(0.1*turnrate);
-
-    if(Tiny::event.active[SDLK_DOWN])
       this->tilt(-0.1*turnrate);
 
+    if(Tiny::event.active[SDLK_DOWN])
+      this->tilt(+0.1*turnrate);
+
     if(Tiny::event.active[SDLK_LEFT])
-      this->pan(-0.1*turnrate);
+      this->pan(0.1*turnrate);
 
     if(Tiny::event.active[SDLK_RIGHT])
-      this->pan(0.1*turnrate);
+      this->pan(-0.1*turnrate);
 
     if(Tiny::event.active[SDLK_c])
       this->rise(-moverate);
@@ -216,18 +216,14 @@ struct cam::orbit {
   }
 
 private:
-  float r = 1.0f;
-  float phi = 0.0f;
-  float theta = 0.0f;
+  float r;// = 1.0f;
+  float phi;// = 0.0f;
+  float theta;// = 0.0f;
   glm::vec3 _pos;
   glm::vec3 _look;
   glm::mat4 _view;
   glm::mat4 _invview;
 };
-
-// Unimplemented
-struct perspective{};
-struct free{};
 
 } // end of namespace Tiny
 

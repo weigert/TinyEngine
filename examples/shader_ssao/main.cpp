@@ -11,12 +11,11 @@ int main( int argc, char* args[] ) {
 
   Tiny::window("Shader SSAO", 1200, 800);
 
-  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -50.0f, 50.0f, 50.0f);
+  Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-50.0f, 50.0f}, 50.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
-  ortho.update();
-  orbit.update();
+  Tiny::camera cam(ortho, orbit);
+  cam.update();
 
-  Tiny::cam::camera cam(ortho, orbit);
   Tiny::event.handler = cam.handler;
   
   // Setup gBuffer
@@ -114,7 +113,7 @@ int main( int argc, char* args[] ) {
     gBuffer.clear(glm::vec4(0,0,0,1));
     gBuffer.target();
     modelshader.use();
-    modelshader.uniform("proj", cam.projection.proj());
+    modelshader.uniform("proj", cam.project.proj());
     modelshader.uniform("view", cam.control.view());
     modelshader.uniform("color", glm::vec3(1.0f));
     treeparticle.render(GL_TRIANGLES, treemodels.size());
@@ -126,7 +125,7 @@ int main( int argc, char* args[] ) {
     ssaoshader.use();
     for (unsigned int i = 0; i < 64; ++i)
       ssaoshader.uniform("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
-    ssaoshader.uniform("projection", cam.projection.proj());
+    ssaoshader.uniform("projection", cam.project.proj());
     ssaoshader.texture("gPosition", gBuffer.position());
     ssaoshader.texture("gNormal", gBuffer.normal());
     ssaoshader.texture("texNoise", noisetex);

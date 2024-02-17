@@ -10,7 +10,6 @@ int main(int argc, char* argv[]){
 
   Tiny::view.vsync = false;
   Tiny::view.antialias = 0;
-  Tiny::benchmark = true;
   Tiny::window("Lattice Boltzmann Method 2D", 800, 400);
 
   // Initialize our Arrays

@@ -12,23 +12,13 @@ int main( int argc, char* args[] ) {
 
 	Tiny::window("Procedural Tree", 1200, 800);
 
-	Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -200.0f, 200.0f, 10.0f);
-	Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
-	ortho.update();
+	Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-400.0f, 400.0f}, 2.0f);
+	Tiny::cam::orbit orbit(glm::vec3(1, 100.5, 0), glm::vec3(0, 100.0f, 0));
 	orbit.update();
-
-	Tiny::cam::camera cam(ortho, orbit);
-	/*
-
-	cam::look = glm::vec3(0, 100, 0);
-	cam::far = 2000.0f;
-	cam::roty = 25.0f;
-	cam::zoomrate = 10.0f;
-	cam::init(600, cam::PROJ);
-*/
+	Tiny::camera cam(ortho, orbit);
 
 	bool paused = false;
-	bool autorotate = true;
+	bool autorotate = false;
 
 	Tiny::event.handler = [&](){
 	  (cam.handler)();
@@ -69,7 +59,7 @@ int main( int argc, char* args[] ) {
 	Tiny::Instance particle(flat);												//Make Particle System
 	particle.bind<glm::mat4>(models);  //Add Matrices
 
-	Tiny::png image("leaf");
+	Tiny::png image("leaf.png");
 	Tiny::Texture tex(image.width(), image.height(), Tiny::Texture::RGBA8U, image.data());
 
 	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Quad", "in_Tex", "in_Model"});
@@ -83,7 +73,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::Square3D floor;
 	glm::mat4 floormodel = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1,0,0));
-	floormodel = glm::scale(floormodel, glm::vec3(1000));
+	floormodel = glm::scale(floormodel, glm::vec3(250));
 
 	Tiny::view.pipeline = [&](){	//Setup Drawing Pipeline
 
@@ -148,7 +138,7 @@ int main( int argc, char* args[] ) {
 			particleShader.use();
 			particleShader.texture("spriteTexture", tex);
 			particleShader.uniform("projectionCamera", cam.vp());
-			particleShader.uniform("ff", glm::rotate(glm::mat4(1.0f), glm::radians(180-cam.control._phi()), glm::vec3(0,1,0)));
+			particleShader.uniform("ff", glm::rotate(glm::mat4(1.0f), 0.5f*3.14159265f -cam.control._phi(), glm::vec3(0,1,0)));
 			particleShader.uniform("leafcolor", glm::vec4(leafcolor[0], leafcolor[1], leafcolor[2], leafopacity));
 			particleShader.uniform("lightcolor", lightcolor);
 
@@ -173,7 +163,7 @@ int main( int argc, char* args[] ) {
 	Tiny::loop([&](){ /* ... */
 
 		if(autorotate)
-			cam.control.pan(0.05f);
+			cam.control.pan(0.01f);
 
 		if(!paused)
 			root->grow(growthrate);

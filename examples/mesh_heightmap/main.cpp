@@ -10,12 +10,10 @@ int main( int argc, char* args[] ) {
 
 	Tiny::window("Heightmap Render", 1200, 800);			//Open Window
 
-	Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -50.0f, 50.0f, 10.0f);
+	Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-50.0f, 50.0f}, 10.0f);
 	Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
-	ortho.update();
-	orbit.update();
-
-	Tiny::cam::camera cam(ortho, orbit);
+	Tiny::camera cam(ortho, orbit);
+	cam.update();
 
 	Tiny::event.handler = cam.handler;								//Event Handler
 	Tiny::view.interface = [&](){ /* ... */ };				//No Interface

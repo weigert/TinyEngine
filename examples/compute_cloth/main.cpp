@@ -16,12 +16,9 @@ int main( int argc, char* args[] ) {
 
   glDisable(GL_CULL_FACE);
 
-  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -100.0f, 100.0f, 20.0f);
+  Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-100.0f, 100.0f}, 20.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(RES/2, RES/2, 0));
-  ortho.update();
-  orbit.update();
-
-  Tiny::cam::camera cam(ortho, orbit);
+  Tiny::camera cam(ortho, orbit);
 
   bool paused = true;
 	Tiny::view.interface = [&](){};

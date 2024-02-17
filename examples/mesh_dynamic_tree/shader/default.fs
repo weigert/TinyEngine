@@ -55,7 +55,7 @@ uniform bool drawshadow;
 
 void main(void) {
 	vec4 _light = vec4(1.0);
-	if(drawshadow) _light = directionalLight();
+	//if(drawshadow) _light = directionalLight();
 	if(drawfloor) fragColor = _light*drawcolor;
   else if(!wireframe) fragColor = _light*drawcolor;
   else fragColor = drawcolor;

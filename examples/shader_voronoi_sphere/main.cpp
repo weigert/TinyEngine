@@ -27,12 +27,9 @@ int main( int argc, char* args[] ) {
 
   // Camera for Viewing Sphere
 
-  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -100.0f, 100.0f, 500.0f);
+  Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-100.0f, 100.0f}, 500.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
-  ortho.update();
-  orbit.update();
-
-  Tiny::cam::camera cam(ortho, orbit);
+  Tiny::camera cam(ortho, orbit);
   cam.update();
 
   // Shader, Model for Rendering Sphere / Sampling from Cubemap

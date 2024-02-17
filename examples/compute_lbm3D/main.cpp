@@ -13,12 +13,9 @@ int main( int argc, char* args[] ) {
 	Tiny::view.vsync = false;
 	Tiny::window("Lattice Boltzmann Method 3D, Terrain BC", 800, 800);			//Open Window
 
-  Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -100.0f, 100.0f, 10.0f);
+  Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-100.0f, 100.0f}, 10.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
-  ortho.update();
-  orbit.update();
-
-  Tiny::cam::camera cam(ortho, orbit);
+  Tiny::camera cam(ortho, orbit);
   cam.update();
 
 	bool paused = true;

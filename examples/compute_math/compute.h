@@ -67,23 +67,23 @@ void increment(){
 
 	std::fill(buffer.begin(), buffer.end(), 0.0f);         //Reset Buffer
 
-  Tiny::Buffer<float> buf(buffer);                       //Raw Buffer Object
-	Tiny::Compute compute("shader/increment.cs", {"buff"});		  //Create the Compute Shader
-	compute.bind("buff", &buf);								                  //Upload the Buffer
+  Tiny::Buffer buf(buffer);                       //Raw Buffer Object
+	Tiny::Compute compute("shader/increment.cs");		  //Create the Compute Shader
+	compute.storage("buff", buf);								                  //Upload the Buffer
 	compute.use();																	      //Use the Shader
 
 	std::cout<<"Parallel ";
 	Tiny::benchmark<std::chrono::milliseconds>([&](){
 
-	for(int i = 0; i < ITER; i++)
-		compute.dispatch(SIZE/1024);			                  //Execute the Compute Shader
+	 for(int i = 0; i < ITER; i++)
+	 	 compute.dispatch(SIZE/1024);			                  //Execute the Compute Shader
+	
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-	buf.retrieve(buffer);			                            //Retrieve Data from Compute Shader
+  });
 
-	});
-
+  buf.get(buffer);
   std::cout<<"Result: "<<std::setprecision(16)<<buffer[0]<<std::endl;
-
   std::cout<<std::endl;
 
 }
@@ -120,9 +120,9 @@ void accumulate(){
 
   //Parallel
 
-  Tiny::Compute compute("shader/accumulate.cs", {"buff"});		//Create the Compute Shader
-  Tiny::Buffer<float> buf(buffer);
-  compute.bind("buff", &buf);							    //Upload the Buffer
+  Tiny::Compute compute("shader/accumulate.cs");		//Create the Compute Shader
+  Tiny::Buffer buf(buffer);
+  compute.storage("buff", buf);							    //Upload the Buffer
   compute.use();																        //Use the Shader
 
   int K = 256;                                          //K-Ary Merge
@@ -142,8 +142,6 @@ void accumulate(){
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   }
-
-  buf.retrieve(buffer);
 
   });
 
@@ -235,18 +233,18 @@ void gausstransform(){
     P[m*N+n] = 0.0f;
 
   //Define Shaders and their Interfaces
-  Tiny::Compute compute("shader/gausstransform.cs", {"pointsetA", "pointsetB", "probability"});
-  Tiny::Compute accumulate("shader/2Daccumulate.cs", {"vector", "probability"});
+  Tiny::Compute compute("shader/gausstransform.cs");
+  Tiny::Compute accumulate("shader/2Daccumulate.cs");
 
-  Tiny::Buffer<glm::vec4> pA(pointsetA);
-  Tiny::Buffer<glm::vec4> pB(pointsetB);
-  Tiny::Buffer<float> prob(N*M, (float*)NULL);
-  Tiny::Buffer<float> vec((M>N)?M:N, (float*)NULL);
+  Tiny::Buffer pA(pointsetA);
+  Tiny::Buffer pB(pointsetB);
+  Tiny::Buffer prob(N*M, (float*)NULL);
+  Tiny::Buffer vec((M>N)?M:N, (float*)NULL);
 
-  compute.bind("pointsetA", &pA);
-  compute.bind("pointsetB", &pB);
-  compute.bind("probability", &prob);
-  compute.bind("vector", &vec);
+  compute.storage("pointsetA", pA);
+  compute.storage("pointsetB", pB);
+  compute.storage("probability", prob);
+  compute.storage("vector", vec);
 
   std::cout<<"Parallel ";
   Tiny::benchmark<std::chrono::milliseconds>([&](){
@@ -281,7 +279,7 @@ void gausstransform(){
   accumulate.dispatch(M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  prob.retrieve(N*M, P);
+  //prob.retrieve(N*M, P);
 
   accumulate.uniform("set", 0.0);
 
@@ -290,14 +288,14 @@ void gausstransform(){
   accumulate.dispatch(M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  vec.retrieve(M, PY);
+  //vec.retrieve(M, PY);
 
   accumulate.uniform("operation", 0);
   accumulate.uniform("minordim", false);
   accumulate.dispatch(N/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  vec.retrieve(N, PX);
+  //vec.retrieve(N, PX);
 
   });
 
@@ -343,15 +341,15 @@ void matrixmatrix(){
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
   //Define Shaders and their Interfaces
-  Tiny::Compute compute("shader/matmult.cs", {"matrixA", "matrixB", "result"});
+  Tiny::Compute compute("shader/matmult.cs");
 
-  Tiny::Buffer<float> mA(N*K, A);
-  Tiny::Buffer<float> mB(K*M, B);
-  Tiny::Buffer<float> res(N*M, (float*)R);
+  Tiny::Buffer mA(N*K, A);
+  Tiny::Buffer mB(K*M, B);
+  Tiny::Buffer res(N*M, (float*)R);
 
-  compute.bind("matrixA", &mA);
-  compute.bind("matrixB", &mB);
-  compute.bind("result", &res);
+  compute.storage("matrixA", mA);
+  compute.storage("matrixB", mB);
+  compute.storage("result", res);
 
   //const int BS = 2;
 
@@ -368,7 +366,7 @@ void matrixmatrix(){
   compute.dispatch(N/16, M/1024);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-  res.retrieve(N*M, R);
+  //res.retrieve(N*M, R);
 
   });
 

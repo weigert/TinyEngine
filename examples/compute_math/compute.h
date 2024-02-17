@@ -53,7 +53,7 @@ void increment(){
   //Serial
 
 	std::cout<<"Serial ";
-	timer::benchmark<std::chrono::milliseconds>([&](){
+	Tiny::benchmark<std::chrono::milliseconds>([&](){
 
 	for(int i = 0; i < ITER; i++)
 	for(int j = 0; j < SIZE; j++)
@@ -73,7 +73,7 @@ void increment(){
 	compute.use();																	      //Use the Shader
 
 	std::cout<<"Parallel ";
-	timer::benchmark<std::chrono::milliseconds>([&](){
+	Tiny::benchmark<std::chrono::milliseconds>([&](){
 
 	for(int i = 0; i < ITER; i++)
 		compute.dispatch(SIZE/1024);			                  //Execute the Compute Shader
@@ -109,7 +109,7 @@ void accumulate(){
   //Serial
 
   std::cout<<"Serial ";
-  timer::benchmark<std::chrono::milliseconds>([&](){
+  Tiny::benchmark<std::chrono::milliseconds>([&](){
 
     for(int j = 0; j < size; j++)
       dsum += dbuffer.at(j);
@@ -129,7 +129,7 @@ void accumulate(){
   compute.uniform("K", K);                              //Set Uniform
 
   std::cout<<"Parallel ";
-  timer::benchmark<std::chrono::milliseconds>([&](){
+  Tiny::benchmark<std::chrono::milliseconds>([&](){
 
   for(int rest = size%K, stride = size/K;
       stride >= 1 || rest > 0;
@@ -193,7 +193,7 @@ void gausstransform(){
   //Serial
 
   std::cout<<"Serial ";
-  timer::benchmark<std::chrono::milliseconds>([&](){
+  Tiny::benchmark<std::chrono::milliseconds>([&](){
 
   for(int m = 0; m < M; m++){
 
@@ -249,7 +249,7 @@ void gausstransform(){
   compute.bind("vector", &vec);
 
   std::cout<<"Parallel ";
-  timer::benchmark<std::chrono::milliseconds>([&](){
+  Tiny::benchmark<std::chrono::milliseconds>([&](){
 
   //Execute N-N Interaction
 
@@ -358,7 +358,7 @@ void matrixmatrix(){
   glFinish();
 
   std::cout<<"Parallel ";
-  timer::benchmark<std::chrono::microseconds>([&](){
+  Tiny::benchmark<std::chrono::microseconds>([&](){
 
   compute.use();
   compute.uniform("N", N);
@@ -385,7 +385,7 @@ void matrixmatrix(){
   Eigen::Map<Eigen::Matrix<float,-1,-1,Eigen::RowMajor>> RM(R,N,M);
 
   std::cout<<"Serial Eigen ";
-  timer::benchmark<std::chrono::microseconds>([&](){
+  Tiny::benchmark<std::chrono::microseconds>([&](){
 
     RM = AM*BM;
 

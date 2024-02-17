@@ -23,7 +23,7 @@
 #include <TinyEngine/Target>
 #include <TinyEngine/Texture>
 
-#include <TinyEngine/timer>
+#include <TinyEngine/benchmark>
 
 #include <csignal>
 
@@ -82,7 +82,7 @@ void quit(){
   SDL_Quit();
 }
 
-bool benchmark = false;
+//bool benchmark = false;
 int average = 0;
 
 template<typename F, typename... Args>

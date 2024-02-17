@@ -41,7 +41,7 @@ int main( int argc, char* args[] ) {
 	std::unordered_set<int> groups;
 
 	std::cout<<"Meshing ";
-	timer::benchmark<std::chrono::microseconds>([&](){
+	Tiny::benchmark<std::chrono::microseconds>([&](){
 
 		for(int i = 0; i < 5; i++)
 		for(int j = 0; j < 5; j++)
@@ -150,7 +150,7 @@ int main( int argc, char* args[] ) {
 		//	for(int d = 0; d < 16; d++)
 			chunks[i].update();
 
-			t += timer::benchmark<std::chrono::microseconds>([&](){
+			t += Tiny::benchmark<std::chrono::microseconds>([&](){
 
 			for(int d = 0; d < 6; d++)
 				vertpool.unsection(chunks[i].faces[d]);
@@ -167,7 +167,7 @@ int main( int argc, char* args[] ) {
 		std::cout<<"AVERAGE ROLL: "<<at/chunks.size()<<std::endl;
 
 		std::cout<<std::endl<<"Mask and Order ";
-		timer::benchmark<std::chrono::microseconds>([&](){
+		Tiny::benchmark<std::chrono::microseconds>([&](){
 
 		vertpool.mask([&](DAIC& cmd){
 			return groups.contains(cmd.group);

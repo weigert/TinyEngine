@@ -358,7 +358,7 @@ function<void(Chunk*, Vertexpool<Vertex>*)> greedypool = [](Chunk* c, Vertexpool
   for(int d = 0; d < 6; d++){
 
   //  std::cout<<"Chunk D-Loop ";
-  //  timer::benchmark<std::chrono::microseconds>([&](){
+  //  Tiny::benchmark<std::chrono::microseconds>([&](){
 
     u = (d/2+0)%3;  //u = 0, 0, 1, 1, 2, 2      //Dimension indices
     v = (d/2+1)%3;  //v = 1, 1, 2, 2, 0, 0

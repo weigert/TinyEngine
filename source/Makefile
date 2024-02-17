@@ -73,7 +73,7 @@ install:
 # TinyEngine Helpers #
 ######################
 
-HELPERS = camera image object timer
+HELPERS = camera image object benchmark
 
 .PHONY: helpers
 helpers:

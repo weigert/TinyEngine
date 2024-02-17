@@ -6,7 +6,6 @@
 #include <atomic>
 
 namespace Tiny {
-namespace timer {
 
 typedef std::chrono::milliseconds ms;
 
@@ -34,7 +33,6 @@ struct measure {
   std::chrono::time_point<std::chrono::high_resolution_clock> stop;
 };
 
-} // end of namespace timer
 } // end of namespace Tiny
 
 #endif

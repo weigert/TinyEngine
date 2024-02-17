@@ -9,12 +9,9 @@ int main( int argc, char* args[] ) {
 
 	// Create Camera
 
-	Tiny::cam::ortho ortho(Tiny::view.WIDTH, Tiny::view.HEIGHT, -10.0f, 10.0f, 5.0f);
+	Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-10.0f, 10.0f}, 5.0f);
 	Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
-	ortho.update();
-	orbit.update();
-
-	Tiny::cam::camera cam(ortho, orbit);
+	Tiny::camera cam(ortho, orbit);
 
 	Tiny::event.handler = cam.handler;
 	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
@@ -48,7 +45,6 @@ int main( int argc, char* args[] ) {
 
 	Tiny::loop([&](){ //Autorotate Camera
 		//cam.control.pan(0.1f);
-		cam.projection.update();
 		cam.update();
 	});
 

@@ -37,7 +37,7 @@ int main( int argc, char* args[] ) {
 	vector<Chunk> chunks;
 
 	std::cout<<"Meshing ";
-	timer::benchmark<std::chrono::microseconds>([&](){
+	Tiny::benchmark<std::chrono::microseconds>([&](){
 
   for(int i = 0; i < 5; i++)
   for(int j = 0; j < 5; j++)
@@ -97,7 +97,7 @@ int main( int argc, char* args[] ) {
 		//	r = rand()%chunks.size();
 			chunks[i].update();
 
-			t += timer::benchmark<std::chrono::microseconds>([&](){
+			t += Tiny::benchmark<std::chrono::microseconds>([&](){
 
 			chunkmesh::greedy(&chunks[i], models[i]->buffers["index"], models[i]->buffers["in_Position"], models[i]->buffers["in_Normal"], models[i]->buffers["in_Color"]);
 			models[i]->SIZE = models[i]->buffers["index"]->SIZE;

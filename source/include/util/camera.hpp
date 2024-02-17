@@ -2,92 +2,105 @@
 #define TINYENGINE_UTIL_CAMERA
 
 namespace Tiny {
+
 namespace cam {
+
+  struct perspective; //!< Perspective Projection
+  struct orthogonal;  //!< Orthogonal Projection
+  
+  struct orbit; //!< Orbit Control
+  struct free;  //!< Free-Cam Controls
+
+};
 
 //! Camera Type, Composed of Controls and Projection
 template<typename P, typename C>
 struct camera {
 
-  typedef P projection_type;
-  typedef C control_type;
+  typedef P project_t;
+  typedef C control_t;
 
-  camera(const projection_type& projection, const control_type& control):
-    projection(projection),control(control){
-      this->update();
-    }
+  camera(const project_t& project, const control_t& control):
+  project(project),
+  control(control){
+    this->update();
+  }
 
   void update(){
     this->control.update();
-    this->projection.update();
-    this->_vp = projection.proj()*control.view();
+    this->project.update();
+    this->_vp = project.proj()*control.view();
   }
 
-  const std::function<void()> handler = [&](){
-    control.handler();
-    projection.handler();
+  const std::function<void()> handler = [this](){
+    this->control.handler();
+    this->project.handler();
     this->update();
   };
 
-  const inline glm::mat4 vp(){
-    return this->_vp;
-  }
+  inline glm::mat4 vp() const { return this->_vp; }
 
-  control_type control;
-  projection_type projection;
-private:
+protected:
+  control_t control;
+  project_t project;
   glm::mat4 _vp;
 };
 
 // Camera Projection Implementations
 
-struct ortho {
+//! Orthogonal Projection
+struct cam::orthogonal {
 
-  ortho(const float& W, const float& H, const float& near, const float& far, const float& scale):
-    W(W),H(H),near(near),far(far),rad(scale){
+  orthogonal(glm::vec2 dim, glm::vec2 clip, float scale):
+  dim(dim),
+  clip(clip),
+  scale(scale){
     this->update();
   }
 
   void update(){
-    this->_proj = glm::ortho(-W/rad, W/rad, -H/rad, H/rad, near, far);
-  }
-
-  inline const glm::mat4 proj() const {
-    return this->_proj;
+    this->_proj = glm::ortho(-dim.x/scale, dim.x/scale, -dim.y/scale, dim.y/scale, clip.x, clip.y);
   }
 
   void handler(){
 
-    if(Tiny::event.scroll.posy) this->rad += 0.1;
-    if(Tiny::event.scroll.negy) this->rad -= 0.1;
+    if(Tiny::event.scroll.posy) this->scale += 0.1;
+    if(Tiny::event.scroll.negy) this->scale -= 0.1;
     
-    if(Tiny::event.active[SDLK_PAGEUP])   this->rad += 0.1;
-    if(Tiny::event.active[SDLK_PAGEDOWN]) this->rad -= 0.1;
+    if(Tiny::event.active[SDLK_PAGEUP])   this->scale += 0.1;
+    if(Tiny::event.active[SDLK_PAGEDOWN]) this->scale -= 0.1;
 
     if(Tiny::event.windowEventTrigger){
-      this->W = Tiny::view.WIDTH;
-      this->H = Tiny::view.HEIGHT;
+      this->dim.x = Tiny::view.WIDTH;
+      this->dim.y = Tiny::view.HEIGHT;
     }
 
   }
 
-private:
-  float W, H, rad, near, far;
+  inline glm::mat4 proj() const { return this->_proj; }
+
+protected:
+  glm::vec2 dim;
+  glm::vec2 clip;
+  float scale;
   glm::mat4 _proj;
 };
 
 // Camera Control Implementations
 
-struct orbit {
+//! Camera Orbit Controls
+struct cam::orbit {
 
   static constexpr float tau = 2.0*3.14159265;
 
   orbit(glm::vec3 _pos, glm::vec3 _look = glm::vec3(0)):
-    _pos(_pos),_look(_look){
-      this->update();
-      // r = ;
-      // phi = ;
-      // theta = ;
-    }
+  _pos(_pos),
+  _look(_look){
+    r = glm::length(_look - _pos);
+    // phi = ;
+    // theta = ;
+    this->update();
+  }
 
   void update(){
     this->_pos = _look + this->r*glm::vec3(cos(theta)*sin(phi), sin(theta), cos(theta)*cos(phi));
@@ -216,7 +229,6 @@ private:
 struct perspective{};
 struct free{};
 
-} // end of namespace cam
 } // end of namespace Tiny
 
 #endif

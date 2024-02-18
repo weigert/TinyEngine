@@ -42,9 +42,6 @@ public:
     this->set(layout, data);
   }
 
-  //! Construct Texture directly from an SDL Surface (Deprecate)
-  Texture(SDL_Surface* s):Texture(s->w, s->h, RGBA8U, s->pixels){};
-
   void set(Layout layout, const void* data = NULL);                               //!< Fill Texture with Layout of Data
   void operator()() const { glBindTexture(GL_TEXTURE_2D, this->index()); }        //!< Bind the Texture
 

@@ -32,9 +32,10 @@ namespace Tiny {
 
 static View view;           //Window and Interface  (Requires Initialization)
 static Event event;         //Event Handler
+static bool kill = false;
 
 void sighandler(int signal){
-  event.quit = true;
+  event.quit();
 }
 
 bool init(){
@@ -57,6 +58,10 @@ bool init(){
     std::cout<<"Failed to launch OpenGL Context"<<std::endl;
     return false;
   }
+
+  event.quit([](){
+    kill = true;
+  });
 
   return true;
 
@@ -101,7 +106,7 @@ int average = 0;
 template<typename F, typename... Args>
 void loop(F function, Args&&... args){
 
-  while(!event.quit){
+  while(!Tiny::kill){
 
     if(Tiny::view.enabled){
       event.retrieve(); //Get Input

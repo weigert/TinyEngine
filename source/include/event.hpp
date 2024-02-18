@@ -14,43 +14,18 @@ namespace Tiny {
 //! This type contains a set of callbacks with no parameters,
 //! which are intended to be collectively executed when an event occurs.
 //! Note that callbacks cannot be removed from this container.
+template<typename P>
 struct dispatch {
-
-  typedef std::function<void()> callback_t;
-
-  //! Move a Callback into the Container
-  //! Uses std::forward for lambda insertion.
-  template<typename F>
-  void operator()(F&& callback){
-    callbacks.emplace_back(std::forward<F>(callback));
-  }
-
-  //! Dispatch the Set of Callbacks
-  void operator()(){
-    for(auto& callback: callbacks)
-      callback();
-  }
-
-private:
-  std::vector<callback_t> callbacks = {};
-};
-
-//! \brief Dispatch is a Callback Set Container (w. Parameter)
-//! This type contains a set of callbacks with a single parameter, 
-//! which are intended to be collectively executed when an event occurs.
-//! Note that callbacks cannot be removed from this container.
-template<typename T>
-struct dispatch_p {
-
-  typedef T param_t;                                //!< Callback Parameter 
-  typedef std::function<void(param_t)> callback_t;  //!< Callback Type
+  
+  typedef P param_t;
+  typedef std::function<void(P)> callback_t;
 
   //! Move a Callback into the Container
   //! Uses std::forward for lambda insertion.
   template<typename F>
   void operator()(F&& callback){
     callbacks.emplace_back(std::forward<F>(callback));
-  }
+  } 
 
   //! Dispatch the Set of Callbacks
   void operator()(param_t param){
@@ -62,31 +37,37 @@ private:
   std::vector<callback_t> callbacks = {};
 };
 
-/*
-// NOTE: ADD THIS BACK IN FOR UNHOOKING!
+template<>
+struct dispatch<void> {
+  
+  typedef std::function<void()> callback_t;
 
-//! \brief Dispatch Map Container
-//! This type contains a map of dispatchers, with a uniform parameter type.
-//! The map of dispatchers allows for choosing a set of callbacks to execute
-//! based on a key type, with a convenient operator interface.
-template<typename K, typename T>
-struct dispatch_set {
+  //! Move a Callback into the Container
+  //! Uses std::forward for lambda insertion.
+  template<typename F>
+  void operator()(F&& callback){
+    callbacks.emplace_back(std::forward<F>(callback));
+  } 
 
-  typedef K key_t;                //!< Type of Dispatch Indexing Key
-  typedef dispatch<T> dispatch_t; //!< Type of Parameterized Callback Set
-
-  dispatch_t& operator[](key_t key){
-    return this->_dispatch[key];
+  //! Dispatch the Set of Callbacks
+  void operator()(){
+    for(auto& callback: callbacks)
+      callback();
   }
 
 private:
-  std::unordered_map<K, dispatch_t> _dispatch;
+  std::vector<callback_t> callbacks = {};
 };
-*/
+
+struct mouse_t {
+  glm::ivec2 pos;
+  glm::ivec2 dir;
+  bool left;
+  bool middle;
+  bool right;
+};
 
 struct Event {
-
-  bool quit = false;
 
   void retrieve();  // Retrieve Events
   void process();   // Process Events
@@ -94,27 +75,21 @@ struct Event {
   template<typename T>
   using dset = std::unordered_map<SDL_Keycode, T>;
 
-  dset<dispatch> active;
-  dset<dispatch_p<bool>> press;
-  dispatch finalize;
-  dispatch_p<glm::ivec2> resize;
-  dispatch_p<glm::ivec2> scroll;
-  
-  /*
-  // dispatch_p<glm::ivec2> click;
-  //Movement Events
-  bool mousemove = false;
-  SDL_MouseMotionEvent mouse;
+  dset<dispatch<void>> active;    //!< Dispatch Set for Actively Pressed Keys
+  dset<dispatch<bool>> press; //!< Dispatch Set for Key Presses / Releases
 
-  //Clicking Events
-  std::unordered_map<Uint8, bool> click;      //Active Buttons
-  std::deque<Uint8> clicked;                  //Button Events
-  */
+  dispatch<mouse_t> mouse;      //!< Callback Set for Mouse Move Events
+  dispatch<mouse_t> click;      //!< Callback Set for Mouse Click Events
+
+  dispatch<glm::ivec2> scroll;  //!< Callback Set for Mouse Scroll Events
+  dispatch<glm::ivec2> resize;  //!< Callback Set for Window Resize Events
+
+  dispatch<void> loop;  //!< Callback Set Per-Loop
+  dispatch<void> quit;  //!< Callback Set On Quit
 
 private:
   std::unordered_set<SDL_Keycode> active_set;
   std::deque<SDL_KeyboardEvent> press_queue;
-  SDL_Event in;
 };
 
 }

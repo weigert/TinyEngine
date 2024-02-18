@@ -37,7 +37,7 @@ struct camera {
   void hook(){
     this->project.hook();
     this->control.hook();
-    Tiny::event.loop([this](){
+    Tiny::event.tick([this](){
       this->update();
     });
   }
@@ -222,7 +222,7 @@ struct cam::orbit {
       this->strafe(moverate);
     });
 
-    Tiny::event.loop([this](){
+    Tiny::event.tick([this](){
       this->update();
     });
 

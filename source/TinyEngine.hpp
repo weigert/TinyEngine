@@ -109,7 +109,6 @@ void loop(F function, Args&&... args){
   while(!Tiny::kill){
 
     if(Tiny::view.enabled){
-      event.retrieve(); //Get Input
       event.process();  //Call the event-handling system
     }
 

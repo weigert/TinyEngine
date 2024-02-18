@@ -63,7 +63,6 @@ struct mouse_t {
 
 struct Event {
 
-  void retrieve();  // Retrieve Events
   void process();   // Process Events
 
   template<typename T>
@@ -78,7 +77,7 @@ struct Event {
   dispatch<glm::ivec2> scroll;  //!< Callback Set for Mouse Scroll Events
   dispatch<glm::ivec2> resize;  //!< Callback Set for Window Resize Events
 
-  dispatch<void> loop;          //!< Callback Set Per-Loop
+  dispatch<void> tick;          //!< Callback Set Per-Tick
   dispatch<void> quit;          //!< Callback Set On Quit
 
 private:

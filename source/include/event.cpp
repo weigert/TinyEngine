@@ -3,7 +3,7 @@
 
 namespace Tiny {
 
-void Event::retrieve(){
+void Event::process(){
 
   SDL_Event in;
   while(SDL_PollEvent(&in)){
@@ -61,9 +61,6 @@ void Event::retrieve(){
         break;
     }
   }
-}
-
-void Event::process(){
 
   // Dispatch the Pressed Button Queue
   while(!press_queue.empty()){
@@ -76,7 +73,7 @@ void Event::process(){
   for(auto& key: active_set)
     active[key]();
 
-  this->loop();
+  this->tick();
 
 }
 

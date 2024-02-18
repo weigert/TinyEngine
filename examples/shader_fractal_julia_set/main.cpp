@@ -10,7 +10,28 @@ int main( int argc, char* args[] ) {
 
 	Tiny::window("Julia Set Explorer", 1000, 1000);	//Open Window
 
-	Tiny::event.handler  = eventHandler;	//Set Event Handler
+	Tiny::event.scroll([](glm::ivec2 dir){
+		if(dir.y >=  1) zoom *= 0.95;
+		if(dir.y <= -1) zoom /= 0.95;
+	});
+
+  Tiny::event.active[SDLK_w]([](){
+    py += 0.05*zoom;
+  });
+
+  Tiny::event.active[SDLK_a]([](){
+    px += 0.05*zoom;
+  });
+
+  Tiny::event.active[SDLK_s]([](){
+    py -= 0.05*zoom;
+  });
+
+  Tiny::event.active[SDLK_d]([](){
+    px -= 0.05*zoom;
+  });
+
+
 	Tiny::view.interface = interfaceFunc;	//Set Interface Function
 
 	Tiny::Square2D flat;												//Flat geometry primitive

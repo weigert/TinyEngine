@@ -74,6 +74,19 @@ bool window(std::string windowName, int width, int height){ //Open a window
     return false;
   }
 
+  event.resize([](glm::ivec2 dim){
+    view.WIDTH = dim.x;
+    view.HEIGHT = dim.y;
+  });
+
+  event.press[SDLK_F11]([](bool press){
+    if(!press) view.toggle_fullscreen();
+  });
+
+  event.press[SDLK_ESCAPE]([](bool press){
+    if(!press) view.showInterface = !view.showInterface;
+  });
+
   return true;
 }
 
@@ -91,8 +104,8 @@ void loop(F function, Args&&... args){
   while(!event.quit){
 
     if(Tiny::view.enabled){
-      event.input();        //Get Input
-      event.handle(view);   //Call the event-handling system
+      event.retrieve(); //Get Input
+      event.process();  //Call the event-handling system
     }
 
     function(args...);      //User-defined Game Loop

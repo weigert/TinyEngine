@@ -36,18 +36,16 @@ void setup(){
 }
 
 // Event Handler
-std::function<void()> eventHandler = [](){
+void eventhook(){
 
-  if(Tiny::event.scroll.posy)
-    scale *= 0.9;
-  if(Tiny::event.scroll.negy)
-    scale /= 0.9;
-  if(Tiny::event.scroll.posx)
-    pos = glm::rotate(glm::mat4(1),  glm::radians(2.5f), up)*glm::vec4(pos, 1.0);
-  if(Tiny::event.scroll.negx)
-    pos = glm::rotate(glm::mat4(1), -glm::radians(2.5f), up)*glm::vec4(pos, 1.0);
+  Tiny::event.scroll([](glm::ivec2 dir){
+    if(dir.x >=  1) pos = glm::rotate(glm::mat4(1),  glm::radians(2.5f), up)*glm::vec4(pos, 1.0);
+    if(dir.x <= -1) pos = glm::rotate(glm::mat4(1), -glm::radians(2.5f), up)*glm::vec4(pos, 1.0);
+    if(dir.y >=  1) scale *= 0.9;
+    if(dir.y <= -1) scale /= 0.9;
+    setup(); //Recompute (I know this shouldn't be called all the time, whatever lol)
+  });
 
-  setup(); //Recompute (I know this shouldn't be called all the time, whatever lol)
 };
 
 //Interface Function

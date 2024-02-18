@@ -14,26 +14,26 @@ int main( int argc, char* args[] ) {
 
 	Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-400.0f, 400.0f}, 2.0f);
 	Tiny::cam::orbit orbit(glm::vec3(1, 100.5, 0), glm::vec3(0, 100.0f, 0));
-	orbit.update();
 	Tiny::camera cam(ortho, orbit);
+	cam.hook();
 
-	bool paused = false;
+  bool paused = false;
+  Tiny::event.press[SDLK_p]([&paused](bool pressed){
+    if(!pressed) paused = !paused;
+  });
+	
 	bool autorotate = false;
+	Tiny::event.press[SDLK_a]([&autorotate](bool pressed){
+    if(!pressed) autorotate = !autorotate;
+  });
 
-	Tiny::event.handler = [&](){
-	  (cam.handler)();
-	  if(!Tiny::event.press.empty()){
-	    if(Tiny::event.press.back() == SDLK_p)
-	      paused = !paused;
-	    else if(Tiny::event.press.back() == SDLK_a)
-	      autorotate = !autorotate;
-	    else if(Tiny::event.press.back() == SDLK_r){
-	      Branch* newroot = new Branch(root, true);
-	      delete(root);
-	      root = newroot;
-	    }
-	  }
-	};
+	Tiny::event.press[SDLK_r]([&autorotate](bool pressed){
+    if(!pressed){
+			Branch* newroot = new Branch(root, true);
+			delete(root);
+			root = newroot;
+		} 
+  });
 
 	Tiny::view.interface = interfaceFunc;
 

@@ -48,7 +48,6 @@ int main( int argc, char* args[] ) {
 	Tiny::view.vsync = false;
 	Tiny::window("GPU Accelerated Voronoise", _SIZE_, _SIZE_);
 
-	Tiny::event.handler  = [](){}; //eventHandler;
 	Tiny::view.interface = interfaceFunc;
 
 	srand(time(NULL));

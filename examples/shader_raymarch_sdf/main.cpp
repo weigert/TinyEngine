@@ -10,7 +10,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::window("3D Signed Distance Field", 1000, 1000);
 
-	Tiny::event.handler  = eventHandler;
+	hook();
 	Tiny::view.interface = interfaceFunc;
 
 	Tiny::Shader sdf({"shader/sdf.vs", "shader/sdf.fs"}, {"in_Quad", "in_Tex"});

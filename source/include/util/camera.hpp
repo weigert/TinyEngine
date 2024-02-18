@@ -1,6 +1,8 @@
 #ifndef TINYENGINE_UTIL_CAMERA
 #define TINYENGINE_UTIL_CAMERA
 
+#include <TinyEngine/TinyEngine>
+
 namespace Tiny {
 
 namespace cam {
@@ -32,11 +34,13 @@ struct camera {
     this->_vp = project.proj()*control.view();
   }
 
-  const std::function<void()> handler = [this](){
-    this->control.handler();
-    this->project.handler();
-    this->update();
-  };
+  void hook(){
+    this->project.hook();
+    this->control.hook();
+    Tiny::event.finalize([this](){
+      this->update();
+    });
+  }
 
   inline glm::mat4 vp() const { return this->_vp; }
 
@@ -62,18 +66,25 @@ struct cam::orthogonal {
     this->_proj = glm::ortho(-dim.x/scale, dim.x/scale, -dim.y/scale, dim.y/scale, clip.x, clip.y);
   }
 
-  void handler(){
+  void hook(){
 
-    if(Tiny::event.scroll.posy) this->scale /= 0.98;
-    if(Tiny::event.scroll.negy) this->scale *= 0.98;
-    
-    if(Tiny::event.active[SDLK_PAGEUP])   this->scale /= 0.98;
-    if(Tiny::event.active[SDLK_PAGEDOWN]) this->scale *= 0.98;
+    Tiny::event.active[SDLK_PAGEUP]([this](){
+      scale /= 0.98;
+    });
 
-    if(Tiny::event.windowEventTrigger){
-      this->dim.x = Tiny::view.WIDTH;
-      this->dim.y = Tiny::view.HEIGHT;
-    }
+    Tiny::event.active[SDLK_PAGEDOWN]([this](){
+      this->scale *= 0.98;
+    });
+
+    Tiny::event.scroll([this](glm::ivec2 dir){
+      if(dir.y >=  1) this->scale /= 0.98;
+      if(dir.y <= -1) this->scale *= 0.98;
+    });
+
+    Tiny::event.resize([this](glm::ivec2 dim){
+      this->dim = dim;
+    });
+
   }
 
   inline glm::mat4 proj() const { return this->_proj; }
@@ -164,61 +175,63 @@ struct cam::orbit {
   const float moverate = 0.05;
   const float turnrate = 0.1;
 
-  void handler(){
+  void hook(){
 
-    if(Tiny::event.scroll.posy)
-      this->zoom( zoomrate);
+    Tiny::event.scroll([this](glm::ivec2 dir){
+      if(dir.x >=  1) this->pan( turnrate);
+      if(dir.x <= -1) this->pan(-turnrate);
+    });
 
-    if(Tiny::event.scroll.negy)
-      this->zoom(-zoomrate);
-
-    if(Tiny::event.scroll.posx)
-      this->pan( turnrate);
-
-    if(Tiny::event.scroll.negx)
-      this->pan(-turnrate);
-
-    if(Tiny::event.active[SDLK_UP])
+    Tiny::event.active[SDLK_UP]([this](){
       this->tilt(-0.1*turnrate);
+    });
 
-    if(Tiny::event.active[SDLK_DOWN])
+    Tiny::event.active[SDLK_DOWN]([this](){
       this->tilt(+0.1*turnrate);
+    });
 
-    if(Tiny::event.active[SDLK_LEFT])
+    Tiny::event.active[SDLK_LEFT]([this](){
       this->pan(0.1*turnrate);
+    });
 
-    if(Tiny::event.active[SDLK_RIGHT])
+    Tiny::event.active[SDLK_RIGHT]([this](){
       this->pan(-0.1*turnrate);
+    });
 
-    if(Tiny::event.active[SDLK_c])
+    Tiny::event.active[SDLK_c]([this](){
       this->rise(-moverate);
+    });
 
-    if(Tiny::event.active[SDLK_v])
+    Tiny::event.active[SDLK_v]([this](){
       this->rise(moverate);
+    });
 
-    if(Tiny::event.active[SDLK_w])
+    Tiny::event.active[SDLK_w]([this](){
       this->stride(-moverate);
+    });
 
-    if(Tiny::event.active[SDLK_s])
+    Tiny::event.active[SDLK_s]([this](){
       this->stride(moverate);
+    });
 
-    if(Tiny::event.active[SDLK_d])
+    Tiny::event.active[SDLK_d]([this](){
       this->strafe(-moverate);
+    });
 
-    if(Tiny::event.active[SDLK_a])
+    Tiny::event.active[SDLK_a]([this](){
       this->strafe(moverate);
+    });
 
-    if(Tiny::event.active[SDLK_PAGEUP])
-      this->zoom( zoomrate);
+    Tiny::event.finalize([this](){
+      this->update();
+    });
 
-    if(Tiny::event.active[SDLK_PAGEDOWN])
-      this->zoom(-zoomrate);
   }
 
 private:
-  float r;// = 1.0f;
-  float phi;// = 0.0f;
-  float theta;// = 0.0f;
+  float r;
+  float phi;
+  float theta;
   glm::vec3 _pos;
   glm::vec3 _look;
   glm::mat4 _view;

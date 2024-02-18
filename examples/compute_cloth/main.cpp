@@ -6,31 +6,26 @@ const int RES = 64;
 int main( int argc, char* args[] ) {
 
 
-	//Initialize a Window
+  //Initialize a Window
   Tiny::view.vsync = false;
   Tiny::view.antialias = 0;
 
   Tiny::view.pointSize = 2.0f;
 
-	Tiny::window("GPU Cloth Simulation", 800, 800);
+  Tiny::window("GPU Cloth Simulation", 800, 800);
 
   glDisable(GL_CULL_FACE);
 
   Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-100.0f, 100.0f}, 20.0f);
-  Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(RES/2, RES/2, 0));
+  Tiny::cam::orbit orbit(glm::vec3(RES/2, RES/2, 1), glm::vec3(RES/2, RES/2, 0));
   Tiny::camera cam(ortho, orbit);
+  cam.hook();
 
   bool paused = true;
-	Tiny::view.interface = [&](){};
-  Tiny::event.handler = [&](){
-
-		cam.handler();
-
-		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
-			paused = !paused;
-
-	};
-
+  Tiny::event.press[SDLK_p]([&paused](bool pressed){
+    if(!pressed) paused = !paused;
+  });
+  
   // Create an Array of Points as an SSBO, Render as Point Model
 
   std::vector<glm::vec4> vertices(4*RES*RES, glm::vec4(0));
@@ -70,7 +65,7 @@ int main( int argc, char* args[] ) {
   Tiny::Shader surfaceShader({"shader/surface.vs", "shader/surface.fs"}, {"in_Pos", "in_Index"});
 
   Tiny::Triangle triangle;
-	Tiny::Instance triangleinstance(triangle);
+  Tiny::Instance triangleinstance(triangle);
   triangleinstance.bind<glm::vec4>(indexbuf);
 
 
@@ -89,10 +84,10 @@ int main( int argc, char* args[] ) {
   Tiny::Compute shift_f("shader/shift_f.cs");
   Tiny::Compute shift_pv("shader/shift_pv.cs");
 
-	//Define the rendering pipeline
-	Tiny::view.pipeline = [&](){
+  //Define the rendering pipeline
+  Tiny::view.pipeline = [&](){
 
-		Tiny::view.target(glm::vec3(0));	//Clear Screen to white
+    Tiny::view.target(glm::vec3(0));	//Clear Screen to white
 
   //  pointShader.use();
   //  pointShader.uniform("vp", cam::vp);
@@ -104,10 +99,10 @@ int main( int argc, char* args[] ) {
 
     triangleinstance.render(GL_LINE_STRIP, indices.size());
 
-	};
+  };
 
-	//Execute the render loop
-	Tiny::loop([&](){
+  //Execute the render loop
+  Tiny::loop([&](){
 
     if(paused) return;
 
@@ -135,10 +130,10 @@ int main( int argc, char* args[] ) {
 
     t++;
 
-	});
+  });
 
-	Tiny::quit();
+  Tiny::quit();
 
-	return 0;
+  return 0;
 
 }

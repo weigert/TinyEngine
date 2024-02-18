@@ -7,8 +7,6 @@ int main( int argc, char* args[] ) {
 
 	Tiny::window("Shader Effects Example", 1200, 800);
 
-	Tiny::event.handler = [](){ /* ... */ };
-
 	int ind = 0;    //Effect Index
 	int res = 100;  //Pixelate Effect
 	int bits = 4;   //Bitreduce Effect

@@ -9,9 +9,9 @@ int main( int argc, char* args[] ) {
 	Tiny::view.vsync = true;
 	Tiny::window("Lighting Scene Test", 1200, 800);
 
+	eventhook();
 	setup();
 
-	Tiny::event.handler  = eventHandler;
 	Tiny::view.interface = interfaceFunc;
 
 	Tiny::Shader shader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color"});

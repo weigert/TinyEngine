@@ -7,11 +7,13 @@
 int main( int argc, char* args[] ) {
 
 	Tiny::view.vsync = false;															//Turn off VSYNC before opening window
-
 	Tiny::window("GPU Accelerated Cellular Automata Example", WIDTH, HEIGHT);	//Open Window
-	Tiny::event.handler = eventHandler;										//Define Event Handler
-	Tiny::view.interface = [](){ /* ... */ }; 						//No Interface
-
+  
+	bool paused = true;
+  Tiny::event.press[SDLK_p]([&paused](bool pressed){
+    if(!pressed) paused = !paused;
+  });
+  
 	setup();	//Setup Model Data
 
 	Tiny::png image("canyon.png");

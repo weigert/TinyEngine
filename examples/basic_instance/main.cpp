@@ -12,9 +12,7 @@ int main( int argc, char* args[] ) {
 	Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-10.0f, 10.0f}, 5.0f);
 	Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
 	Tiny::camera cam(ortho, orbit);
-
-	Tiny::event.handler = cam.handler;
-	Tiny::view.interface = [&](){ /* ... */ }; //No Interface
+	cam.hook();
 
 	Tiny::Square3D model;									//Model we want to instance render!
 

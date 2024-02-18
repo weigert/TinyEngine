@@ -92,14 +92,11 @@ int main(int argc, char* argv[]){
 
   // Loop
 
-  int n = 0;
   bool paused = true;
+	Tiny::event.press[SDLK_p]([&paused](bool t){
+		paused = !paused;
+	});
 
-  Tiny::view.interface = [](){};
-  Tiny::event.handler = [&](){
-    if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
-      paused = !paused;
-  };
   Tiny::view.pipeline = [&](){
 
     Tiny::view.target(glm::vec4(0,0,0,1));

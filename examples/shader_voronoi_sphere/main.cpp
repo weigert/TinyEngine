@@ -30,7 +30,7 @@ int main( int argc, char* args[] ) {
   Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-100.0f, 100.0f}, 500.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
   Tiny::camera cam(ortho, orbit);
-  cam.update();
+  cam.hook();
 
   // Shader, Model for Rendering Sphere / Sampling from Cubemap
 
@@ -78,7 +78,6 @@ int main( int argc, char* args[] ) {
 
   const float R = 0.05f;
 
-  Tiny::event.handler = cam.handler;
   Tiny::view.pipeline = [&](){
 
     voronoi.clear();

@@ -14,15 +14,12 @@ int main( int argc, char* args[] ) {
   Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-100.0f, 100.0f}, 50.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
   Tiny::camera cam(ortho, orbit);
-  cam.update();
+  cam.hook();
 
 	bool paused = false;
-
-	Tiny::event.handler = [&](){
-		cam.handler();
-		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
-			paused = !paused;
-	};
+  Tiny::event.press[SDLK_p]([&paused](bool pressed){
+    if(!pressed) paused = !paused;
+  });
 
 	int pres = 4; //Pixel Resolution
 	int cres = 8; //Color Resolution

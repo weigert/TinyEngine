@@ -1,8 +1,10 @@
 #include "event.hpp"
+#include <iostream>
 
 namespace Tiny {
 
-void Event::input(){
+void Event::retrieve(){
+
 while(SDL_PollEvent(&in)){
 
   ImGui_ImplSDL2_ProcessEvent(&in);
@@ -12,33 +14,30 @@ while(SDL_PollEvent(&in)){
       quit = true;
       break;
     case SDL_KEYDOWN:
-      active[in.key.keysym.sym] = true;
+      active_set.insert(in.key.keysym.sym);
+      press_queue.push_front(in.key);
       break;
     case SDL_KEYUP:
-      active[in.key.keysym.sym] = false;
-      press.push_front(in.key.keysym.sym);
+      active_set.erase(in.key.keysym.sym);
+      press_queue.push_front(in.key);
       break;
     case SDL_MOUSEWHEEL:
-      scroll.posy = (in.wheel.y > 0.99);
-      scroll.negy = (in.wheel.y < -0.99);
-      scroll.posx = (in.wheel.x > 0.99);
-      scroll.negx = (in.wheel.x < -0.99);
+      scroll(glm::ivec2(in.wheel.x, in.wheel.y));
       break;
     case SDL_MOUSEMOTION:
-      mouse = in.motion;
-      mousemove = true;
+      //mouse = in.motion;
+      //mousemove = true;
       break;
     case SDL_MOUSEBUTTONDOWN:
-      click[in.button.button] = true;
+      //click[in.button.button] = true;
       break;
     case SDL_MOUSEBUTTONUP:
-      click[in.button.button] = false;
-      clicked.push_front(in.button.button);
+      //click[in.button.button] = false;
+      //clicked.push_front(in.button.button);
       break;
     case SDL_WINDOWEVENT:
       if(in.window.event == SDL_WINDOWEVENT_RESIZED){
-        windowEvent = in;
-        windowEventTrigger = true;
+        this->resize(glm::ivec2((int)in.window.data1, (int)in.window.data2));
       }
       break;
     default:
@@ -47,30 +46,24 @@ while(SDL_PollEvent(&in)){
 }
 }
 
-void Event::handle(View &view){
+void Event::process(){
 
-  if(windowEventTrigger){
-    view.WIDTH = windowEvent.window.data1;
-    view.HEIGHT = windowEvent.window.data2;
+  // Dispatch the Pressed Button Queue
+  while(!press_queue.empty()){
+    SDL_KeyboardEvent event = press_queue.back();
+    press[event.keysym.sym](event.state == SDL_PRESSED);
+    press_queue.pop_back();
   }
+  
+  // Dispatch all Active-Set Callbacks
+  for(auto& key: active_set)
+    active[key]();
 
-  (handler)();  //Call user-defined handler
+  //if(!clicked.empty()) clicked.pop_back();  //Reset Event Triggers
+  //mousemove = false;
 
-  if(!press.empty()){
-    if(press.back() == SDLK_ESCAPE) //Toggle interface visibility
-      view.showInterface = !view.showInterface;
+  this->finalize();
 
-    if(press.back() == SDLK_F11){   //Toggle fullscreen
-      view.toggle_fullscreen();
-    }
-
-    press.pop_back();
-  }
-
-  if(!clicked.empty()) clicked.pop_back();  //Reset Event Triggers
-  scroll.reset();
-  mousemove = false;
-  windowEventTrigger = false;
 }
 
 }

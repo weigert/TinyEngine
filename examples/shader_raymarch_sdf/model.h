@@ -29,17 +29,14 @@ glm::vec3 up = glm::vec3(0,1,0);
 glm::vec3 camerapos = glm::vec3(5.0);
 glm::vec3 lookpos = glm::vec3(0.0);
 
-// Event Handler
-std::function<void()> eventHandler = [](){
+void hook(){
 
-  if(Tiny::event.scroll.posy)
-    zoom /= 0.9;
-  if(Tiny::event.scroll.negy)
-    zoom *= 0.9;
-  if(Tiny::event.scroll.posx)
-    camerapos = glm::rotate(glm::mat4(1),  0.05f, up)*glm::vec4(camerapos, 1.0);
-  if(Tiny::event.scroll.negx)
-    camerapos = glm::rotate(glm::mat4(1), -0.05f, up)*glm::vec4(camerapos, 1.0);
+  Tiny::event.scroll([](glm::ivec2 dir){
+    if(dir.y > 0) zoom /= 0.9;
+    if(dir.y < 0) zoom *= 0.9;
+    if(dir.x > 0) camerapos = glm::rotate(glm::mat4(1),  0.05f, up)*glm::vec4(camerapos, 1.0);
+    if(dir.x < 0) camerapos = glm::rotate(glm::mat4(1), -0.05f, up)*glm::vec4(camerapos, 1.0);
+  });
 
 };
 

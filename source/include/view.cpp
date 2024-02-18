@@ -65,6 +65,7 @@ bool View::init(std::string _name, int W, int H){
 
   printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
   printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
+
   return true;
 }
 

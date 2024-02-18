@@ -7,81 +7,75 @@
 
 int main( int argc, char* args[] ) {
 
-	Tiny::view.vsync = false;
-	Tiny::window("3D Quadratic ODE", 1000, 800);
-	glPointSize(1.5f);
+  Tiny::view.vsync = false;
+  Tiny::window("3D Quadratic ODE", 1000, 800);
+  glPointSize(1.5f);
 
   Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-200.0f, 200.0f}, 5.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
   Tiny::camera cam(ortho, orbit);
-  cam.update();
+  cam.hook();
 
-	Tiny::view.interface = [&](){};
+  bool paused = true;
+  Tiny::event.press[SDLK_p]([&paused](bool pressed){
+    if(pressed) paused = !paused;
+  });
 
-	bool paused = true;
-	bool streak = false;
-  Tiny::event.handler = [&](){
+  bool streak = false;
+  Tiny::event.press[SDLK_SPACE]([&streak](bool pressed){
+    streak = pressed;
+  });
 
-		cam.handler();
+  const std::function<float()> randf = [](){
+    return (float)(rand()%200000)/100000.0f-1.0f;
+  };
 
-		if(Tiny::event.active[SDLK_SPACE]) streak = true;
-		else streak = false;
+  std::vector<glm::vec4> position;
+  for(int i = 0; i < NPARTICLES; i++)
+    position.push_back(glm::vec4(randf(),randf(),randf(), 1));
 
-		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
-			paused = !paused;
+  Tiny::Buffer posbuf(position);
+  Tiny::Buffer colbuf;
+  colbuf.set<glm::vec4>(NPARTICLES, NULL);
 
-	};
+    //Compute Shaders
+  Tiny::Compute compute("shader/ODE.cs");
 
-	const std::function<float()> randf = [](){
-		return (float)(rand()%200000)/100000.0f-1.0f;
-	};
+  //Visualization Shader
+  Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos", "in_Col"});
 
-	std::vector<glm::vec4> position;
-	for(int i = 0; i < NPARTICLES; i++)
-		position.push_back(glm::vec4(randf(),randf(),randf(), 1));
+  Tiny::Model particles({"position", "color"});
+  particles.bind<glm::vec4>("position", posbuf);
+  particles.bind<glm::vec4>("color", colbuf);
 
-	Tiny::Buffer posbuf(position);
-	Tiny::Buffer colbuf;
-	colbuf.set<glm::vec4>(NPARTICLES, NULL);
+  //Define the rendering pipeline
+  Tiny::view.pipeline = [&](){
 
-  //Compute Shader
-	Tiny::Compute compute("shader/ODE.cs");
+    Tiny::view.target(glm::vec3(0), !streak);	//Clear Screen to white
 
-	//Visualization Shader
-	Tiny::Shader particleShader({"shader/particle.vs", "shader/particle.fs"}, {"in_Pos", "in_Col"});
+    particleShader.use();
+    particleShader.uniform("vp", cam.vp());
+    particleShader.uniform("op", ((streak)?0.3f:1.0f));
+    particles.render(GL_POINTS, NPARTICLES);
 
-	Tiny::Model particles({"position", "color"});
-	particles.bind<glm::vec4>("position", posbuf);
-	particles.bind<glm::vec4>("color", colbuf);
+  };
 
-	//Define the rendering pipeline
-	Tiny::view.pipeline = [&](){
+  Tiny::loop([&](){
 
-		Tiny::view.target(glm::vec3(0), !streak);	//Clear Screen to white
+    //cam::pan(-0.2f);
 
-		particleShader.use();
-		particleShader.uniform("vp", cam.vp());
-		particleShader.uniform("op", ((streak)?0.3f:1.0f));
-		particles.render(GL_POINTS, NPARTICLES);
+    if(paused) return;
 
-	};
+    compute.use();
+    compute.uniform("size", NPARTICLES);
+    compute.storage("position", posbuf);
+    compute.storage("color", colbuf);
+    compute.dispatch(SPARTICLES/32, SPARTICLES/32);
 
-	Tiny::loop([&](){
+  });
 
-		//cam::pan(-0.2f);
+  Tiny::quit();
 
-		if(paused) return;
-
-		compute.use();
-		compute.uniform("size", NPARTICLES);
-		compute.storage("position", posbuf);
-		compute.storage("color", colbuf);
-		compute.dispatch(SPARTICLES/32, SPARTICLES/32);
-
-	});
-
-	Tiny::quit();
-
-	return 0;
+  return 0;
 
 }

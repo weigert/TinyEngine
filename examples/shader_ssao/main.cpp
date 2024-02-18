@@ -14,9 +14,7 @@ int main( int argc, char* args[] ) {
   Tiny::cam::orthogonal ortho({Tiny::view.WIDTH, Tiny::view.HEIGHT}, {-50.0f, 50.0f}, 50.0f);
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
   Tiny::camera cam(ortho, orbit);
-  cam.update();
-
-  Tiny::event.handler = cam.handler;
+  cam.hook();
   
   // Setup gBuffer
 

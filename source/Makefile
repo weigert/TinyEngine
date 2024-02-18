@@ -30,7 +30,7 @@ all: setup helpers install
 # Copy Required Header Files to Target Location
 .PHONY: setup
 setup:
-	@echo "Copying Core Header Files ...";
+	@echo "TinyEngine: Copying Core Header Files ...";
 	@if [ ! -d $(INCPATH) ]; then mkdir $(INCPATH); fi;
 	@if [ ! -d $(INCPATH)/TinyEngine ]; then mkdir $(INCPATH)/TinyEngine; fi;
 	@cp TinyEngine.hpp $(INCPATH)/TinyEngine/TinyEngine
@@ -46,7 +46,6 @@ setup:
 	@cp include/external/imgui/imgui_impl_opengl3.h $(INCPATH)/TinyEngine/imgui_impl_opengl3
 	@cp include/external/imgui/imgui_impl_sdl.h $(INCPATH)/TinyEngine/imgui_impl_sdl
 	@cp include/external/imgui/imconfig.h $(INCPATH)/TinyEngine/imconfig.h
-	@echo "Done";
 
 #######################
 # TinyEngine Compiler #
@@ -56,18 +55,17 @@ IMGUI = imgui imgui_demo imgui_draw imgui_widgets imgui_impl_opengl3 imgui_impl_
 
 .PHONY: install
 install:
-	@echo "Compiling TinyEngine ...";
+	@echo "TinyEngine: Compiling TinyEngine ...";
 	@if [ ! -d "tmp" ]; then mkdir tmp; fi;
 	@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/event.cpp -o tmp/event.o
 	@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/view.cpp -o tmp/view.o
 	@$(foreach i,$(IMGUI), $(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/external/imgui/$(i).cpp -o tmp/$(i).o;)
-	@echo "Generating Static Library Archive ...";
+	@echo "TinyEngine: Generating Static Library Archive ...";
 	@ar cr tmp/libTinyEngine.a tmp/event.o tmp/view.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
-	@echo "Placing Compiled TinyEngine Library ...";
+	@echo "TinyEngine: Placing Compiled TinyEngine Library ...";
 	@if [ ! -d $(LIBPATH) ]; then mkdir $(LIBPATH); fi;
 	@cp tmp/libTinyEngine.a $(LIBPATH)/libTinyEngine.a
 	@rm -rf tmp
-	@echo "Done";
 
 ######################
 # TinyEngine Helpers #
@@ -77,8 +75,7 @@ HELPERS = camera image object benchmark
 
 .PHONY: helpers
 helpers:
-	@echo "Copying Helper Header Files ...";
+	@echo "TinyEngine: Copying Helper Header Files ...";
 	@if [ ! -d "$(INCPATH)" ]; then mkdir $(INCPATH); fi;
 	@if [ ! -d "$(INCPATH)/TinyEngine" ]; then mkdir $(INCPATH)/TinyEngine; fi;
 	@$(foreach var,$(HELPERS), cp include/util/$(var).hpp $(INCPATH)/TinyEngine/$(var);)
-	@echo "Done";

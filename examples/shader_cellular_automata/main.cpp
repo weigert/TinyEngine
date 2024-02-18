@@ -5,15 +5,13 @@
 int main( int argc, char* args[] ) {
 
 	Tiny::view.vsync = false;													//Turn off VSYNC before opening window
-	bool paused = true;
-
 	Tiny::window("GPU Accelerated Cellular Automata Example", 1200, 800);	//Open Window
-	Tiny::event.handler = [&](){
-	  if(!Tiny::event.press.empty())
-	    if(Tiny::event.press.back() == SDLK_p)
-	      paused = !paused;
-	};
-	Tiny::view.interface = [](){ /* ... */ }; 						//No Interface
+
+  bool paused = true;
+  Tiny::event.press[SDLK_p]([&paused](bool pressed){
+    if(!pressed) paused = !paused;
+  });
+  
 
 	Tiny::image<uint8_t> image(1200, 800);
 	image.fill([&](const glm::ivec2 p){

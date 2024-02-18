@@ -10,53 +10,47 @@
 
 namespace Tiny {
 
+template<typename T>
+struct dispatch_base {
+
+  typedef std::function<T> callback_t;
+
+  template<typename F>
+  void operator()(F&& callback){
+    callbacks.emplace_back(std::forward<F>(callback));
+  }
+
+protected:
+  std::vector<callback_t> callbacks = {};
+};
+
 //! \brief Dispatch is a Callback Set Container
 //! This type contains a set of callbacks with no parameters,
 //! which are intended to be collectively executed when an event occurs.
 //! Note that callbacks cannot be removed from this container.
 template<typename P>
-struct dispatch {
+struct dispatch: dispatch_base<void(P)> {
   
-  typedef P param_t;
-  typedef std::function<void(P)> callback_t;
-
-  //! Move a Callback into the Container
-  //! Uses std::forward for lambda insertion.
-  template<typename F>
-  void operator()(F&& callback){
-    callbacks.emplace_back(std::forward<F>(callback));
-  } 
+  using dispatch_base<void(P)>::operator();
 
   //! Dispatch the Set of Callbacks
-  void operator()(param_t param){
-    for(auto& callback: callbacks)
+  void operator()(P param){
+    for(auto& callback: this->callbacks)
       callback(param);
   }
-
-private:
-  std::vector<callback_t> callbacks = {};
 };
 
+//! No-Arg Specialization
 template<>
-struct dispatch<void> {
-  
-  typedef std::function<void()> callback_t;
+struct dispatch<void>: dispatch_base<void()> {
 
-  //! Move a Callback into the Container
-  //! Uses std::forward for lambda insertion.
-  template<typename F>
-  void operator()(F&& callback){
-    callbacks.emplace_back(std::forward<F>(callback));
-  } 
+  using dispatch_base<void()>::operator();
 
-  //! Dispatch the Set of Callbacks
+  //! Dispatch the Set of Callbacks (No Arg)
   void operator()(){
-    for(auto& callback: callbacks)
+    for(auto& callback: this->callbacks)
       callback();
   }
-
-private:
-  std::vector<callback_t> callbacks = {};
 };
 
 struct mouse_t {
@@ -75,8 +69,8 @@ struct Event {
   template<typename T>
   using dset = std::unordered_map<SDL_Keycode, T>;
 
-  dset<dispatch<void>> active;    //!< Dispatch Set for Actively Pressed Keys
-  dset<dispatch<bool>> press; //!< Dispatch Set for Key Presses / Releases
+  dset<dispatch<void>> active;  //!< Dispatch Set for Actively Pressed Keys
+  dset<dispatch<bool>> press;   //!< Dispatch Set for Key Presses / Releases
 
   dispatch<mouse_t> mouse;      //!< Callback Set for Mouse Move Events
   dispatch<mouse_t> click;      //!< Callback Set for Mouse Click Events
@@ -84,8 +78,8 @@ struct Event {
   dispatch<glm::ivec2> scroll;  //!< Callback Set for Mouse Scroll Events
   dispatch<glm::ivec2> resize;  //!< Callback Set for Window Resize Events
 
-  dispatch<void> loop;  //!< Callback Set Per-Loop
-  dispatch<void> quit;  //!< Callback Set On Quit
+  dispatch<void> loop;          //!< Callback Set Per-Loop
+  dispatch<void> quit;          //!< Callback Set On Quit
 
 private:
   std::unordered_set<SDL_Keycode> active_set;

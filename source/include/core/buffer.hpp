@@ -1,8 +1,8 @@
 #ifndef TINYENGINE_CORE_BUFFER
 #define TINYENGINE_CORE_BUFFER
 
-#include <cstddef>
-#include <glm/glm.hpp>
+#include <TinyEngine/TinyEngine>
+
 #include <vector>
 
 namespace Tiny {

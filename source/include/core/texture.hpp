@@ -1,6 +1,8 @@
 #ifndef TINYENGINE_CORE_TEXTURE
 #define TINYENGINE_CORE_TEXTURE
 
+#include <TinyEngine/TinyEngine>
+
 namespace Tiny {
 
 //! Texture is GPU Texture of a fixed size and data Layout.

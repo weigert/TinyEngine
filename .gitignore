@@ -6,3 +6,4 @@ imgui.ini
 tmp
 todo.md
 doc/*/**
+.vscode

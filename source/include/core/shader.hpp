@@ -1,7 +1,6 @@
 #ifndef TINYENGINE_CORE_SHADER
 #define TINYENGINE_CORE_SHADER
 
-#include <TinyEngine/TinyEngine>
 #include <TinyEngine/Buffer>
 #include <TinyEngine/Texture>
 

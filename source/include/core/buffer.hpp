@@ -1,7 +1,8 @@
 #ifndef TINYENGINE_CORE_BUFFER
 #define TINYENGINE_CORE_BUFFER
 
-#include <TinyEngine/TinyEngine>
+#include <GL/glew.h>
+#include <glm/glm.hpp>
 
 #include <vector>
 

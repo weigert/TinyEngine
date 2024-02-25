@@ -3,31 +3,24 @@ import tinyengine as tiny
 tiny.view.linewidth = 2.0
 tiny.window("Python Test", 400, 400)
 
-gizmoshader = tiny.Shader(['shader/gizmo.vs', 'shader/gizmo.fs']);
+gizmoshader = tiny.Shader(['shader/gizmo.vs', 'shader/gizmo.fs'], ["in_Pos", "in_Tex"]);
 gizmo = tiny.Gizmo();
 
-def handler():
-    tiny.cam.handler()
+ortho = tiny.cam_orthogonal([400.0, 400.0], [-100.0, 100.0], 100.0)
+orbit = tiny.cam_orbit([1, 0, 0], [0, 0, 0])
+
+camera = tiny.camera(ortho, orbit)
+camera.hook()
 
 def pipeline():
-
     tiny.view.target([0.0, 0.0, 0.0], True, True)
-
     gizmoshader.use();
-    gizmoshader.uniform("vp", tiny.cam.vp());
+    gizmoshader.uniform("vp", camera.vp());
     gizmo.render(tiny.GL.lines);
 
 def loop():
     return;
 
-tiny.view.pipeline = pipeline;
-tiny.event.handler = handler;
-
-tiny.cam.zoomrate(5.0);
-tiny.cam.moverate(0.1);
-tiny.cam.near(-100.0);
-tiny.cam.far(100.0);
-tiny.cam.init(100.0, tiny.cam.type.ORTHO)
-
+tiny.view.pipeline(pipeline);
 tiny.loop(loop);
 tiny.quit()

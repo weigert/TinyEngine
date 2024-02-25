@@ -7,15 +7,6 @@
 
 #define TINYENGINE_VERSION "1.8"
 
-#include <SDL2/SDL.h>
-
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <TinyEngine/Event>
-#include <TinyEngine/View>
-
 #include <TinyEngine/Buffer>
 #include <TinyEngine/Instance>
 #include <TinyEngine/Model>
@@ -23,14 +14,22 @@
 #include <TinyEngine/Target>
 #include <TinyEngine/Texture>
 
+#include <TinyEngine/Event>
+#include <TinyEngine/View>
+
+#include <SDL2/SDL.h>
+
+#include <iostream>
 #include <csignal>
 
 //! TinyEngine's Main Namespace
 namespace Tiny {
 
-static View view;           //Window and Interface  (Requires Initialization)
-static Event event;         //Event Handler
-static bool kill = false;
+// Global Variables
+
+View view;          //Window and Interface  (Requires Initialization)
+Event event;        //Event Handler
+bool kill = false;
 
 void sighandler(int signal){
   event.quit();

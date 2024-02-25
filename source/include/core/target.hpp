@@ -1,7 +1,6 @@
 #ifndef TINYENGINE_CORE_TARGET
 #define TINYENGINE_CORE_TARGET
 
-#include <TinyEngine/TinyEngine>
 #include <TinyEngine/Texture>
 
 namespace Tiny {

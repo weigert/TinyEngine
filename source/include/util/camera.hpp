@@ -1,9 +1,14 @@
 #ifndef TINYENGINE_UTIL_CAMERA
 #define TINYENGINE_UTIL_CAMERA
 
-#include <TinyEngine/TinyEngine>
+#include <TinyEngine/Event>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Tiny {
+
+extern Tiny::Event event;
 
 namespace cam {
 

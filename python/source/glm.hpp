@@ -1,11 +1,41 @@
 #ifndef TINYENGINE_GLM_PYTHON
 #define TINYENGINE_GLM_PYTHON
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
+namespace py = pybind11;
+
 #include "glm/gtc/type_ptr.hpp" // includes all vector and matrix types too
 #include <cstddef>
 
 namespace pybind11 {
 namespace detail {
+
+template <>
+struct type_caster<glm::vec2> {
+
+  PYBIND11_TYPE_CASTER(glm::vec2, _("glm::vec2"));
+
+  bool load(handle src, bool convert){
+
+    auto s = reinterpret_steal<sequence>(src);
+    if(s.size() != 2) return false;
+
+    std::vector<float> v;
+    for (auto it : s){
+      make_caster<float> conv;
+      if (!conv.load(it, convert))
+        return false;
+      v.push_back(cast_op<float &&>(std::move(conv)));
+    }
+
+    value = glm::make_vec3(&v[0]);
+    return true;
+
+	}
+
+};
 
 template <>
 struct type_caster<glm::vec3> {
@@ -32,6 +62,7 @@ struct type_caster<glm::vec3> {
 
 };
 
+/*
 template <>
 struct type_caster<glm::mat4> {
 
@@ -58,7 +89,7 @@ struct type_caster<glm::mat4> {
 
 	}
 
-  static handle cast(const glm::mat4& src, return_value_policy /* policy */, handle /* parent */){
+  static handle cast(const glm::mat4& src, return_value_policy ){
 
     py::list li;
     for(int i = 0; i < 4; i++)
@@ -69,7 +100,7 @@ struct type_caster<glm::mat4> {
 	}
 
 };
-
+*/
 
 }
 }

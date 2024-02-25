@@ -1,11 +1,9 @@
 #ifndef TINYENGINE_CORE_MODEL
 #define TINYENGINE_CORE_MODEL
 
-#include <TinyEngine/TinyEngine>
 #include <TinyEngine/Buffer>
 
 #include <string>
-#include <vector>
 #include <unordered_map>
 
 namespace Tiny {

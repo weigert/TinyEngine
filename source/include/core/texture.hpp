@@ -1,7 +1,8 @@
 #ifndef TINYENGINE_CORE_TEXTURE
 #define TINYENGINE_CORE_TEXTURE
 
-#include <TinyEngine/TinyEngine>
+#include <GL/glew.h>
+#include <glm/glm.hpp>
 
 namespace Tiny {
 

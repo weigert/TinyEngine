@@ -1,12 +1,8 @@
 #ifndef TINYENGINE_CORE_INSTANCE
 #define TINYENGINE_CORE_INSTANCE
 
-#include <TinyEngine/TinyEngine>
 #include <TinyEngine/Buffer>
 #include <TinyEngine/Model>
-
-#include <string>
-#include <unordered_map>
 
 namespace Tiny {
 

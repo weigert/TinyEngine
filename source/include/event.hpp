@@ -68,6 +68,9 @@ struct Event {
   template<typename T>
   using dset = std::unordered_map<SDL_Keycode, T>;
 
+  dispatch<void> init;          //!< Callback Set On Init
+  dispatch<void> quit;          //!< Callback Set On Quit
+
   dispatch<SDL_Event*> raw;     //!< Raw Event Processing
 
   dset<dispatch<void>> active;  //!< Dispatch Set for Actively Pressed Keys
@@ -80,7 +83,6 @@ struct Event {
   dispatch<glm::ivec2> resize;  //!< Callback Set for Window Resize Events
 
   dispatch<void> tick;          //!< Callback Set Per-Tick
-  dispatch<void> quit;          //!< Callback Set On Quit
 
 private:
   std::unordered_set<SDL_Keycode> active_set;

@@ -4,6 +4,8 @@
 #include <TinyEngine/color>
 #include <TinyEngine/gui>
 
+#include <TinyEngine/debug>
+
 int main( int argc, char* args[] ) {
 
 	Tiny::window("Shader Effects Example", 1200, 800);
@@ -19,6 +21,9 @@ int main( int argc, char* args[] ) {
 	  ImGui::DragInt("Bits", &bits, 1, 1, 16);
 	});
 	gui.hook();
+	
+	Tiny::Debug debug;
+	//Tiny::debug.hook();
 
 	Tiny::png image("canyon.png");
 	Tiny::Texture tex(image.width(), image.height(), Tiny::Texture::RGBA8U, image.data());
@@ -40,7 +45,8 @@ int main( int argc, char* args[] ) {
 		flat.render();													//Render Primitive
 	
 		gui.render();
-
+		debug.render();
+	
 	};
 
 	Tiny::loop([&](){

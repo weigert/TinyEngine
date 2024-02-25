@@ -23,8 +23,6 @@
 #include <TinyEngine/Target>
 #include <TinyEngine/Texture>
 
-#include <TinyEngine/benchmark>
-
 #include <csignal>
 
 //! TinyEngine's Main Namespace
@@ -88,6 +86,7 @@ bool window(std::string windowName, int width, int height){ //Open a window
     if(!press) view.toggle_fullscreen();
   });
 
+  event.init(); // Trigger all Initializations w. Require State
   return true;
 }
 
@@ -95,9 +94,6 @@ void quit(){
   if(Tiny::view.enabled) view.quit();
   SDL_Quit();
 }
-
-//bool benchmark = false;
-int average = 0;
 
 template<typename F, typename... Args>
 void loop(F function, Args&&... args){

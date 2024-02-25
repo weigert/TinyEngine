@@ -71,7 +71,7 @@ install:
 # TinyEngine Helpers #
 ######################
 
-HELPERS = camera image object benchmark gui
+HELPERS = camera image object benchmark gui debug
 
 .PHONY: helpers
 helpers:

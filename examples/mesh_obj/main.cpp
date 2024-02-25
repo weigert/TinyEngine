@@ -1,6 +1,7 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/color>
 #include <TinyEngine/object>
+#include <TinyEngine/gui>
 
 #include "model.h"
 
@@ -12,7 +13,8 @@ int main( int argc, char* args[] ) {
 	eventhook();
 	setup();
 
-	Tiny::view.interface = interfaceFunc;
+	Tiny::GUI gui(interfaceFunc);
+	gui.hook();
 
 	Tiny::Shader shader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color"});
 	Tiny::Shader cubedepth({"shader/cubedepth.vs", "shader/cubedepth.gs", "shader/cubedepth.fs"}, {"in_Position"});
@@ -94,6 +96,8 @@ int main( int argc, char* args[] ) {
 		shelf.render(GL_TRIANGLES, shelf.size());
 		shader.uniform("model", framemodel);
 		frame.render(GL_TRIANGLES, frame.size());
+
+		gui.render();
 
 	};
 

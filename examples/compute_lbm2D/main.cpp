@@ -93,8 +93,8 @@ int main(int argc, char* argv[]){
   // Loop
 
   bool paused = true;
-	Tiny::event.press[SDLK_p]([&paused](bool t){
-		paused = !paused;
+	Tiny::event.press[SDLK_p]([&paused](bool pressed){
+		if(pressed) paused = !paused;
 	});
 
   Tiny::view.pipeline = [&](){

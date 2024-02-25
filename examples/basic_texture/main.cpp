@@ -22,9 +22,6 @@ int main( int argc, char* args[] ) {
 	});
 	gui.hook();
 	
-	Tiny::Debug debug;
-	//Tiny::debug.hook();
-
 	Tiny::png image("canyon.png");
 	Tiny::Texture tex(image.width(), image.height(), Tiny::Texture::RGBA8U, image.data());
 	Tiny::Square2D flat;														//Create Primitive Model
@@ -44,8 +41,8 @@ int main( int argc, char* args[] ) {
 		effect.uniform("model", glm::mat4(1));	//Add Model Matrix
 		flat.render();													//Render Primitive
 	
-		gui.render();
-		debug.render();
+		//gui.render();
+		Tiny::debug.render();
 	
 	};
 

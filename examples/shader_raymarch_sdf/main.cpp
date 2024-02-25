@@ -1,5 +1,6 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/color>
+#include <TinyEngine/gui>
 
 #include "model.h"
 
@@ -11,7 +12,9 @@ int main( int argc, char* args[] ) {
 	Tiny::window("3D Signed Distance Field", 1000, 1000);
 
 	hook();
-	Tiny::view.interface = interfaceFunc;
+
+	Tiny::GUI gui(interfaceFunc);
+	gui.hook();
 
 	Tiny::Shader sdf({"shader/sdf.vs", "shader/sdf.fs"}, {"in_Quad", "in_Tex"});
 	Tiny::Square2D flat;												//Flat geometry primitive
@@ -28,6 +31,8 @@ int main( int argc, char* args[] ) {
 		sdf.uniform("diverge", glm::vec4(dc[0], dc[1], dc[2], dc[3]));
 		sdf.uniform("model", glm::mat4(1.0f));
 		flat.render();
+
+		gui.render();
 
 	};
 

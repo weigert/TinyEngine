@@ -14,14 +14,10 @@ int main( int argc, char* args[] ) {
 	Tiny::view.antialias = 0;
 	Tiny::window("N-Ball Collisions", 800, 400);
 
-	bool paused = true;
-	Tiny::view.interface = [&](){};
-  Tiny::event.handler = [&](){
-
-		if(!Tiny::event.press.empty() && Tiny::event.press.back() == SDLK_p)
-			paused = !paused;
-
-	};
+  bool paused = true;
+	Tiny::event.press[SDLK_p]([&paused](bool pressed){
+		if(pressed) paused = !paused;
+	});
 
   //Get Positions and Velocities
 	std::vector<glm::vec4> position;

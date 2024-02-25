@@ -1,6 +1,7 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/color>
 #include <TinyEngine/image>
+#include <TinyEngine/gui>
 
 #include "poisson.h"
 #include "model.h"
@@ -48,7 +49,8 @@ int main( int argc, char* args[] ) {
 	Tiny::view.vsync = false;
 	Tiny::window("GPU Accelerated Voronoise", _SIZE_, _SIZE_);
 
-	Tiny::view.interface = interfaceFunc;
+	Tiny::GUI gui(interfaceFunc);
+	gui.hook();
 
 	srand(time(NULL));
 
@@ -141,6 +143,9 @@ int main( int argc, char* args[] ) {
 			billboardshader.uniform("model", glm::mat4(1.0f));
 			flat.render();
 		}
+
+		gui.render();
+
 	};
 
 	float t = 0; //Time

@@ -4,6 +4,8 @@
 #include <TinyEngine/math>
 #include <TinyEngine/camera>
 
+#include <TinyEngine/gui>
+
 #define PI 3.14159265f
 
 #include "model.h"
@@ -35,7 +37,8 @@ int main( int argc, char* args[] ) {
 		} 
   });
 
-	Tiny::view.interface = interfaceFunc;
+	Tiny::GUI gui(interfaceFunc);
+	gui.hook();
 
 	root = new Branch({0.6, 0.45, 2.5}); //Create Root
 
@@ -156,6 +159,8 @@ int main( int argc, char* args[] ) {
 			particle.render(GL_TRIANGLE_STRIP, leaves.size()); //Render Particle System
 
 		}
+
+		gui.render();
 
 	};
 

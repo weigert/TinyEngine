@@ -1,5 +1,6 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/color>
+#include <TinyEngine/gui>
 
 #include "model.h"
 
@@ -31,8 +32,8 @@ int main( int argc, char* args[] ) {
     px -= 0.05*zoom;
   });
 
-
-	Tiny::view.interface = interfaceFunc;	//Set Interface Function
+	Tiny::GUI gui(interfaceFunc);
+	gui.hook();
 
 	Tiny::Square2D flat;												//Flat geometry primitive
 	Tiny::Shader julia({"shader/julia.vs", "shader/julia.fs"}, {"in_Quad", "in_Tex"});
@@ -52,6 +53,8 @@ int main( int argc, char* args[] ) {
 		julia.uniform("offset", glm::vec2(px, py));
 		julia.uniform("model", glm::mat4(1));
 		flat.render();											//Draw onto Flat Geometry
+
+		gui.render();
 
 	};
 

@@ -1,4 +1,5 @@
 #include <TinyEngine/TinyEngine>
+#include <TinyEngine/benchmark>
 
 #include "compute.h"
 

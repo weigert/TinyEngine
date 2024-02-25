@@ -17,14 +17,12 @@ int main( int argc, char* args[] ) {
   Tiny::cam::orbit orbit(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0));
   Tiny::camera cam(ortho, orbit);
   cam.update();
+  cam.hook();
 
   bool paused = true;
-	Tiny::event.press[SDLK_p]([&paused](bool t){
-		paused = !paused;
+	Tiny::event.press[SDLK_p]([&paused](bool pressed){
+		if(pressed) paused = !paused;
 	});
-
-	Tiny::event.handler = cam.handler;
-	Tiny::view.interface = [&](){ /* ... */ };				//No Interface
 
 	setup();																					//Prepare Model Stuff
 

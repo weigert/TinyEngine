@@ -2,6 +2,7 @@
 #define TINYENGINE_CORE_TARGET
 
 #include <TinyEngine/Texture>
+#include <vector>
 
 namespace Tiny {
 

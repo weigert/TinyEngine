@@ -57,11 +57,12 @@ IMGUI = imgui imgui_demo imgui_draw imgui_widgets imgui_impl_opengl3 imgui_impl_
 install:
 	@echo "TinyEngine: Compiling TinyEngine ...";
 	@if [ ! -d "tmp" ]; then mkdir tmp; fi;
+	@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC TinyEngine.cpp -o tmp/TinyEngine.o
 	@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/event.cpp -o tmp/event.o
 	@$(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/view.cpp -o tmp/view.o
 	@$(foreach i,$(IMGUI), $(CC) $(CF) -I$(INCPATH) $(TINYOS) -c -fPIC include/external/imgui/$(i).cpp -o tmp/$(i).o;)
 	@echo "TinyEngine: Generating Static Library Archive ...";
-	@ar cr tmp/libTinyEngine.a tmp/event.o tmp/view.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
+	@ar cr tmp/libTinyEngine.a tmp/TinyEngine.o tmp/event.o tmp/view.o tmp/imgui.o tmp/imgui_demo.o tmp/imgui_draw.o tmp/imgui_widgets.o tmp/imgui_impl_opengl3.o tmp/imgui_impl_sdl.o
 	@echo "TinyEngine: Placing Compiled TinyEngine Library ...";
 	@if [ ! -d $(LIBPATH) ]; then mkdir $(LIBPATH); fi;
 	@cp tmp/libTinyEngine.a $(LIBPATH)/libTinyEngine.a

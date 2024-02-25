@@ -17,7 +17,22 @@ struct Debug: Tiny::GUI {
 
   using Tiny::GUI::GUI;
 
-  Debug():Tiny::GUI([](){
+  Debug():Tiny::GUI([this](){
+    this->interface();
+  }){
+    this->hook();
+  }
+
+private:
+
+  //! 
+  void hook(){
+    Tiny::event.press[SDLK_F1]([this](bool press){
+      if(!press) this->visible = !this->visible;
+    });
+  }
+
+  void interface(){
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(Tiny::view.WIDTH, Tiny::view.HEIGHT), ImGuiCond_Always);
     // ... add debug info ...
@@ -36,25 +51,11 @@ struct Debug: Tiny::GUI {
       //... output debug info ...
       ImGui::End();
     }
-
-  }){
-    this->hook();
   }
-
-  void hook(){
-    Tiny::event.raw([](SDL_Event* in){
-      ImGui_ImplSDL2_ProcessEvent(in);
-    });
-    Tiny::event.press[SDLK_F1]([this](bool press){
-      if(!press) this->visible = !this->visible;
-    });
-  }
-
 };
 
-// static Debug debug;
+static Debug debug;
 
 }
-
 
 #endif

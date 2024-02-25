@@ -13,13 +13,12 @@ namespace Tiny {
 
 namespace {
 
-//! ImguiState is a wrapper for ImGui initialization and destruction,
-//! intended to be intialized as a single static object so that multiple
-//! GUI instances can be defined separately.
+//! ImguiState is a wrapper for ImGui initialization and destruction
+//! This is intended as a singleton for multiple potential GUI instances.
 struct ImGuiState {
 
   ImGuiState(){
-    IMGUI_CHECKVERSION();           //Setup ImGUI
+    IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = ImGui::GetIO();
     this->hook();
@@ -29,23 +28,6 @@ struct ImGuiState {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-  }
-
-  void hook(){
-    Tiny::event.init([this](){
-      this->init();
-    });
-  }
-
-  void init(){
-    ImGui_ImplSDL2_InitForOpenGL(Tiny::view.gWindow, Tiny::view.gContext);
-    #ifndef TINYENGINE_COMPATIBILITY
-    ImGui_ImplOpenGL3_Init("#version 330 core");
-    #else
-    ImGui_ImplOpenGL3_Init("#version 130");
-    #endif
-    ImGui::StyleColorsCustom();
-    this->gWindow = Tiny::view.gWindow;
   }
 
   void operator()(){
@@ -61,6 +43,26 @@ struct ImGuiState {
   }
 
 private:
+
+  //! Create the ImGui Context when Tiny::view is initialized!
+  void hook(){
+    Tiny::view.initialized([this](){
+      ImGui_ImplSDL2_InitForOpenGL(Tiny::view.gWindow, Tiny::view.gContext);
+      #ifndef TINYENGINE_COMPATIBILITY
+      ImGui_ImplOpenGL3_Init("#version 330 core");
+      #else
+      ImGui_ImplOpenGL3_Init("#version 130");
+      #endif
+      ImGui::StyleColorsCustom();
+      this->gWindow = Tiny::view.gWindow;
+
+      // Hook in the ImGui Event Processor
+      Tiny::event.raw([](SDL_Event* in){
+        ImGui_ImplSDL2_ProcessEvent(in);
+      });
+    });
+  }
+
   ImGuiIO io;
   SDL_Window* gWindow;
 };
@@ -73,6 +75,7 @@ private:
 //! A GUI can be directly rendered in the regular pipeline callback.
 //! Hooking a GUI is necessary for interaction and visibility toggling.
 struct GUI {
+
   template<typename F>
   GUI(F&& pipeline){
     this->pipeline = pipeline;
@@ -80,9 +83,6 @@ struct GUI {
 
   // Event-Processing
   void hook(){
-    Tiny::event.raw([](SDL_Event* in){
-      ImGui_ImplSDL2_ProcessEvent(in);
-    });
     Tiny::event.press[SDLK_ESCAPE]([this](bool press){
       if(!press) visible = !visible;
     });

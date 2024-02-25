@@ -1,7 +1,8 @@
 #ifndef TINYENGINE_EVENT
 #define TINYENGINE_EVENT
 
-#include <TinyEngine/View>
+#include <SDL2/SDL.h>
+#include <glm/glm.hpp>
 
 #include <deque>
 #include <unordered_set>
@@ -68,7 +69,7 @@ struct Event {
   template<typename T>
   using dset = std::unordered_map<SDL_Keycode, T>;
 
-  dispatch<void> init;          //!< Callback Set On Init
+  dispatch<void> tick;          //!< Callback Set Per-Tick
   dispatch<void> quit;          //!< Callback Set On Quit
 
   dispatch<SDL_Event*> raw;     //!< Raw Event Processing
@@ -81,8 +82,6 @@ struct Event {
 
   dispatch<glm::ivec2> scroll;  //!< Callback Set for Mouse Scroll Events
   dispatch<glm::ivec2> resize;  //!< Callback Set for Window Resize Events
-
-  dispatch<void> tick;          //!< Callback Set Per-Tick
 
 private:
   std::unordered_set<SDL_Keycode> active_set;

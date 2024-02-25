@@ -1,6 +1,8 @@
 #ifndef TINYENGINE_VIEW
 #define TINYENGINE_VIEW
 
+#include <TinyEngine/Event>
+
 #include <GL/glew.h>                                //Rendering Dependencies
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -31,6 +33,8 @@ struct View {
 
   bool windowed = false;
   bool enabled = false;
+
+  Tiny::dispatch<void> initialized;
 
   void toggle_fullscreen() {
     _fullscreen = !_fullscreen;

@@ -86,7 +86,7 @@ bool window(std::string windowName, int width, int height){ //Open a window
     if(!press) view.toggle_fullscreen();
   });
 
-  event.init(); // Trigger all Initializations w. Require State
+  view.initialized(); // Trigger all Initializations w. Require State
   return true;
 }
 

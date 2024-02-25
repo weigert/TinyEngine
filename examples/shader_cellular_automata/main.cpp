@@ -1,6 +1,5 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/image>
-#include <TinyEngine/color>
 
 int main( int argc, char* args[] ) {
 
@@ -58,7 +57,7 @@ int main( int argc, char* args[] ) {
 			flip = !flip;
 		}
 
-		Tiny::view.target(color::black);									//Target screen
+		Tiny::view.target(glm::vec3(0));									//Target screen
 		shader.use(); 																		//Setup Shader
 		if(flip) shader.texture("imageTexture", textureA);
 		else 		 shader.texture("imageTexture", textureB);

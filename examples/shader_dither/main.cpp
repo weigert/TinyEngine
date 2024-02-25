@@ -1,6 +1,5 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/image>
-#include <TinyEngine/color>
 #include <TinyEngine/object>
 #include <TinyEngine/camera>
 
@@ -51,7 +50,7 @@ int main( int argc, char* args[] ) {
 
 		skull.render(GL_TRIANGLES, skull.size());
 
-		Tiny::view.target(color::black);									//Target screen
+		Tiny::view.target(glm::vec3(0));									//Target screen
 
 		dither.use(); 																		//Setup Shader
 		dither.texture("imageTexture", image.color());

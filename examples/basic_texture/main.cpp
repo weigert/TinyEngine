@@ -1,7 +1,6 @@
 #include <TinyEngine/TinyEngine>
 
 #include <TinyEngine/image>
-#include <TinyEngine/color>
 #include <TinyEngine/gui>
 
 #include <TinyEngine/debug>
@@ -31,7 +30,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){
 
-		Tiny::view.target(color::black);				//Target Main Screen
+		Tiny::view.target(glm::vec3(0));				//Target Main Screen
 
 		effect.use();														//Use Effect Shader
 		effect.uniform("index", ind);						//Define Uniforms

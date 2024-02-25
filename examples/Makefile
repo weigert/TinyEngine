@@ -6,8 +6,9 @@ all:
 	@for dir in * ; do \
     if [ -d $${dir} ]; then \
 			cd $${dir}; \
+			echo $${dir}; \
 			rm ./main ||:; \
-			$(MAKE) all; \
+			$(MAKE) --no-print-directory all; \
 			cd ..; \
 		else \
 			exit 0; \

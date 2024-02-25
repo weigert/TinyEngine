@@ -1,5 +1,4 @@
 #include <TinyEngine/TinyEngine>
-#include <TinyEngine/color>
 #include <TinyEngine/camera>
 
 #define GRIDSIZE 64
@@ -31,7 +30,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){											//Setup Drawing Pipeline
 
-		Tiny::view.target(color::white);								//Target Screen
+		Tiny::view.target(glm::vec3(1));								//Target Screen
 
 		defaultShader.use();														//Prepare Shader
 		defaultShader.uniform("model", model);					//Set Model Matrix

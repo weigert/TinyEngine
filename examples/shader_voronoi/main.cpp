@@ -1,5 +1,4 @@
 #include <TinyEngine/TinyEngine>
-#include <TinyEngine/color>
 #include <TinyEngine/image>
 #include <TinyEngine/gui>
 
@@ -114,7 +113,7 @@ int main( int argc, char* args[] ) {
 
 		std::cout<<"Average Execution Time: "<<us<<std::endl; 	//Comment out for less spam
 
-		Tiny::view.target(color::black);	//Target Screen
+		Tiny::view.target(glm::vec3(0));	//Target Screen
 
 		//Pick a shader, pass textures, render as a quad.
 		if(drawstyle == 3){

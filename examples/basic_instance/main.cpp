@@ -1,6 +1,5 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/image>
-#include <TinyEngine/color>
 #include <TinyEngine/camera>
 
 int main( int argc, char* args[] ) {
@@ -32,7 +31,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){
 
-		Tiny::view.target(color::black);
+		Tiny::view.target(glm::vec3(0));
 
 		particleShader.use();
 		particleShader.texture("spriteTexture", tex);

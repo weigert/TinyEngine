@@ -1,5 +1,4 @@
 #include <TinyEngine/TinyEngine>
-#include <TinyEngine/color>
 #include <TinyEngine/camera>
 
 #include <random>
@@ -143,7 +142,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){											//Setup Drawing Pipeline
 
-		Tiny::view.target(color::black);								//Target Screen
+		Tiny::view.target(glm::vec3(0));								//Target Screen
 
 		glLineWidth(1.0f);
 

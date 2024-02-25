@@ -1,5 +1,4 @@
 #include <TinyEngine/TinyEngine>
-#include <TinyEngine/color>
 #include <TinyEngine/gui>
 
 #include "model.h"
@@ -40,7 +39,7 @@ int main( int argc, char* args[] ) {
 
 	Tiny::view.pipeline = [&](){
 
-		Tiny::view.target(color::black);		//Target Screen
+		Tiny::view.target(glm::vec3(0));		//Target Screen
 
 		julia.use();												//Prepare Shader
 		julia.uniform("maxiter", res);

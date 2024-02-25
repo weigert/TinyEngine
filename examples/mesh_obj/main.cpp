@@ -1,5 +1,4 @@
 #include <TinyEngine/TinyEngine>
-#include <TinyEngine/color>
 #include <TinyEngine/object>
 #include <TinyEngine/gui>
 
@@ -68,7 +67,7 @@ int main( int argc, char* args[] ) {
 		}
 
 		//Render Scene
-		Tiny::view.target(color::black);	//Target Screen
+		Tiny::view.target(glm::vec3(0));	//Target Screen
 
 		shader.use();
 		shader.uniform("vp", proj*view);

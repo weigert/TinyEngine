@@ -68,6 +68,8 @@ struct Event {
   template<typename T>
   using dset = std::unordered_map<SDL_Keycode, T>;
 
+  dispatch<SDL_Event*> raw;     //!< Raw Event Processing
+
   dset<dispatch<void>> active;  //!< Dispatch Set for Actively Pressed Keys
   dset<dispatch<bool>> press;   //!< Dispatch Set for Key Presses / Releases
 

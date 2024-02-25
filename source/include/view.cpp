@@ -32,17 +32,6 @@ bool View::init(std::string _name, int W, int H){
   glewExperimental = GL_TRUE;     //Launch GLEW
   glewInit();
 
-  IMGUI_CHECKVERSION();           //Setup ImGUI
-  ImGui::CreateContext();
-  io = ImGui::GetIO(); (void)io;
-  ImGui_ImplSDL2_InitForOpenGL(gWindow, gContext);
-  #ifndef TINYENGINE_COMPATIBILITY
-  ImGui_ImplOpenGL3_Init("#version 330 core");
-  #else
-  ImGui_ImplOpenGL3_Init("#version 130");
-  #endif
-  ImGui::StyleColorsCustom();
-
   #ifndef TINYENGINE_COMPATIBILITY
   if(antialias)
   glEnable(GL_MULTISAMPLE);
@@ -70,34 +59,13 @@ bool View::init(std::string _name, int W, int H){
 }
 
 void View::quit(){
-  ImGui_ImplOpenGL3_Shutdown();   //Shutdown ImGUI
-  ImGui_ImplSDL2_Shutdown();
-  ImGui::DestroyContext();
-
   SDL_GL_DeleteContext( gContext );
   SDL_DestroyWindow( gWindow );
 }
 
 void View::render(){
-  (pipeline)();                   //User-Defined Pipeline call
-
-  if(showInterface)               //Draw the interface on top
-    drawInterface();
-
+  (pipeline)();               //User-Defined Pipeline call
   SDL_GL_SwapWindow(gWindow); //Update Window
-}
-
-void View::drawInterface(){
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame(gWindow);
-  ImGui::NewFrame();
-
-  (interface)();  //Draw user-defined interface
-  //ImGui::ShowDemoWindow();  //Demo-Window (if you want)
-
-  ImGui::Render();
-  glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void View::target(glm::vec3 clearcolor, bool clearc, bool cleard){

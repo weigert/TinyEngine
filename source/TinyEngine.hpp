@@ -88,10 +88,6 @@ bool window(std::string windowName, int width, int height){ //Open a window
     if(!press) view.toggle_fullscreen();
   });
 
-  event.press[SDLK_ESCAPE]([](bool press){
-    if(!press) view.showInterface = !view.showInterface;
-  });
-
   return true;
 }
 

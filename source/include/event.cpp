@@ -8,7 +8,7 @@ void Event::process(){
   SDL_Event in;
   while(SDL_PollEvent(&in)){
 
-    ImGui_ImplSDL2_ProcessEvent(&in);
+    this->raw(&in);
 
     switch(in.type){
       case SDL_QUIT:

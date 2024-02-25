@@ -2,6 +2,7 @@
 
 #include <TinyEngine/image>
 #include <TinyEngine/color>
+#include <TinyEngine/gui>
 
 int main( int argc, char* args[] ) {
 
@@ -11,12 +12,13 @@ int main( int argc, char* args[] ) {
 	int res = 100;  //Pixelate Effect
 	int bits = 4;   //Bitreduce Effect
 
-	Tiny::view.interface = [&](){
+	Tiny::GUI gui([&](){
 	  ImGui::Text("Shader Effects");
 	  ImGui::DragInt("Effect", &ind, 1, 0, 2);
 	  ImGui::DragInt("Resolution", &res, 1, 1, 400);
 	  ImGui::DragInt("Bits", &bits, 1, 1, 16);
-	};
+	});
+	gui.hook();
 
 	Tiny::png image("canyon.png");
 	Tiny::Texture tex(image.width(), image.height(), Tiny::Texture::RGBA8U, image.data());
@@ -36,6 +38,8 @@ int main( int argc, char* args[] ) {
 		effect.texture("imageTexture", tex);		//Load Texture
 		effect.uniform("model", glm::mat4(1));	//Add Model Matrix
 		flat.render();													//Render Primitive
+	
+		gui.render();
 
 	};
 

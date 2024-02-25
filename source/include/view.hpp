@@ -6,10 +6,6 @@
 #include <SDL2/SDL_ttf.h>
 #include <glm/glm.hpp>
 
-#include <TinyEngine/imgui>                    //Interface Dependencies
-#include <TinyEngine/imgui_impl_sdl>
-#include <TinyEngine/imgui_impl_opengl3>
-
 #include <string>
 #include <functional>
 
@@ -21,11 +17,6 @@ struct View {
   void quit();
 
   unsigned int WIDTH, HEIGHT;
-
-  ImGuiIO io;
-  std::function<void()> interface = [](){};  //User defined Interface
-  bool showInterface = false;
-  void drawInterface();
 
   std::function<void()> pipeline = [](){};           //User defined Pipeline
   void render();
@@ -47,7 +38,7 @@ struct View {
     else SDL_SetWindowFullscreen(this->gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
   }
 
-private:
+//private:
   SDL_Window* gWindow;        //Window Pointer
   SDL_GLContext gContext;     //Render Context
 

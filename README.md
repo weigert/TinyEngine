@@ -192,6 +192,11 @@ This will reduce the version to a compatibility version, reducing some features 
 
 Note that some examples rely on features introduced in OpenGL4+, meaning that the required version of GLSL will not be available. All example programs are reduced to the **minimum necessary version**.
 
+To compile library for WSL you have to set the flag otherwise you probably will not able to use it. Compile library as follows:
+```bash
+export  CPPFLAGS="-DTINYENGINE_COMPATIBILITY"
+make all
+```
 #### Shipping Resources
 
 TinyEngine supports the embedded shipping of resources in executables in a native way. It does this by utilizing [c-embed](https://github.com/weigert/c-embed) and desiging file-loading structures to use an `<stdio.h>` style interface. To ship your resources (i.e. shaders, images, .obj files) as embedded in the executable, use the `c-embed` style make rule as follows:
@@ -220,7 +225,7 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
 #### Debian-Based Systems (e.g. Ubuntu)
 
     - OpenGL3: apt-get install libglu1-mesa-dev
-    - SDL2:    apt-get install libsdl2-dev
+    - SDL2:    apt-get install libsdl2-dev libsdl2-ttf-dev
     - GLEW:    apt-get install libglew-dev
     - GLM:     apt-get install libglm-dev
 
@@ -234,7 +239,7 @@ Currently TinyEngine has only been tested on linux (Ubuntu 18 LTS, Fedora 33) an
 In a single command:
 
 ```bash
-sudo apt-get install libglu1-mesa-dev libsdl2-dev libglew-dev libglm-dev
+sudo apt-get install libglu1-mesa-dev libsdl2-dev libsdl2-ttf-dev libglew-dev libglm-dev
 ```
 
 #### Fedora / DNF Package Manager Systems

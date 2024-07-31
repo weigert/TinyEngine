@@ -6,7 +6,7 @@ LIBPATH = $(HOME)/.local/lib
 INCPATH = $(HOME)/.local/include
 
 # Compilation Settings
-CC = g++ -std=c++17
+CC = g++ -std=c++17 $(CPPFLAGS)
 CF = -Wfatal-errors -O3
 
 # MacOS: Dependencies install with homegrew
@@ -17,7 +17,7 @@ TINYOS = -lX11 -lGL
 endif
 ifeq ($(UNAME), Darwin)			#Detext MacOS
 INCPATH = /opt/homebrew/include
-CC = g++-12 -std=c++17
+CC = g++-12 -std=c++17 $(CPPFLAGS)
 TINYOS = -framework OpenGL
 endif
 

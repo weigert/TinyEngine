@@ -30,12 +30,16 @@ bool init(){
     printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
     return false;
   }
-
-  #ifndef TINYENGINE_COMPATIBILITY
+  std::cout << "SDL Init done\n";
+  
+  #ifdef TINYENGINE_COMPATIBILITY
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+  std::cout << "Comptibility mode ON\n";
+  #else
+  std::cout << "Comptibility mode OFF\n";
   #endif
 
   signal(SIGINT, &sighandler);

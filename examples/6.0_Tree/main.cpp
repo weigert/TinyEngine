@@ -1,7 +1,7 @@
 #include <TinyEngine/TinyEngine>
 #include <TinyEngine/image>
 #include <TinyEngine/color>
-#include <TinyEngine/helper>
+#include <TinyEngine/math>
 #include <TinyEngine/camera>
 
 #define PI 3.14159265f
